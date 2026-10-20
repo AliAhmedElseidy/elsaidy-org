@@ -1,28 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  FAMILY_BRANCHES,
-  ELSAIDY_TITLE_ORIGINS,
-  HISTORICAL_TIMELINE,
-  HISTORICAL_REFERENCES,
-  FamilyBranch,
-  HistoricalReference,
+  VERBATIM_ABOUT_PARAGRAPH_1,
+  VERBATIM_ABOUT_PARAGRAPH_2,
+  VERBATIM_TITLE_REASON,
+  DOCUMENTED_REFERENCES,
+  MARGINALIA_NOTES,
+  GEOGRAPHICAL_PRESENCE,
   PageRoute
 } from '../data/familyData';
-import {
-  Sun,
-  Moon,
-  BookOpen,
-  Search,
-  Copy,
-  Check,
-  MapPin,
-  FileText,
-  ArrowRight
-} from 'lucide-react';
+import { BookOpen, Copy, Check, ArrowRight, FileText, Landmark } from 'lucide-react';
 
 interface AboutPageProps {
-  isDark: boolean;
-  onToggleTheme: () => void;
   activeBranchId: string;
   onSelectBranch: (id: string) => void;
   onNavigate: (route: PageRoute) => void;
@@ -31,789 +19,344 @@ interface AboutPageProps {
 }
 
 export const AboutPage: React.FC<AboutPageProps> = ({
-  isDark,
-  onToggleTheme,
   activeBranchId,
   onSelectBranch,
   onNavigate,
   copiedKey,
   onCopy
 }) => {
-  const [refCategory, setRefCategory] = useState<string>('all');
-  const [refSearch, setRefSearch] = useState<string>('');
-  const [selectedReference, setSelectedReference] = useState<HistoricalReference>(
-    HISTORICAL_REFERENCES[0]
-  );
-
-  const activeBranch: FamilyBranch =
-    FAMILY_BRANCHES.find((b) => b.id === activeBranchId) || FAMILY_BRANCHES[0];
-
-  const filteredReferences = HISTORICAL_REFERENCES.filter((ref) => {
-    const matchesCat = refCategory === 'all' || ref.category === refCategory;
-    const q = refSearch.trim();
-    const matchesQuery =
-      !q ||
-      ref.title.includes(q) ||
-      ref.author.includes(q) ||
-      ref.regionFocus.includes(q) ||
-      ref.summary.includes(q) ||
-      ref.academicCitation.includes(q);
-    return matchesCat && matchesQuery;
-  });
+  const allReferencesVerbatim = DOCUMENTED_REFERENCES.map((r) => r.verbatimText).join('\n');
 
   return (
     <div>
-      {/* Institutional Page Header & Chapter Navigation Rail */}
-      <section
-        className={`pt-8 pb-12 lg:pt-12 lg:pb-16 border-b ${
-          isDark ? 'border-slate-800/80' : 'border-slate-200'
-        }`}
-      >
-        <div
-          className={`flex flex-wrap items-center justify-between gap-4 pb-6 mb-8 border-b text-xs ${
-            isDark ? 'border-slate-800/80 text-slate-400' : 'border-slate-200/80 text-slate-600'
-          }`}
-        >
+      {/* Institutional Archival Breadcrumb & Chapter Bar */}
+      <section className="pt-8 pb-10 border-b border-[#E2DFD7]">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-8 border-b border-[#E2DFD7] text-xs text-zinc-600">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => onNavigate('home')}
-              className="hover:text-[#C59B27] transition-colors flex items-center gap-1 cursor-pointer"
+              className="hover:text-[#8C6D32] transition-colors flex items-center gap-1 cursor-pointer"
             >
               <ArrowRight className="w-3.5 h-3.5" />
-              <span>الرئيسية</span>
+              <span>الصفحة الرئيسية</span>
             </button>
             <span aria-hidden="true">/</span>
-            <span className="font-mono text-[#C59B27]">elsaidy.org/about</span>
+            <span className="font-semibold text-[#8C6D32]">من نحن والتاريخ</span>
             <span aria-hidden="true">·</span>
-            <span>الموسوعة التاريخية والأنساب الموثقة</span>
+            <span className="font-mono text-[11px] text-zinc-500">elsaidy.org/about</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-5 text-xs font-medium text-zinc-700">
+            <a href="#doc-who-we-are" className="hover:text-[#8C6D32] transition-colors">
+              ١. من نحن؟ (النص الوثائقي)
+            </a>
+            <a href="#doc-title-origin" className="hover:text-[#8C6D32] transition-colors">
+              ٢. سبب التسمية بـ الصعيدي
+            </a>
+            <a href="#doc-references" className="hover:text-[#8C6D32] transition-colors">
+              ٣. المراجع التاريخية الموثقة
+            </a>
+            <a href="#doc-branches-table" className="hover:text-[#8C6D32] transition-colors">
+              ٤. سجل الفروع والمنازل
+            </a>
+          </div>
+        </div>
+
+        <div className="max-w-4xl">
+          <div className="text-xs font-semibold text-[#8C6D32] mb-2">
+            الوثيقة التاريخية المعتمدة · الأرشيف العام لعائلة الصعيدي
+          </div>
+          <h1
+            className="font-display font-bold text-[#18181B] tracking-tight leading-[1.2] mb-4"
+            style={{ fontSize: 'clamp(2.25rem, 4vw, 3.5rem)', textWrap: 'balance' }}
+          >
+            من نحن والتاريخ — الجذور الجهنية، تفرع الأبناء، وسبب التسمية بـ الصعيدي
+          </h1>
+          <p className="text-base text-zinc-700 leading-[1.8] max-w-[70ch]">
+            توثيق رسمي لنسب وتاريخ عائلة الصعيدي المنتسبة إلى الجد السابع إبراهيم الصعيدي من قبيلة
+            جهينة من ينبع النخل، وتفرع ذرية ابنه عوض البراهيم في حواضر الجزيرة العربية وبلاد الشام
+            والخليج العربي.
+          </p>
+        </div>
+      </section>
+
+      {/* Section 1: Exact Historical Narrative with Marginalia Side-Notes */}
+      <section
+        id="doc-who-we-are"
+        className="py-14 lg:py-20 border-b border-[#E2DFD7] scroll-mt-20"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+          {/* Primary Editorial Broadsheet Column (8 Columns) */}
+          <div className="lg:col-span-8 bg-[#F9F8F6] border border-[#E2DFD7] p-7 sm:p-10 lg:p-12">
+            {/* Basmala & Document Header */}
+            <div className="text-center pb-8 mb-8 border-b border-[#E2DFD7]">
+              <div className="font-display text-2xl sm:text-3xl font-bold text-[#8C6D32] mb-3">
+                بسم الله الرحمن الرحيم
+              </div>
+              <h2 className="font-display text-3xl sm:text-4xl font-bold text-[#18181B]">
+                من نحن؟
+              </h2>
+            </div>
+
+            {/* Verbatim Historical Text Formatted in Classic Editorial Typography */}
+            <div className="space-y-8 font-display text-xl lg:text-[22px] text-[#18181B] leading-[2.05] text-justify">
+              <p>{VERBATIM_ABOUT_PARAGRAPH_1}</p>
+
+              <div className="w-24 h-px bg-[#8C6D32] mx-auto my-4" />
+
+              <p>{VERBATIM_ABOUT_PARAGRAPH_2}</p>
+            </div>
+
+            {/* Document Footer Metadata & Copy Action */}
+            <div className="mt-10 pt-6 border-t border-[#E2DFD7] flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600 font-sans">
+              <div>
+                <span>المصدر: الوثيقة التعريفية الرسمية لعائلة الصعيدي</span>
+                <span className="mx-2" aria-hidden="true">·</span>
+                <span>قبيلة جهينة — ينبع النخل</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  onCopy(
+                    `بسم الله الرحمن الرحيم\nمن نحن؟\n${VERBATIM_ABOUT_PARAGRAPH_1}\n\n${VERBATIM_ABOUT_PARAGRAPH_2}`,
+                    'copy-verbatim-about'
+                  )
+                }
+                className="px-4 py-2 bg-[#F3F1EC] border border-[#E2DFD7] text-[#18181B] font-medium hover:border-[#8C6D32] transition-colors flex items-center gap-2 cursor-pointer"
+              >
+                {copiedKey === 'copy-verbatim-about' ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-[#8C6D32]" />
+                    <span>تم نسخ النص الوثائقي</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 text-[#8C6D32]" />
+                    <span>نسخ نص الوثيقة</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Marginalia / Side-Notes Column (4 Columns) */}
+          <aside className="lg:col-span-4 space-y-4">
+            <div className="p-5 bg-[#F3F1EC] border border-[#E2DFD7]">
+              <div className="text-xs font-semibold text-[#8C6D32] mb-1">
+                الحواشي والفهرس الهامشي للوثيقة
+              </div>
+              <p className="text-xs text-zinc-600 leading-relaxed">
+                إضاءات توثيقية للأعلام، الأجداد، والمنازل الجغرافية الواردة في متن الوثيقة الرسمية:
+              </p>
+            </div>
+
+            {MARGINALIA_NOTES.map((note) => (
+              <div
+                key={note.id}
+                className="p-5 bg-[#F9F8F6] border border-[#E2DFD7] space-y-1.5"
+              >
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-[#8C6D32]">{note.index}</span>
+                  <span className="text-zinc-500">{note.category}</span>
+                </div>
+                <h3 className="font-display text-lg font-bold text-[#18181B]">
+                  {note.term}
+                </h3>
+                <p className="text-xs text-zinc-700 leading-[1.8]">
+                  {note.explanation}
+                </p>
+              </div>
+            ))}
+          </aside>
+        </div>
+      </section>
+
+      {/* Section 2: Dedicated Section for "سبب التسمية بـ الصعيدي" */}
+      <section
+        id="doc-title-origin"
+        className="py-14 lg:py-20 border-b border-[#E2DFD7] scroll-mt-20"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
+          <div className="lg:col-span-4 flex flex-col justify-between p-7 bg-[#F3F1EC] border border-[#E2DFD7]">
+            <div>
+              <div className="text-xs font-semibold text-[#8C6D32] mb-2">
+                تحقيق اللقب التاريخي · قبيلة جهينة
+              </div>
+              <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#18181B] mb-4">
+                سبب التسمية بـ «الصعيدي»
+              </h2>
+              <p className="text-xs text-zinc-700 leading-[1.85]">
+                يفسّر هذا المبحث التاريخي نشأة لقب «الصعيدي» وارتباطه بمسيرة قبيلة جهينة بين منازلها
+                الأصلية في شمال غرب الجزيرة العربية وصعيد مصر، ودورها التاريخي منذ الفتوحات
+                الإسلامية ومقاومة الاستعمار الفرنسي.
+              </p>
+            </div>
+
+            <div className="pt-6 mt-6 border-t border-[#E2DFD7] text-xs text-zinc-600 space-y-1.5">
+              <div>· القبيلة الأم: قبيلة جهينة القضاعية</div>
+              <div>· الموطن الأصلي: ينبع النخل وشمال غرب الجزيرة العربية</div>
+              <div>· دلالة اللقب: نسبةً إلى مناطق الارتياع في صعيد مصر لمن عاد إلى منازله الأصلية</div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-8 p-7 sm:p-10 lg:p-12 bg-[#F9F8F6] border border-[#E2DFD7] flex flex-col justify-between">
+            <div>
+              <div className="text-xs font-semibold text-[#8C6D32] mb-4">
+                النص التاريخي المعتمد لسبب التسمية:
+              </div>
+              <p className="font-display text-xl lg:text-[23px] text-[#18181B] leading-[2.05] text-justify">
+                {VERBATIM_TITLE_REASON}
+              </p>
+            </div>
+
+            <div className="mt-8 pt-5 border-t border-[#E2DFD7] flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600">
+              <span>توثيق تاريخي مستند إلى مراجع تاريخ جهينة وبلاد ينبع والرحلة الحجازية</span>
+              <button
+                type="button"
+                onClick={() =>
+                  onCopy(`سبب التسمية بـ الصعيدي:\n${VERBATIM_TITLE_REASON}`, 'copy-title-reason')
+                }
+                className="px-4 py-2 bg-[#F3F1EC] border border-[#E2DFD7] text-[#18181B] font-medium hover:border-[#8C6D32] transition-colors flex items-center gap-2 cursor-pointer"
+              >
+                {copiedKey === 'copy-title-reason' ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-[#8C6D32]" />
+                    <span>تم النسخ</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 text-[#8C6D32]" />
+                    <span>نسخ فقرة سبب التسمية</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 3: Academic & Historical References Box (المراجع التاريخية الموثقة) */}
+      <section
+        id="doc-references"
+        className="py-14 lg:py-20 border-b border-[#E2DFD7] scroll-mt-20"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <div>
+            <div className="text-xs font-semibold text-[#8C6D32] mb-2">
+              الفهرس المرجعي المعتمد · المصادر والمطبوعات التاريخية
+            </div>
+            <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#18181B]">
+              المراجع التاريخية الموثقة
+            </h2>
           </div>
 
           <button
             type="button"
-            onClick={onToggleTheme}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg border font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-              isDark
-                ? 'bg-[#0E1624] border-slate-800 text-amber-200 hover:bg-slate-800'
-                : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-100'
-            }`}
+            onClick={() =>
+              onCopy(`المراجع التاريخية الموثقة:\n${allReferencesVerbatim}`, 'copy-all-refs')
+            }
+            className="px-4 py-2.5 bg-[#18181B] text-[#F9F8F6] text-xs font-semibold hover:bg-[#8C6D32] transition-colors flex items-center gap-2 cursor-pointer self-start sm:self-end"
           >
-            {isDark ? (
+            {copiedKey === 'copy-all-refs' ? (
               <>
-                <Sun className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>الوضع النهاري</span>
+                <Check className="w-3.5 h-3.5" />
+                <span>تم نسخ قائمة المراجع</span>
               </>
             ) : (
               <>
-                <Moon className="w-3.5 h-3.5 text-slate-700" />
-                <span>الوضع الليلي</span>
+                <Copy className="w-3.5 h-3.5" />
+                <span>نسخ قائمة المراجع كاملة</span>
               </>
             )}
           </button>
         </div>
 
-        <div className="max-w-4xl">
-          <div className="text-xs font-medium text-[#C59B27] mb-3">
-            السجل التاريخي المعتمد · لجنة التوثيق والأنساب — عائلة الصعيدي
-          </div>
-          <h1
-            className={`font-display font-bold tracking-tight leading-[1.2] mb-5 ${
-              isDark ? 'text-white' : 'text-slate-950'
-            }`}
-            style={{ fontSize: 'clamp(2.25rem, 4vw, 3.5rem)', textWrap: 'balance' }}
-          >
-            التاريخ، الجذور الجهنية، سبب التسمية بلقب «الصعيدي»، وفروع العائلة في الجزيرة والشام والخليج
-          </h1>
-          <p
-            className={`text-base lg:text-lg leading-[1.85] max-w-[68ch] ${
-              isDark ? 'text-slate-300' : 'text-slate-700'
-            }`}
-          >
-            توثيق تاريخي وأكاديمي شامل يستند إلى معاجم الأنساب المعتمدة، وكتب البلدان، والحجج
-            الشرعية والوقفية المحفوظة في ينبع النخل وتيماء وحائل والرياض وتبوك وبلاد الشام والإمارات
-            وسلطنة عُمان.
-          </p>
-        </div>
-
-        {/* Chapter Index Rail */}
-        <div
-          className={`mt-10 pt-6 border-t flex flex-wrap items-center gap-6 text-xs font-medium ${
-            isDark ? 'border-slate-800/80 text-slate-300' : 'border-slate-200 text-slate-700'
-          }`}
-        >
-          <a href="#ch-origins" className="hover:text-[#C59B27] transition-colors">
-            01. الأصول القبلية في ينبع
-          </a>
-          <a href="#ch-title-reason" className="hover:text-[#C59B27] transition-colors">
-            02. سبب التسمية بلقب «الصعيدي»
-          </a>
-          <a href="#ch-branches" className="hover:text-[#C59B27] transition-colors">
-            03. الفروع التاريخية الخمسة
-          </a>
-          <a href="#ch-timeline" className="hover:text-[#C59B27] transition-colors">
-            04. التسلسل الزمني للهجرات
-          </a>
-          <a href="#ch-references" className="hover:text-[#C59B27] transition-colors">
-            05. المراجع الأكاديمية والوثائق
-          </a>
-        </div>
-      </section>
-
-      {/* Chapter 01: Asymmetric Reading Canvas with Margin Notes (الأصول القبلية والموطن الأول) */}
-      <section
-        id="ch-origins"
-        className={`py-16 lg:py-20 border-b scroll-mt-20 ${
-          isDark ? 'border-slate-800/80' : 'border-slate-200'
-        }`}
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          {/* 70% Main Editorial Reading Column */}
-          <div className="lg:col-span-8">
-            <div className="text-xs font-medium text-[#C59B27] mb-2">
-              الفصل الأول · الجذور والنسب الأصيل
-            </div>
-            <h2
-              className={`font-display text-3xl lg:text-4xl font-bold mb-6 ${
-                isDark ? 'text-white' : 'text-slate-950'
-              }`}
-            >
-              النسب الجهني القضاعي والموطن التاريخي الأول في ينبع النخل وينبع البحر
-            </h2>
-
-            <div
-              className={`space-y-5 text-base lg:text-[17px] leading-[1.9] max-w-[68ch] ${
-                isDark ? 'text-slate-300' : 'text-slate-700'
-              }`}
-            >
-              <p>
-                تنتسب عائلة الصعيدي (آل صعيدي) بالأصالة والتواتر والوثائق الشرعية إلى{' '}
-                <strong className="font-semibold text-[#C59B27]">
-                  قبيلة جهينة بن زيد بن ليث بن سود بن أسلم بن الحاف بن قضاعة
-                </strong>
-                ، وهي من أعرق القبائل العربية التي استوطنت إقليم الحجاز وساحل البحر الأحمر وأودية
-                ينبع والعيص والمروة منذ العصور الإسلامية الأولى وحتى يومنا الحاضر.
-              </p>
-              <p>
-                وقد شكّلت <strong>ينبع النخل</strong> بعيونها الجارية وقراها الزراعية الغنّاء، إلى
-                جانب <strong>ينبع البحر</strong> بمرفئها التجاري الاستراتيجي على ساحل البحر الأحمر،
-                الموطن التاريخي الأول لآل صعيدي. وفي هذه الحاضرة الحجازية العريقة، تأسست مكانة
-                الأسرة في الزراعة والتجارة وتسيير القوافل بين الحرمين الشريفين وحواضر الشمال والشام
-                ومصر.
-              </p>
-
-              {/* Editorial Pull Quote */}
-              <blockquote
-                className={`my-8 py-6 border-y font-display text-xl lg:text-2xl italic leading-relaxed ${
-                  isDark
-                    ? 'border-slate-800 text-amber-100/95'
-                    : 'border-slate-200 text-slate-900'
-                }`}
-              >
-                «ظلّت ينبع النخل وينبع البحر المنطلق التاريخي لأسرة الصعيدي من قبيلة جهينة، ومنها
-                سارت فروع الأجداد نحو تيماء وتبوك وحائل والرياض وبلاد الشام والخليج العربي، محافظةً
-                على وحدة النسب وأصالة الموروث.»
-              </blockquote>
-
-              <p>
-                ومع اتساع النشاط التجاري والعمراني في القرون المتأخرة، انطلقت من ينبع هجرات متتابعة
-                لأبناء الأسرة نحو المراكز الحضرية الكبرى على طرق التجارة والحج؛ فاستقر{' '}
-                <strong>الجد عبد الله</strong> في واحة تيماء وتبوك، واتجه{' '}
-                <strong>الجد سلامة</strong> شمالاً إلى بلاد الشام، بينما استقر{' '}
-                <strong>الجدّان صالح وعلي</strong> في حاضرة حائل ومنها إلى العاصمة الرياض، وامتدت
-                أغصان كريمة من العائلة إلى ساحل الخليج العربي في دولة الإمارات العربية المتحدة
-                وسلطنة عُمان.
-              </p>
-            </div>
-          </div>
-
-          {/* 30% Archival Margin Sidebar (dl Metadata Card) */}
-          <aside
-            className={`lg:col-span-4 p-6 lg:p-7 rounded-2xl border ${
-              isDark ? 'bg-[#0E1624] border-slate-800' : 'bg-white border-slate-200'
-            }`}
-          >
-            <div className="text-xs font-semibold text-[#C59B27] mb-4 pb-3 border-b border-slate-700/30">
-              بطاقة التوثيق النسبي والجغرافي
-            </div>
-
-            <dl className="space-y-4 text-xs">
-              <div className={`pb-3 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
-                <dt className={isDark ? 'text-slate-400 mb-1' : 'text-slate-500 mb-1'}>
-                  اسم الأسرة المعتمد
-                </dt>
-                <dd className={`text-sm font-bold font-display ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                  عائلة الصعيدي (آل صعيدي — Elsaidy)
-                </dd>
-              </div>
-
-              <div className={`pb-3 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
-                <dt className={isDark ? 'text-slate-400 mb-1' : 'text-slate-500 mb-1'}>
-                  النسب القبلي الصريح
-                </dt>
-                <dd className={`font-medium leading-relaxed ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                  قبيلة جهينة بن زيد بن ليث بن سود بن أسلم بن الحاف بن قضاعة
-                </dd>
-              </div>
-
-              <div className={`pb-3 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
-                <dt className={isDark ? 'text-slate-400 mb-1' : 'text-slate-500 mb-1'}>
-                  الموطن الأصلي والمنطلق
-                </dt>
-                <dd className={`font-medium ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                  ينبع النخل وينبع البحر — إقليم الحجاز
-                </dd>
-              </div>
-
-              <div className={`pb-3 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
-                <dt className={isDark ? 'text-slate-400 mb-1' : 'text-slate-500 mb-1'}>
-                  الفروع التاريخية الموثقة
-                </dt>
-                <dd className={`leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                  فرع عبد الله (تيماء وتبوك) · فرع سلامة (بلاد الشام) · فرع صالح وعلي (حائل والرياض)
-                  · فرع الخليج العربي (الإمارات وسلطنة عُمان)
-                </dd>
-              </div>
-
-              <div>
-                <dt className={isDark ? 'text-slate-400 mb-1' : 'text-slate-500 mb-1'}>
-                  رقم القيد الأرشيفي الموحد
-                </dt>
-                <dd className="font-mono text-[#C59B27] tabular-nums">
-                  ARCH-JH-ELS-1448H
-                </dd>
-              </div>
-            </dl>
-          </aside>
-        </div>
-      </section>
-
-      {/* Chapter 02: سبب التسمية بلقب «الصعيدي» (Reason behind the "Elsaidy" Title) */}
-      <section
-        id="ch-title-reason"
-        className={`py-16 lg:py-20 border-b scroll-mt-20 ${
-          isDark ? 'border-slate-800/80' : 'border-slate-200'
-        }`}
-      >
-        <div className="max-w-3xl mb-10">
-          <div className="text-xs font-medium text-[#C59B27] mb-2">
-            الفصل الثاني · تحقيق اللقب التاريخي
-          </div>
-          <h2
-            className={`font-display text-3xl lg:text-4xl font-bold mb-4 ${
-              isDark ? 'text-white' : 'text-slate-950'
-            }`}
-          >
-            سبب التسمية بلقب «الصعيدي» ودلالاته التاريخية واللغوية
-          </h2>
-          <p
-            className={`text-sm lg:text-base leading-relaxed ${
-              isDark ? 'text-slate-300' : 'text-slate-700'
-            }`}
-          >
-            يرتبط لقب «الصعيدي» لدى فروع الأسرة المنتسبة إلى قبيلة جهينة بثلاثة مرتكزات تاريخية
-            ولغوية وتوثيقية متكاملة حفظتها الوثائق الشرعية والروايات المتواترة لدى أعيان العائلة:
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {ELSAIDY_TITLE_ORIGINS.map((pillar) => (
-            <div
-              key={pillar.index}
-              className={`p-6 lg:p-7 rounded-2xl border flex flex-col justify-between ${
-                isDark ? 'bg-[#0E1624] border-slate-800/90' : 'bg-white border-slate-200/90'
-              }`}
-            >
-              <div>
-                <div className="text-xs font-mono text-[#C59B27] font-semibold mb-2">
-                  المرتكز {pillar.index} · {pillar.subtitle}
-                </div>
-                <h3
-                  className={`font-display text-xl lg:text-2xl font-bold mb-3 ${
-                    isDark ? 'text-white' : 'text-slate-950'
-                  }`}
-                >
-                  {pillar.title}
-                </h3>
-                <p
-                  className={`text-sm leading-[1.85] mb-6 ${
-                    isDark ? 'text-slate-300' : 'text-slate-700'
-                  }`}
-                >
-                  {pillar.description}
-                </p>
-              </div>
-
+        {/* Archival Citation Index Box */}
+        <div className="bg-[#F3F1EC] border border-[#E2DFD7] p-6 sm:p-8 lg:p-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {DOCUMENTED_REFERENCES.map((ref) => (
               <div
-                className={`pt-4 border-t text-xs leading-relaxed ${
-                  isDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-600'
-                }`}
+                key={ref.id}
+                className="bg-[#F9F8F6] border border-[#E2DFD7] p-6 flex flex-col justify-between"
               >
-                <strong className="text-[#C59B27]">الشاهد التوثيقي: </strong>
-                {pillar.historicalEvidence}
+                <div>
+                  <div className="flex items-center justify-between gap-2 text-xs pb-3 mb-4 border-b border-[#E2DFD7]">
+                    <span className="font-semibold text-[#8C6D32]">
+                      المرجع التاريخي رقم ({ref.number})
+                    </span>
+                    <span className="font-mono text-[11px] text-zinc-500 tabular-nums">
+                      {ref.catalogNumber}
+                    </span>
+                  </div>
+
+                  {/* Exact Verbatim Citation String */}
+                  <div className="font-display text-xl font-bold text-[#18181B] leading-[1.75] mb-4">
+                    {ref.verbatimText}
+                  </div>
+
+                  <p className="text-xs text-zinc-600 leading-[1.8] mb-5">
+                    {ref.scopeNote}
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-[#E2DFD7] space-y-1 text-xs text-zinc-600">
+                  <div>
+                    <strong className="text-[#18181B]">المؤلف: </strong>
+                    {ref.author}
+                  </div>
+                  <div>
+                    <strong className="text-[#18181B]">بيانات النشر: </strong>
+                    {ref.editionDetails}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Chapter 03: الفروع التاريخية الخمسة (Interactive Branch Explorer) */}
-      <section
-        id="ch-branches"
-        className={`py-16 lg:py-20 border-b scroll-mt-20 ${
-          isDark ? 'border-slate-800/80' : 'border-slate-200'
-        }`}
-      >
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-          <div>
-            <div className="text-xs font-medium text-[#C59B27] mb-2">
-              الفصل الثالث · الفروع والانتشار الجغرافي
-            </div>
-            <h2
-              className={`font-display text-3xl lg:text-4xl font-bold ${
-                isDark ? 'text-white' : 'text-slate-950'
-              }`}
-            >
-              فروع عائلة الصعيدي في ينبع وتيماء وحائل والرياض والشام والخليج
-            </h2>
+      {/* Section 4: Structured Register of Branches & Lineage (سجل تفرع الأبناء والمنازل) */}
+      <section id="doc-branches-table" className="py-14 lg:py-20 scroll-mt-20">
+        <div className="mb-8">
+          <div className="text-xs font-semibold text-[#8C6D32] mb-2">
+            البيان التفصيلي للفروع والمنازل الثمانية
           </div>
-
-          <div
-            className={`flex flex-wrap items-center gap-1.5 p-1.5 rounded-xl border ${
-              isDark ? 'bg-[#0E1624] border-slate-800' : 'bg-slate-100 border-slate-200'
-            }`}
-            role="tablist"
-          >
-            {FAMILY_BRANCHES.map((branch) => {
-              const active = branch.id === activeBranch.id;
-              return (
-                <button
-                  key={branch.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => onSelectBranch(branch.id)}
-                  className={`px-3.5 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                    active
-                      ? 'bg-[#C59B27] text-slate-950 font-semibold'
-                      : isDark
-                      ? 'text-slate-300 hover:text-white'
-                      : 'text-slate-700 hover:text-slate-950'
-                  }`}
-                >
-                  {branch.index}. {branch.coordinates.label}
-                </button>
-              );
-            })}
-          </div>
+          <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#18181B]">
+            سجل تفرع عائلة الصعيدي من الجد السابع إبراهيم الصعيدي وابنه عوض البراهيم
+          </h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          {/* Selected Branch Full Dossier */}
-          <div
-            className={`lg:col-span-7 p-6 lg:p-8 rounded-2xl border flex flex-col justify-between ${
-              isDark
-                ? 'bg-[#0E1624] border-[#C59B27]/50'
-                : 'bg-white border-[#C59B27]/60'
-            }`}
-          >
-            <div>
-              <div className="flex flex-wrap items-center gap-2 text-xs text-[#C59B27] mb-3">
-                <MapPin className="w-3.5 h-3.5 shrink-0" />
-                <span className="font-mono font-semibold">فرع رقم {activeBranch.index}</span>
-                <span aria-hidden="true">·</span>
-                <span>{activeBranch.patriarch}</span>
-                <span aria-hidden="true">·</span>
-                <span>{activeBranch.era}</span>
+        <div className="border-t border-r border-[#E2DFD7] grid grid-cols-1 md:grid-cols-2">
+          {GEOGRAPHICAL_PRESENCE.map((branch) => (
+            <div
+              key={branch.id}
+              onClick={() => onSelectBranch(branch.id)}
+              className={`p-6 lg:p-7 border-b border-l border-[#E2DFD7] transition-colors cursor-pointer ${
+                activeBranchId === branch.id ? 'bg-[#F3F1EC]' : 'bg-[#F9F8F6] hover:bg-[#F3F1EC]/50'
+              }`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs mb-2">
+                <span className="font-semibold text-[#8C6D32]">
+                  {branch.index} · {branch.subLocation}
+                </span>
+                <span className="text-zinc-500">{branch.lineagePath}</span>
               </div>
 
-              <h3
-                className={`font-display text-2xl lg:text-3xl font-bold mb-3 ${
-                  isDark ? 'text-white' : 'text-slate-950'
-                }`}
-              >
-                {activeBranch.title}
+              <h3 className="font-display text-2xl font-bold text-[#18181B] mb-2">
+                {branch.regionName}
               </h3>
 
-              <div
-                className={`text-xs mb-5 pb-4 border-b ${
-                  isDark ? 'text-slate-400 border-slate-800' : 'text-slate-600 border-slate-200'
-                }`}
-              >
-                <span>النطاق الإقليمي: {activeBranch.region}</span>
-                <span className="mx-2" aria-hidden="true">·</span>
-                <span>الحواضر والمدن: {activeBranch.cities.join(' ، ')}</span>
+              <div className="text-xs font-semibold text-zinc-800 mb-2">
+                الأعلام والاستقرار: {branch.keyFigures}
               </div>
 
-              <p
-                className={`text-sm lg:text-base leading-[1.9] mb-6 ${
-                  isDark ? 'text-slate-200' : 'text-slate-800'
-                }`}
-              >
-                {activeBranch.detailedHistory}
+              <p className="text-sm text-zinc-700 leading-[1.8]">
+                {branch.description}
               </p>
-
-              <div className="mb-6">
-                <div
-                  className={`text-xs font-semibold mb-3 ${
-                    isDark ? 'text-amber-200' : 'text-slate-900'
-                  }`}
-                >
-                  أبرز المعالم والإسهامات التاريخية والاجتماعية للفرع:
-                </div>
-                <ul className="space-y-2.5 text-sm">
-                  {activeBranch.notableContributions.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5">
-                      <span className="font-mono text-xs text-[#C59B27] mt-0.5 tabular-nums">
-                        0{idx + 1}.
-                      </span>
-                      <span className={isDark ? 'text-slate-300' : 'text-slate-700'}>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div
-              className={`pt-4 border-t text-xs ${
-                isDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-600'
-              }`}
-            >
-              <strong className="font-semibold text-[#C59B27]">التوثيق الأرشيفي: </strong>
-              {activeBranch.archivalNotes}
-            </div>
-          </div>
-
-          {/* All Branches Selector Column */}
-          <div className="lg:col-span-5 flex flex-col justify-between gap-3">
-            {FAMILY_BRANCHES.map((branch) => {
-              const isSelected = branch.id === activeBranch.id;
-              return (
-                <button
-                  key={branch.id}
-                  type="button"
-                  onClick={() => onSelectBranch(branch.id)}
-                  className={`w-full text-right p-4 rounded-xl border transition-colors cursor-pointer ${
-                    isSelected
-                      ? isDark
-                        ? 'bg-slate-900 border-[#C59B27] text-white'
-                        : 'bg-amber-50/50 border-[#C59B27] text-slate-950'
-                      : isDark
-                      ? 'bg-[#0E1624]/60 border-slate-800/80 text-slate-300 hover:border-slate-700'
-                      : 'bg-white border-slate-200/80 text-slate-700 hover:border-slate-300'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-xs font-mono text-[#C59B27] font-semibold">
-                      {branch.index}. {branch.patriarch}
-                    </span>
-                    <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {branch.cities.slice(0, 2).join(' · ')}
-                    </span>
-                  </div>
-                  <div className="text-base font-bold font-display mb-1">{branch.title}</div>
-                  <p
-                    className={`text-xs line-clamp-2 leading-relaxed ${
-                      isDark ? 'text-slate-400' : 'text-slate-600'
-                    }`}
-                  >
-                    {branch.summary}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Chapter 04: التسلسل الزمني للهجرات والحواضر */}
-      <section
-        id="ch-timeline"
-        className={`py-16 lg:py-20 border-b scroll-mt-20 ${
-          isDark ? 'border-slate-800/80' : 'border-slate-200'
-        }`}
-      >
-        <div className="max-w-3xl mb-10">
-          <div className="text-xs font-medium text-[#C59B27] mb-2">
-            الفصل الرابع · المسار التاريخي والزمني
-          </div>
-          <h2
-            className={`font-display text-3xl lg:text-4xl font-bold ${
-              isDark ? 'text-white' : 'text-slate-950'
-            }`}
-          >
-            المحطات التاريخية الكبرى لانتشار عائلة الصعيدي
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          {HISTORICAL_TIMELINE.map((item, idx) => (
-            <div
-              key={idx}
-              className={`p-5 rounded-2xl border flex flex-col justify-between ${
-                isDark ? 'bg-[#0E1624] border-slate-800/90' : 'bg-white border-slate-200/90'
-              }`}
-            >
-              <div>
-                <div className="text-xs font-mono text-[#C59B27] font-semibold mb-2">
-                  0{idx + 1} · {item.era}
-                </div>
-                <h3
-                  className={`font-display text-lg font-bold mb-2 ${
-                    isDark ? 'text-white' : 'text-slate-900'
-                  }`}
-                >
-                  {item.title}
-                </h3>
-                <p
-                  className={`text-xs leading-relaxed mb-4 ${
-                    isDark ? 'text-slate-300' : 'text-slate-600'
-                  }`}
-                >
-                  {item.description}
-                </p>
-              </div>
-              <div
-                className={`pt-3 border-t text-[11px] ${
-                  isDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500'
-                }`}
-              >
-                {item.location}
-              </div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* Chapter 05: المراجع الأكاديمية والوثائق التاريخية المعتمدة */}
-      <section id="ch-references" className="py-16 lg:py-20 scroll-mt-20">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
-          <div className="max-w-2xl">
-            <div className="text-xs font-medium text-[#C59B27] mb-2">
-              الفصل الخامس · البيبليوغرافيا الأكاديمية والوثائق الشرعية
-            </div>
-            <h2
-              className={`font-display text-3xl lg:text-4xl font-bold tracking-tight mb-3 ${
-                isDark ? 'text-white' : 'text-slate-950'
-              }`}
-            >
-              المراجع الأكاديمية والمصادر التاريخية الموثقة
-            </h2>
-            <p
-              className={`text-sm lg:text-base leading-relaxed ${
-                isDark ? 'text-slate-300' : 'text-slate-700'
-              }`}
-            >
-              قائمة مفهرسة بأهم المراجع التاريخية ومعاجم الأنساب والوثائق الشرعية المحفوظة، مع
-              صياغة الاقتباس الأكاديمي المباشر للباحثين والدارسين.
-            </p>
-          </div>
-
-          {/* Search & Category Filter */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                value={refSearch}
-                onChange={(e) => setRefSearch(e.target.value)}
-                placeholder="ابحث في المراجع أو المؤلفين..."
-                aria-label="ابحث في المراجع الأكاديمية"
-                className={`w-full sm:w-64 pr-10 pl-4 py-2 text-xs rounded-xl border outline-none transition-colors ${
-                  isDark
-                    ? 'bg-[#0E1624] border-slate-800 text-slate-100 focus:border-[#C59B27]'
-                    : 'bg-white border-slate-200 text-slate-900 focus:border-[#C59B27]'
-                }`}
-              />
-            </div>
-
-            <div
-              className={`flex flex-wrap items-center gap-1 p-1 rounded-xl border ${
-                isDark ? 'bg-[#0E1624] border-slate-800' : 'bg-slate-100 border-slate-200'
-              }`}
-            >
-              {[
-                { id: 'all', label: 'الكل' },
-                { id: 'genealogy', label: 'الأنساب' },
-                { id: 'geography', label: 'البلدان' },
-                { id: 'manuscripts', label: 'الوثائق' },
-                { id: 'contemporary', label: 'الأرشيف الرقمي' }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setRefCategory(tab.id)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                    refCategory === tab.id
-                      ? 'bg-[#C59B27] text-slate-950 font-semibold'
-                      : isDark
-                      ? 'text-slate-300 hover:text-white'
-                      : 'text-slate-700 hover:text-slate-950'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Reference Cards List */}
-          <div className="lg:col-span-7 space-y-3">
-            {filteredReferences.map((ref) => {
-              const isSelected = selectedReference.id === ref.id;
-              return (
-                <div
-                  key={ref.id}
-                  onClick={() => setSelectedReference(ref)}
-                  className={`p-5 rounded-xl border transition-colors cursor-pointer ${
-                    isSelected
-                      ? isDark
-                        ? 'bg-[#0E1624] border-[#C59B27]'
-                        : 'bg-white border-[#C59B27]'
-                      : isDark
-                      ? 'bg-[#0E1624]/60 border-slate-800/80 hover:border-slate-700'
-                      : 'bg-white border-slate-200/80 hover:border-slate-300'
-                  }`}
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs mb-2">
-                    <div className="flex items-center gap-2 text-[#C59B27]">
-                      <span className="font-mono font-semibold">{ref.index}.</span>
-                      <span>{ref.categoryLabel}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>{ref.regionFocus}</span>
-                    </div>
-                    <span className="font-mono text-[11px] text-slate-400 tabular-nums">
-                      {ref.archivalCode}
-                    </span>
-                  </div>
-
-                  <h3
-                    className={`font-display text-lg lg:text-xl font-bold mb-1 ${
-                      isDark ? 'text-white' : 'text-slate-900'
-                    }`}
-                  >
-                    {ref.title}
-                  </h3>
-
-                  <div className={`text-xs mb-2.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                    <span>المؤلف / المصدر: {ref.author}</span>
-                    <span className="mx-2" aria-hidden="true">·</span>
-                    <span>{ref.publicationPeriod}</span>
-                  </div>
-
-                  <p
-                    className={`text-xs lg:text-sm leading-relaxed mb-3 ${
-                      isDark ? 'text-slate-300' : 'text-slate-700'
-                    }`}
-                  >
-                    {ref.summary}
-                  </p>
-
-                  <div
-                    className={`p-3 rounded-lg border text-xs font-mono ${
-                      isDark
-                        ? 'bg-[#090E17] border-slate-800/90 text-slate-300'
-                        : 'bg-slate-50 border-slate-200 text-slate-700'
-                    }`}
-                  >
-                    <span className="text-[#C59B27] font-sans font-semibold ml-1">
-                      الاقتباس الأكاديمي:
-                    </span>{' '}
-                    {ref.academicCitation}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Sticky Archival Excerpt & Citation Reader */}
-          <div
-            className={`lg:col-span-5 p-6 lg:p-8 rounded-2xl border sticky top-24 ${
-              isDark ? 'bg-[#0E1624] border-slate-800' : 'bg-white border-slate-200'
-            }`}
-          >
-            <div className="flex items-center justify-between gap-2 text-xs text-[#C59B27] mb-3">
-              <div className="flex items-center gap-1.5">
-                <BookOpen className="w-4 h-4 shrink-0" />
-                <span>بطاقة النص المرجعي والاقتباس الأكاديمي</span>
-              </div>
-              <span className="font-mono text-[11px] tabular-nums">
-                {selectedReference.archivalCode}
-              </span>
-            </div>
-
-            <h3
-              className={`font-display text-2xl font-bold mb-2 ${
-                isDark ? 'text-white' : 'text-slate-950'
-              }`}
-            >
-              {selectedReference.title}
-            </h3>
-
-            <div
-              className={`text-xs pb-4 mb-5 border-b ${
-                isDark ? 'text-slate-400 border-slate-800' : 'text-slate-600 border-slate-200'
-              }`}
-            >
-              <span>{selectedReference.author}</span>
-              <span className="mx-2" aria-hidden="true">·</span>
-              <span>{selectedReference.regionFocus}</span>
-            </div>
-
-            <div
-              className={`p-5 rounded-xl border mb-5 font-display text-base lg:text-lg leading-[1.9] ${
-                isDark
-                  ? 'bg-[#090E17] border-slate-800/90 text-amber-100/95'
-                  : 'bg-[#FAF8F5] border-slate-200 text-slate-900'
-              }`}
-            >
-              {selectedReference.excerpt}
-            </div>
-
-            <div
-              className={`p-4 rounded-xl border mb-6 text-xs leading-relaxed ${
-                isDark
-                  ? 'bg-[#090E17]/60 border-slate-800 text-slate-300'
-                  : 'bg-slate-50 border-slate-200 text-slate-700'
-              }`}
-            >
-              <div className="font-semibold text-[#C59B27] mb-1">صيغة التوثيق الأكاديمي (APA / MLA):</div>
-              <div>{selectedReference.academicCitation}</div>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() =>
-                  onCopy(
-                    `${selectedReference.academicCitation}\nالنص المقتبس: ${selectedReference.excerpt}`,
-                    `acad-${selectedReference.id}`
-                  )
-                }
-                className="px-4 py-2.5 rounded-xl bg-[#C59B27] text-slate-950 text-xs font-semibold flex items-center gap-2 hover:bg-[#d4ab32] transition-colors cursor-pointer whitespace-nowrap shrink-0"
-              >
-                {copiedKey === `acad-${selectedReference.id}` ? (
-                  <>
-                    <Check className="w-3.5 h-3.5" />
-                    <span>تم نسخ التوثيق الأكاديمي</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>نسخ التوثيق الأكاديمي</span>
-                  </>
-                )}
-              </button>
-
-              <a
-                href="#contact-portal"
-                className="text-xs font-medium text-[#C59B27] hover:underline underline-offset-4 whitespace-nowrap shrink-0"
-              >
-                إيداع وثيقة تاريخية جديدة ←
-              </a>
-            </div>
-          </div>
         </div>
       </section>
     </div>

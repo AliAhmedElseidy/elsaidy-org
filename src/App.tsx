@@ -5,45 +5,37 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  FAMILY_BRANCHES,
+  GEOGRAPHICAL_PRESENCE,
   PageRoute,
-  InfrastructureService,
-  BlogArticlePreview
+  WhiteLabeledPortal,
+  DiwanArticle
 } from './data/familyData';
 import { HomePage } from './pages/HomePage';
 import { AboutPage } from './pages/AboutPage';
 import { BlogPage } from './pages/BlogPage';
 import { ProjectsPage } from './pages/ProjectsPage';
-import {
-  ArrowUpLeft,
-  Check,
-  Globe,
-  Mail,
-  Building2,
-  X
-} from 'lucide-react';
+import { ArrowUpLeft, Check, Globe, Mail, Landmark, X } from 'lucide-react';
 
 function getInitialRoute(): PageRoute {
   if (typeof window === 'undefined') return 'home';
   const path = window.location.pathname.replace(/\/+$/, '');
   if (path === '/about') return 'about';
-  if (path === '/blog') return 'blog';
-  if (path === '/projects') return 'projects';
+  if (path === '/diwan' || path === '/blog') return 'diwan';
+  if (path === '/portals' || path === '/projects') return 'portals';
   return 'home';
 }
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<PageRoute>(getInitialRoute);
-  const [isDark, setIsDark] = useState<boolean>(true);
-  const [activeBranchId, setActiveBranchId] = useState<string>(FAMILY_BRANCHES[1].id);
+  const [activeBranchId, setActiveBranchId] = useState<string>(GEOGRAPHICAL_PRESENCE[0].id);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [inspectedService, setInspectedService] = useState<InfrastructureService | null>(null);
-  const [activeArticle, setActiveArticle] = useState<BlogArticlePreview | null>(null);
+  const [inspectedPortal, setInspectedPortal] = useState<WhiteLabeledPortal | null>(null);
+  const [activeArticle, setActiveArticle] = useState<DiwanArticle | null>(null);
 
-  // Contact / Provisioning Request Form State
+  // Institutional Contact & Portal Access Form State
   const [formData, setFormData] = useState({
     fullName: '',
-    branch: 'فرع صالح وعلي — حائل والرياض',
+    branch: 'فرع محافظة تيماء (عبد الله بن عوض)',
     email: '',
     requestType: 'طلب بريد رسمي (@elsaidy.org)',
     message: ''
@@ -90,7 +82,7 @@ export default function App() {
       return;
     }
     if (!formData.message.trim() || formData.message.trim().length < 10) {
-      setFormError('يرجى كتابة تفاصيل الطلب أو المراسلة التاريخية/التقنية (10 أحرف على الأقل).');
+      setFormError('يرجى كتابة تفاصيل الطلب أو المراسلة التوثيقية (10 أحرف على الأقل).');
       return;
     }
     setFormError('');
@@ -100,20 +92,12 @@ export default function App() {
   return (
     <div
       dir="rtl"
-      className={`min-h-screen transition-colors duration-200 ${
-        isDark
-          ? 'bg-[#090E17] text-slate-100 selection:bg-[#C59B27]/30 selection:text-amber-100'
-          : 'bg-[#FAF8F5] text-slate-900 selection:bg-[#C59B27]/20 selection:text-slate-900'
-      }`}
+      className="min-h-screen bg-[#F9F8F6] text-[#18181B] selection:bg-[#8C6D32]/20 selection:text-[#18181B]"
     >
-      {/* Top Navigation Bar — Strict 3-Zone Contract */}
+      {/* Formal Top Navigation Bar — Strict 3-Zone Contract */}
       <header
         id="top"
-        className={`sticky top-0 z-40 flex items-center justify-between gap-8 px-6 lg:px-12 py-4 border-b backdrop-blur-md transition-colors duration-200 ${
-          isDark
-            ? 'bg-[#090E17]/95 border-slate-800/80'
-            : 'bg-[#FAF8F5]/95 border-slate-200/90'
-        }`}
+        className="sticky top-0 z-40 flex items-center justify-between gap-8 px-6 lg:px-12 py-4 bg-[#F9F8F6] border-b border-[#E2DFD7]"
       >
         {/* Zone 1: Single text element wordmark */}
         <a
@@ -122,19 +106,15 @@ export default function App() {
             e.preventDefault();
             navigateTo('home');
           }}
-          className={`text-xl font-bold font-display tracking-tight whitespace-nowrap shrink-0 ${
-            isDark ? 'text-white' : 'text-slate-900'
-          }`}
+          className="text-xl lg:text-2xl font-bold font-display tracking-tight text-[#18181B] whitespace-nowrap shrink-0"
         >
-          عائلة الصعيدي
+          الموقع الرسمي لعائلة الصعيدي
         </a>
 
         {/* Zone 2: 5 concise single-line text navigation links */}
         <nav
           aria-label="التنقل الرئيسي"
-          className={`hidden md:flex items-center gap-7 text-sm font-medium ${
-            isDark ? 'text-slate-300' : 'text-slate-600'
-          }`}
+          className="hidden md:flex items-center gap-7 text-sm font-medium text-zinc-700"
         >
           <a
             href="/"
@@ -142,13 +122,13 @@ export default function App() {
               e.preventDefault();
               navigateTo('home');
             }}
-            className={`hover:text-[#C59B27] transition-colors whitespace-nowrap shrink-0 ${
+            className={`hover:text-[#8C6D32] transition-colors whitespace-nowrap shrink-0 ${
               currentRoute === 'home'
-                ? 'text-[#C59B27] underline underline-offset-8 font-semibold'
+                ? 'text-[#8C6D32] underline underline-offset-8 font-semibold'
                 : ''
             }`}
           >
-            الرئيسية
+            الصفحة الرئيسية
           </a>
           <a
             href="/about"
@@ -156,45 +136,45 @@ export default function App() {
               e.preventDefault();
               navigateTo('about');
             }}
-            className={`hover:text-[#C59B27] transition-colors whitespace-nowrap shrink-0 ${
+            className={`hover:text-[#8C6D32] transition-colors whitespace-nowrap shrink-0 ${
               currentRoute === 'about'
-                ? 'text-[#C59B27] underline underline-offset-8 font-semibold'
+                ? 'text-[#8C6D32] underline underline-offset-8 font-semibold'
                 : ''
             }`}
           >
-            التاريخ والأنساب
+            من نحن والتاريخ
           </a>
           <a
-            href="/blog"
+            href="/diwan"
             onClick={(e) => {
               e.preventDefault();
-              navigateTo('blog');
+              navigateTo('diwan');
             }}
-            className={`hover:text-[#C59B27] transition-colors whitespace-nowrap shrink-0 ${
-              currentRoute === 'blog'
-                ? 'text-[#C59B27] underline underline-offset-8 font-semibold'
+            className={`hover:text-[#8C6D32] transition-colors whitespace-nowrap shrink-0 ${
+              currentRoute === 'diwan'
+                ? 'text-[#8C6D32] underline underline-offset-8 font-semibold'
                 : ''
             }`}
           >
-            المدونة والمقالات
+            الديوان والأخبار
           </a>
           <a
-            href="/projects"
+            href="/portals"
             onClick={(e) => {
               e.preventDefault();
-              navigateTo('projects');
+              navigateTo('portals');
             }}
-            className={`hover:text-[#C59B27] transition-colors whitespace-nowrap shrink-0 ${
-              currentRoute === 'projects'
-                ? 'text-[#C59B27] underline underline-offset-8 font-semibold'
+            className={`hover:text-[#8C6D32] transition-colors whitespace-nowrap shrink-0 ${
+              currentRoute === 'portals'
+                ? 'text-[#8C6D32] underline underline-offset-8 font-semibold'
                 : ''
             }`}
           >
-            البنية الرقمية
+            البوابات الرقمية والخدمات
           </a>
           <a
             href="#contact-portal"
-            className="hover:text-[#C59B27] transition-colors whitespace-nowrap shrink-0"
+            className="hover:text-[#8C6D32] transition-colors whitespace-nowrap shrink-0"
           >
             تواصل معنا
           </a>
@@ -204,38 +184,32 @@ export default function App() {
         <div className="flex items-center gap-3 shrink-0">
           <button
             type="button"
-            onClick={() => navigateTo('projects')}
-            className="px-4 py-2 text-xs font-semibold rounded-lg bg-[#C59B27] text-slate-950 hover:bg-[#d4ab32] transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            onClick={() => navigateTo('portals')}
+            className="px-4 py-2 text-xs font-semibold bg-[#18181B] text-[#F9F8F6] hover:bg-[#8C6D32] transition-colors cursor-pointer whitespace-nowrap shrink-0"
           >
-            بوابة الأنظمة
+            البوابات الرقمية
           </button>
         </div>
       </header>
 
-      {/* Main Multi-Page Content Container */}
+      {/* Main Content Container */}
       <main className="max-w-[1280px] mx-auto px-6 lg:px-12">
-        {/* Mobile Route Switcher Strip (Visible only on small viewports below header) */}
-        <div
-          className={`flex md:hidden items-center gap-1.5 pt-4 overflow-x-auto text-xs ${
-            isDark ? 'text-slate-300' : 'text-slate-700'
-          }`}
-        >
+        {/* Responsive Mobile Navigation Strip */}
+        <div className="flex md:hidden items-center gap-1.5 pt-4 pb-2 overflow-x-auto text-xs border-b border-[#E2DFD7]">
           {[
-            { id: 'home' as PageRoute, label: 'الرئيسية' },
-            { id: 'about' as PageRoute, label: 'التاريخ والأنساب' },
-            { id: 'blog' as PageRoute, label: 'المدونة' },
-            { id: 'projects' as PageRoute, label: 'البنية الرقمية' }
+            { id: 'home' as PageRoute, label: 'الصفحة الرئيسية' },
+            { id: 'about' as PageRoute, label: 'من نحن والتاريخ' },
+            { id: 'diwan' as PageRoute, label: 'الديوان والأخبار' },
+            { id: 'portals' as PageRoute, label: 'البوابات الرقمية' }
           ].map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => navigateTo(item.id)}
-              className={`px-3 py-1.5 rounded-lg border whitespace-nowrap shrink-0 ${
+              className={`px-3 py-1.5 border whitespace-nowrap shrink-0 ${
                 currentRoute === item.id
-                  ? 'bg-[#C59B27] border-[#C59B27] text-slate-950 font-semibold'
-                  : isDark
-                  ? 'bg-[#0E1624] border-slate-800'
-                  : 'bg-white border-slate-200'
+                  ? 'bg-[#18181B] border-[#18181B] text-[#F9F8F6] font-semibold'
+                  : 'bg-[#F3F1EC] border-[#E2DFD7] text-[#18181B]'
               }`}
             >
               {item.label}
@@ -243,25 +217,19 @@ export default function App() {
           ))}
         </div>
 
-        {/* Render Active Independent Page View */}
+        {/* Active Page View */}
         {currentRoute === 'home' && (
           <HomePage
-            isDark={isDark}
-            onToggleTheme={() => setIsDark(!isDark)}
             activeBranchId={activeBranchId}
             onSelectBranch={(id) => setActiveBranchId(id)}
             onNavigate={navigateTo}
-            onInspectService={(srv) => setInspectedService(srv)}
+            onInspectPortal={(portal) => setInspectedPortal(portal)}
             onReadArticle={(art) => setActiveArticle(art)}
-            copiedKey={copiedKey}
-            onCopy={handleCopy}
           />
         )}
 
         {currentRoute === 'about' && (
           <AboutPage
-            isDark={isDark}
-            onToggleTheme={() => setIsDark(!isDark)}
             activeBranchId={activeBranchId}
             onSelectBranch={(id) => setActiveBranchId(id)}
             onNavigate={navigateTo}
@@ -270,129 +238,96 @@ export default function App() {
           />
         )}
 
-        {currentRoute === 'blog' && (
+        {currentRoute === 'diwan' && (
           <BlogPage
-            isDark={isDark}
-            onToggleTheme={() => setIsDark(!isDark)}
             onNavigate={navigateTo}
             onReadArticle={(art) => setActiveArticle(art)}
           />
         )}
 
-        {currentRoute === 'projects' && (
+        {currentRoute === 'portals' && (
           <ProjectsPage
-            isDark={isDark}
-            onToggleTheme={() => setIsDark(!isDark)}
             onNavigate={navigateTo}
-            onInspectService={(srv) => setInspectedService(srv)}
+            onInspectPortal={(portal) => setInspectedPortal(portal)}
             copiedKey={copiedKey}
             onCopy={handleCopy}
           />
         )}
 
-        {/* Shared Interactive Contact & Account Provisioning Section (#contact-portal) */}
+        {/* Institutional Contact & Official Services Request Section */}
         <section
           id="contact-portal"
-          className={`py-16 lg:py-24 border-t scroll-mt-20 ${
-            isDark ? 'border-slate-800/80' : 'border-slate-200'
-          }`}
+          className="py-16 lg:py-24 border-t border-[#E2DFD7] scroll-mt-20"
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
             <div className="lg:col-span-5">
-              <div className="text-xs font-medium text-[#C59B27] mb-2">
-                بوابة التواصل والخدمات الذاتية — elsaidy.org
+              <div className="text-xs font-semibold text-[#8C6D32] mb-2">
+                الأمانة العامة ولجنة التوثيق والتواصل
               </div>
-              <h2
-                className={`font-display text-3xl lg:text-4xl font-bold tracking-tight mb-4 ${
-                  isDark ? 'text-white' : 'text-slate-950'
-                }`}
-              >
-                تواصل مع مجلس العائلة وفريق البنية الرقمية
+              <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#18181B] tracking-tight mb-4">
+                المراسلات الرسمية وطلبات الحسابات والتوثيق
               </h2>
-              <p
-                className={`text-sm lg:text-base leading-relaxed mb-8 ${
-                  isDark ? 'text-slate-300' : 'text-slate-700'
-                }`}
-              >
-                سواء كنت من أبناء عائلة الصعيدي الراغبين في إصدار بريد إلكتروني رسمي على النطاق{' '}
-                <span className="font-mono text-[#C59B27]">@elsaidy.org</span>، أو تفعيل صلاحيات
-                الدخول إلى نظام <span className="font-mono">ERPNext</span>، أو لديك وثائق ومشجرات
-                تاريخية تود إضافتها إلى الأرشيف الرقمي، يسعدنا استقبال مراسلتك.
+              <p className="text-sm lg:text-base text-zinc-700 leading-[1.85] mb-8">
+                تستقبل الأمانة العامة للموقع الرسمي لعائلة الصعيدي طلبات إصدار البريد الرسمي (
+                <span className="font-mono text-[#8C6D32]">@elsaidy.org</span>)، وطلبات الدخول إلى
+                بوابة الإدارة والموارد المركزية، إضافةً إلى إيداع الوثائق والمشجرات التاريخية لدى
+                الأرشيف الوثائقي.
               </p>
 
-              <div
-                className={`p-6 rounded-2xl border space-y-4 ${
-                  isDark ? 'bg-[#0E1624] border-slate-800' : 'bg-white border-slate-200'
-                }`}
-              >
+              <div className="p-6 bg-[#F3F1EC] border border-[#E2DFD7] space-y-4">
                 <div className="flex items-start gap-3">
-                  <Globe className="w-4 h-4 text-[#C59B27] mt-1 shrink-0" />
+                  <Globe className="w-4 h-4 text-[#8C6D32] mt-1 shrink-0" />
                   <div>
-                    <div className="text-xs font-semibold text-[#C59B27]">
-                      صفحات المنصة والنطاقات الرسمية
+                    <div className="text-xs font-semibold text-[#8C6D32]">
+                      النطاق الرسمي الموحد للعائلة
                     </div>
-                    <div className="text-xs font-mono mt-0.5">
-                      elsaidy.org · /about · /blog · /projects
+                    <div className="text-xs font-mono text-[#18181B] mt-0.5">
+                      elsaidy.org · blog.elsaidy.org · mail.elsaidy.org
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <Mail className="w-4 h-4 text-[#C59B27] mt-1 shrink-0" />
+                  <Mail className="w-4 h-4 text-[#8C6D32] mt-1 shrink-0" />
                   <div>
-                    <div className="text-xs font-semibold text-[#C59B27]">
-                      البريد الرسمي والاتصال الموحد
+                    <div className="text-xs font-semibold text-[#8C6D32]">
+                      نظام المراسلات والبريد الرسمي
                     </div>
-                    <div className="text-xs font-mono mt-0.5">
-                      info@elsaidy.org · mail.elsaidy.org · erp.elsaidy.org
+                    <div className="text-xs font-mono text-[#18181B] mt-0.5">
+                      info@elsaidy.org
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <Building2 className="w-4 h-4 text-[#C59B27] mt-1 shrink-0" />
+                  <Landmark className="w-4 h-4 text-[#8C6D32] mt-1 shrink-0" />
                   <div>
-                    <div className="text-xs font-semibold text-[#C59B27]">
-                      الحواضر والفروع الممثلة
+                    <div className="text-xs font-semibold text-[#8C6D32]">
+                      منازل وحواضر العائلة الممثلة
                     </div>
-                    <div
-                      className={`text-xs mt-0.5 leading-relaxed ${
-                        isDark ? 'text-slate-300' : 'text-slate-600'
-                      }`}
-                    >
-                      ينبع النخل وينبع البحر · تيماء وتبوك · حائل والرياض · بلاد الشام · الإمارات ·
-                      سلطنة عُمان
+                    <div className="text-xs text-zinc-700 mt-0.5 leading-relaxed">
+                      ينبع النخل · محافظة تيماء · منطقة حائل (حي الزبارة) · مدينة الرياض · منطقة
+                      تبوك · بلاد الشام (جبل العرب - أم ولد) · الإمارات (عجمان - مشرف والجرف) ·
+                      سلطنة عُمان (الباطنة - الخابورة)
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Validated Interactive Form */}
-            <div
-              className={`lg:col-span-7 p-6 lg:p-8 rounded-2xl border ${
-                isDark ? 'bg-[#0E1624] border-slate-800' : 'bg-white border-slate-200'
-              }`}
-            >
+            {/* Validated Institutional Request Form */}
+            <div className="lg:col-span-7 bg-[#F3F1EC] border border-[#E2DFD7] p-7 sm:p-10">
               {formSubmitted ? (
                 <div className="py-8 text-center space-y-4">
-                  <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400">
+                  <div className="w-12 h-12 bg-[#18181B] text-[#F9F8F6] flex items-center justify-center mx-auto">
                     <Check className="w-6 h-6" />
                   </div>
-                  <h3
-                    className={`font-display text-2xl font-bold ${
-                      isDark ? 'text-white' : 'text-slate-900'
-                    }`}
-                  >
-                    تم استلام طلبك بنجاح في بوابة عائلة الصعيدي
+                  <h3 className="font-display text-2xl font-bold text-[#18181B]">
+                    تم قيد مراسلتكم بنجاح لدى الأمانة العامة للموقع الرسمي
                   </h3>
-                  <p
-                    className={`text-sm max-w-md mx-auto leading-relaxed ${
-                      isDark ? 'text-slate-300' : 'text-slate-600'
-                    }`}
-                  >
-                    شكراً لك <strong>{formData.fullName}</strong> ({formData.branch}). سيقوم فريق
-                    التوثيق والبنية الرقمية بمراجعة طلبك ({formData.requestType}) والتواصل معك عبر{' '}
+                  <p className="text-sm text-zinc-700 max-w-md mx-auto leading-relaxed">
+                    شكراً لك <strong>{formData.fullName}</strong> ({formData.branch}). ستقوم اللجنة
+                    المختصة بمراجعة طلبكم ({formData.requestType}) والتواصل معكم عبر{' '}
                     <span className="font-mono">{formData.email}</span>.
                   </p>
                   <button
@@ -404,9 +339,9 @@ export default function App() {
                         message: ''
                       });
                     }}
-                    className="px-5 py-2.5 rounded-xl bg-[#C59B27] text-slate-950 text-xs font-semibold hover:bg-[#d4ab32] transition-colors cursor-pointer"
+                    className="px-6 py-2.5 bg-[#18181B] text-[#F9F8F6] text-xs font-semibold hover:bg-[#8C6D32] transition-colors cursor-pointer"
                   >
-                    إرسال طلب آخر
+                    إرسال مراسلة أخرى
                   </button>
                 </div>
               ) : (
@@ -415,9 +350,7 @@ export default function App() {
                     <div>
                       <label
                         htmlFor="fullName"
-                        className={`block text-xs font-medium mb-2 ${
-                          isDark ? 'text-slate-300' : 'text-slate-700'
-                        }`}
+                        className="block text-xs font-semibold text-[#18181B] mb-2"
                       >
                         الاسم الكامل (الثلاثي أو الرباعي)
                       </label>
@@ -427,52 +360,44 @@ export default function App() {
                         required
                         value={formData.fullName}
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                        placeholder="مثال: علي بن أحمد الصعيدي"
-                        className={`w-full px-4 py-2.5 text-sm rounded-xl border outline-none transition-colors ${
-                          isDark
-                            ? 'bg-[#090E17] border-slate-800 text-white focus:border-[#C59B27]'
-                            : 'bg-[#FAF8F5] border-slate-300 text-slate-900 focus:border-[#C59B27]'
-                        }`}
+                        placeholder="أدخل الاسم الكامل..."
+                        className="w-full px-4 py-2.5 text-sm bg-[#F9F8F6] border border-[#E2DFD7] text-[#18181B] outline-none focus:border-[#8C6D32]"
                       />
                     </div>
 
                     <div>
                       <label
                         htmlFor="branch"
-                        className={`block text-xs font-medium mb-2 ${
-                          isDark ? 'text-slate-300' : 'text-slate-700'
-                        }`}
+                        className="block text-xs font-semibold text-[#18181B] mb-2"
                       >
-                        الفرع العائلي / المنطقة
+                        الفرع العائلي / الحاضرة
                       </label>
                       <select
                         id="branch"
                         value={formData.branch}
                         onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-                        className={`w-full px-4 py-2.5 text-sm rounded-xl border outline-none transition-colors ${
-                          isDark
-                            ? 'bg-[#090E17] border-slate-800 text-white focus:border-[#C59B27]'
-                            : 'bg-[#FAF8F5] border-slate-300 text-slate-900 focus:border-[#C59B27]'
-                        }`}
+                        className="w-full px-4 py-2.5 text-sm bg-[#F9F8F6] border border-[#E2DFD7] text-[#18181B] outline-none focus:border-[#8C6D32]"
                       >
-                        <option value="الموطن الأول — ينبع النخل وينبع البحر">
-                          الموطن الأول — ينبع النخل وينبع البحر
+                        <option value="الموطن الأول — ينبع النخل">الموطن الأول — ينبع النخل</option>
+                        <option value="فرع محافظة تيماء (عبد الله بن عوض)">
+                          فرع محافظة تيماء (عبد الله بن عوض)
                         </option>
-                        <option value="فرع عبد الله — تيماء وتبوك">
-                          فرع عبد الله — تيماء وتبوك
+                        <option value="فرع بلاد الشام — جبل العرب، أم ولد (سلامة بن عوض)">
+                          فرع بلاد الشام — جبل العرب، أم ولد (سلامة بن عوض)
                         </option>
-                        <option value="فرع سلامة — بلاد الشام">
-                          فرع سلامة — بلاد الشام
+                        <option value="فرع منطقة حائل — حي الزبارة (إبراهيم بن عبد الله بن صالح)">
+                          فرع منطقة حائل — حي الزبارة (إبراهيم بن عبد الله بن صالح)
                         </option>
-                        <option value="فرع صالح وعلي — حائل والرياض">
-                          فرع صالح وعلي — حائل والرياض
+                        <option value="فرع مدينة الرياض (ناصر وحمود بن عبد الله بن صالح)">
+                          فرع مدينة الرياض (ناصر وحمود بن عبد الله بن صالح)
                         </option>
-                        <option value="فرع الخليج العربي — الإمارات وسلطنة عُمان">
-                          فرع الخليج العربي — الإمارات وسلطنة عُمان
+                        <option value="فرع الإمارات — عجمان، مشرف والجرف (علي بن عبد الله بن صالح)">
+                          فرع الإمارات — عجمان، مشرف والجرف (علي بن عبد الله بن صالح)
                         </option>
-                        <option value="باحث تاريخي / جهة خارجية">
-                          باحث تاريخي / جهة خارجية
+                        <option value="فرع سلطنة عُمان — الباطنة، الخابورة (خليفة بن علي)">
+                          فرع سلطنة عُمان — الباطنة، الخابورة (خليفة بن علي)
                         </option>
+                        <option value="فرع منطقة تبوك">فرع منطقة تبوك</option>
                       </select>
                     </div>
                   </div>
@@ -481,9 +406,7 @@ export default function App() {
                     <div>
                       <label
                         htmlFor="email"
-                        className={`block text-xs font-medium mb-2 ${
-                          isDark ? 'text-slate-300' : 'text-slate-700'
-                        }`}
+                        className="block text-xs font-semibold text-[#18181B] mb-2"
                       >
                         البريد الإلكتروني للتواصل
                       </label>
@@ -495,22 +418,16 @@ export default function App() {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         placeholder="name@example.com"
-                        className={`w-full px-4 py-2.5 text-sm text-right rounded-xl border outline-none transition-colors font-mono ${
-                          isDark
-                            ? 'bg-[#090E17] border-slate-800 text-white focus:border-[#C59B27]'
-                            : 'bg-[#FAF8F5] border-slate-300 text-slate-900 focus:border-[#C59B27]'
-                        }`}
+                        className="w-full px-4 py-2.5 text-sm text-right font-mono bg-[#F9F8F6] border border-[#E2DFD7] text-[#18181B] outline-none focus:border-[#8C6D32]"
                       />
                     </div>
 
                     <div>
                       <label
                         htmlFor="requestType"
-                        className={`block text-xs font-medium mb-2 ${
-                          isDark ? 'text-slate-300' : 'text-slate-700'
-                        }`}
+                        className="block text-xs font-semibold text-[#18181B] mb-2"
                       >
-                        نوع الطلب أو المراسلة
+                        موضوع الطلب أو المراسلة
                       </label>
                       <select
                         id="requestType"
@@ -518,23 +435,19 @@ export default function App() {
                         onChange={(e) =>
                           setFormData({ ...formData, requestType: e.target.value })
                         }
-                        className={`w-full px-4 py-2.5 text-sm rounded-xl border outline-none transition-colors ${
-                          isDark
-                            ? 'bg-[#090E17] border-slate-800 text-white focus:border-[#C59B27]'
-                            : 'bg-[#FAF8F5] border-slate-300 text-slate-900 focus:border-[#C59B27]'
-                        }`}
+                        className="w-full px-4 py-2.5 text-sm bg-[#F9F8F6] border border-[#E2DFD7] text-[#18181B] outline-none focus:border-[#8C6D32]"
                       >
                         <option value="طلب بريد رسمي (@elsaidy.org)">
-                          طلب بريد رسمي (@elsaidy.org — Mailcow)
+                          طلب بريد رسمي (@elsaidy.org)
                         </option>
-                        <option value="طلب صلاحية نظام الموارد (ERPNext)">
-                          طلب صلاحية نظام الموارد (ERPNext)
+                        <option value="تصريح دخول: بوابة الإدارة والموارد المركزية">
+                          تصريح دخول: بوابة الإدارة والموارد المركزية
                         </option>
-                        <option value="توثيق شجرة العائلة أو إرسال وثيقة تاريخية">
-                          توثيق شجرة العائلة أو إرسال وثيقة تاريخية
+                        <option value="إيداع وثيقة أو مخطوطة في الأرشيف الوثائقي">
+                          إيداع وثيقة أو مخطوطة في الأرشيف الوثائقي
                         </option>
-                        <option value="المساهمة بمقال في مدونة العائلة (blog.elsaidy.org)">
-                          المساهمة بمقال في مدونة العائلة (blog.elsaidy.org)
+                        <option value="نشر دراسة أو خبر في ديوان العائلة">
+                          نشر دراسة أو خبر في ديوان العائلة
                         </option>
                       </select>
                     </div>
@@ -543,11 +456,9 @@ export default function App() {
                   <div>
                     <label
                       htmlFor="message"
-                      className={`block text-xs font-medium mb-2 ${
-                        isDark ? 'text-slate-300' : 'text-slate-700'
-                      }`}
+                      className="block text-xs font-semibold text-[#18181B] mb-2"
                     >
-                      تفاصيل الرسالة أو البيانات التوثيقية
+                      البيان التفصيلي للطلب أو الوثيقة
                     </label>
                     <textarea
                       id="message"
@@ -555,30 +466,26 @@ export default function App() {
                       required
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder="اكتب تفاصيل طلبك أو معلومات الوثيقة / الفرع العائلي..."
-                      className={`w-full px-4 py-3 text-sm rounded-xl border outline-none transition-colors ${
-                        isDark
-                          ? 'bg-[#090E17] border-slate-800 text-white focus:border-[#C59B27]'
-                          : 'bg-[#FAF8F5] border-slate-300 text-slate-900 focus:border-[#C59B27]'
-                      }`}
+                      placeholder="اكتب تفاصيل مراسلتك أو بيانات الفرع والوثيقة..."
+                      className="w-full px-4 py-3 text-sm bg-[#F9F8F6] border border-[#E2DFD7] text-[#18181B] outline-none focus:border-[#8C6D32]"
                     />
                   </div>
 
                   {formError && (
-                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-400">
+                    <div className="p-3 bg-red-50 border border-red-200 text-xs text-red-800">
                       {formError}
                     </div>
                   )}
 
                   <div className="flex items-center justify-between gap-4 pt-2">
-                    <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                      تُحفظ كافة البيانات بسريّة تامة ضمن خوادم العائلة المشفرة.
+                    <span className="text-xs text-zinc-600">
+                      تُحفظ جميع المراسلات والوثائق في السجل الرسمي للأمانة العامة.
                     </span>
                     <button
                       type="submit"
-                      className="px-6 py-3 rounded-xl bg-[#C59B27] text-slate-950 text-xs font-semibold hover:bg-[#d4ab32] transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                      className="px-6 py-3 bg-[#18181B] text-[#F9F8F6] text-xs font-semibold hover:bg-[#8C6D32] transition-colors cursor-pointer whitespace-nowrap shrink-0"
                     >
-                      إرسال الطلب والمراسلة
+                      اعتماد وإرسال الطلب
                     </button>
                   </div>
                 </form>
@@ -588,177 +495,132 @@ export default function App() {
         </section>
       </main>
 
-      {/* Quiet Corporate & Heritage Footer */}
-      <footer
-        className={`border-t py-12 px-6 lg:px-12 text-xs ${
-          isDark
-            ? 'bg-[#070B12] border-slate-800/80 text-slate-400'
-            : 'bg-[#F3EFEA] border-slate-200 text-slate-600'
-        }`}
-      >
+      {/* Formal Institutional Footer */}
+      <footer className="border-t border-[#E2DFD7] bg-[#F3F1EC] py-12 px-6 lg:px-12 text-xs text-zinc-600">
         <div className="max-w-[1280px] mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
           <div>
-            <div
-              className={`font-display text-lg font-bold mb-1 ${
-                isDark ? 'text-white' : 'text-slate-900'
-              }`}
-            >
-              عائلة الصعيدي — البوابة الرسمية والبنية الرقمية (Elsaidy Family)
+            <div className="font-display text-xl font-bold text-[#18181B] mb-1">
+              الموقع الرسمي لعائلة الصعيدي (elsaidy.org)
             </div>
-            <p className="leading-relaxed">
-              من قبيلة جهينة القضاعية · ينبع النخل · تيماء · حائل · الرياض · تبوك · بلاد الشام ·
-              الإمارات · سلطنة عُمان
+            <p className="leading-relaxed text-zinc-700">
+              الجد السابع إبراهيم الصعيدي · قبيلة جهينة · ينبع النخل · تيماء · حائل · الرياض · تبوك
+              · جبل العرب (بلاد الشام) · الإمارات (عجمان) · سلطنة عُمان (الخابورة)
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-6">
+          <div className="flex flex-wrap items-center gap-6 font-medium text-[#18181B]">
             <button
               type="button"
               onClick={() => navigateTo('home')}
-              className="hover:text-[#C59B27] transition-colors cursor-pointer"
+              className="hover:text-[#8C6D32] transition-colors cursor-pointer"
             >
-              الرئيسية (elsaidy.org)
+              الصفحة الرئيسية
             </button>
             <button
               type="button"
               onClick={() => navigateTo('about')}
-              className="hover:text-[#C59B27] transition-colors cursor-pointer"
+              className="hover:text-[#8C6D32] transition-colors cursor-pointer"
             >
-              التاريخ والأنساب (/about)
+              من نحن والتاريخ
             </button>
             <button
               type="button"
-              onClick={() => navigateTo('blog')}
-              className="hover:text-[#C59B27] transition-colors cursor-pointer"
+              onClick={() => navigateTo('diwan')}
+              className="hover:text-[#8C6D32] transition-colors cursor-pointer"
             >
-              المدونة والمقالات (/blog)
+              الديوان والأخبار
             </button>
             <button
               type="button"
-              onClick={() => navigateTo('projects')}
-              className="hover:text-[#C59B27] transition-colors cursor-pointer"
+              onClick={() => navigateTo('portals')}
+              className="hover:text-[#8C6D32] transition-colors cursor-pointer"
             >
-              البنية الرقمية (/projects)
+              البوابات الرقمية والخدمات
             </button>
-            <a
-              href="https://blog.elsaidy.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-[#C59B27] transition-colors font-mono"
-            >
-              blog.elsaidy.org ↗
-            </a>
           </div>
         </div>
 
-        <div
-          className={`max-w-[1280px] mx-auto mt-8 pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-4 ${
-            isDark ? 'border-slate-800/60' : 'border-slate-300/70'
-          }`}
-        >
+        <div className="max-w-[1280px] mx-auto mt-8 pt-6 border-t border-[#E2DFD7] flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
-            © {new Date().getFullYear()} عائلة الصعيدي (Elsaidy Family). جميع الحقوق محفوظة.
+            © {new Date().getFullYear()} الموقع الرسمي لعائلة الصعيدي. جميع الحقوق محفوظة للأمانة
+            العامة واللجنة التاريخية.
           </div>
-          <div className="font-mono text-[11px]">
-            elsaidy.org · erp.elsaidy.org · mail.elsaidy.org · blog.elsaidy.org
+          <div className="text-[11px] text-zinc-500">
+            بوابة الإدارة والموارد المركزية · نظام المراسلات والبريد الرسمي · الأرشيف الوثائقي والمنصة المعرفية
           </div>
         </div>
       </footer>
 
-      {/* Interactive Service Specifications Modal */}
-      {inspectedService && (
+      {/* White-Labeled Portal Inspection Modal */}
+      {inspectedPortal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-          onClick={() => setInspectedService(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
+          onClick={() => setInspectedPortal(null)}
         >
           <div
-            className={`w-full max-w-xl rounded-2xl border p-6 lg:p-8 ${
-              isDark
-                ? 'bg-[#0E1624] border-slate-700 text-slate-100'
-                : 'bg-white border-slate-200 text-slate-900'
-            }`}
+            className="w-full max-w-xl bg-[#F9F8F6] border border-[#E2DFD7] p-6 sm:p-8 text-[#18181B]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between gap-4 pb-4 mb-5 border-b border-slate-700/40">
+            <div className="flex items-start justify-between gap-4 pb-4 mb-5 border-b border-[#E2DFD7]">
               <div>
-                <div className="text-xs text-[#C59B27] font-mono">
-                  {inspectedService.domain} · {inspectedService.categoryLabel}
+                <div className="text-xs text-[#8C6D32] font-semibold">
+                  {inspectedPortal.portalSubTitle} · {inspectedPortal.domain}
                 </div>
                 <h3 className="font-display text-2xl font-bold mt-1">
-                  {inspectedService.arabicTitle}
+                  {inspectedPortal.officialName}
                 </h3>
               </div>
               <button
                 type="button"
-                onClick={() => setInspectedService(null)}
-                className="p-2 rounded-lg hover:bg-slate-800/50 transition-colors cursor-pointer"
+                onClick={() => setInspectedPortal(null)}
+                className="p-1.5 border border-[#E2DFD7] hover:border-[#8C6D32] transition-colors cursor-pointer"
                 aria-label="إغلاق"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-4 text-sm">
-              <p
-                className={
-                  isDark ? 'text-slate-300 leading-relaxed' : 'text-slate-700 leading-relaxed'
-                }
-              >
-                {inspectedService.description}
-              </p>
+              <p className="text-zinc-700 leading-[1.85]">{inspectedPortal.summary}</p>
 
-              <div
-                className={`p-4 rounded-xl border text-xs space-y-2 ${
-                  isDark ? 'bg-[#090E17] border-slate-800' : 'bg-slate-50 border-slate-200'
-                }`}
-              >
-                <div className="flex justify-between gap-2">
-                  <span className="text-slate-400">النطاق المعتمد:</span>
-                  <span className="font-mono text-[#C59B27]">{inspectedService.domain}</span>
-                </div>
-                <div className="flex justify-between gap-2">
-                  <span className="text-slate-400">بروتوكول الأمان:</span>
-                  <span className="font-mono">{inspectedService.protocol}</span>
-                </div>
-                <div className="flex justify-between gap-2">
-                  <span className="text-slate-400">مستوى الصلاحية:</span>
-                  <span>{inspectedService.accessLevel}</span>
-                </div>
-                <div className="flex justify-between gap-2">
-                  <span className="text-slate-400">المعمارية:</span>
-                  <span>{inspectedService.architectureNote}</span>
-                </div>
+              <div className="p-4 bg-[#F3F1EC] border border-[#E2DFD7] text-xs space-y-2">
+                {inspectedPortal.operationalGuidelines.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between gap-2 pb-2 border-b border-[#E2DFD7] last:border-b-0 last:pb-0"
+                  >
+                    <span className="text-zinc-600">{item.label}:</span>
+                    <span className="font-semibold text-[#18181B]">{item.value}</span>
+                  </div>
+                ))}
               </div>
 
               <div className="flex flex-wrap items-center justify-end gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => {
-                    const srvTitle = inspectedService.arabicTitle;
-                    setInspectedService(null);
+                    const pName = inspectedPortal.officialName;
+                    setInspectedPortal(null);
                     setFormData((prev) => ({
                       ...prev,
-                      requestType: `طلب صلاحية: ${srvTitle}`
+                      requestType: `تصريح دخول: ${pName}`
                     }));
                     document
                       .getElementById('contact-portal')
                       ?.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className={`px-4 py-2.5 rounded-xl border text-xs font-medium cursor-pointer ${
-                    isDark
-                      ? 'border-slate-700 text-slate-200 hover:bg-slate-800'
-                      : 'border-slate-300 text-slate-800 hover:bg-slate-100'
-                  }`}
+                  className="px-4 py-2.5 bg-[#F3F1EC] border border-[#E2DFD7] text-[#18181B] text-xs font-semibold hover:border-[#8C6D32] cursor-pointer"
                 >
-                  طلب حساب أو صلاحية دخول
+                  طلب حساب أو تصريح دخول
                 </button>
+
                 <a
-                  href={inspectedService.url}
+                  href={inspectedPortal.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-5 py-2.5 rounded-xl bg-[#C59B27] text-slate-950 text-xs font-semibold hover:bg-[#d4ab32] transition-colors flex items-center gap-1.5"
+                  className="px-5 py-2.5 bg-[#18181B] text-[#F9F8F6] text-xs font-semibold hover:bg-[#8C6D32] transition-colors flex items-center gap-1.5"
                 >
-                  <span>الانتقال إلى {inspectedService.domain}</span>
+                  <span>الانتقال إلى البوابة</span>
                   <ArrowUpLeft className="w-4 h-4" />
                 </a>
               </div>
@@ -767,25 +629,20 @@ export default function App() {
         </div>
       )}
 
-      {/* Interactive Full Article Reader Modal */}
+      {/* Full Article Reader Modal */}
       {activeArticle && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 overflow-y-auto"
           onClick={() => setActiveArticle(null)}
         >
           <div
-            className={`w-full max-w-3xl rounded-2xl border p-6 lg:p-10 my-8 ${
-              isDark
-                ? 'bg-[#0E1624] border-slate-700 text-slate-100'
-                : 'bg-white border-slate-200 text-slate-900'
-            }`}
+            className="w-full max-w-3xl bg-[#F9F8F6] border border-[#E2DFD7] p-6 sm:p-10 my-8 text-[#18181B]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-4 pb-5 mb-6 border-b border-slate-700/40">
+            <div className="flex items-start justify-between gap-4 pb-5 mb-6 border-b border-[#E2DFD7]">
               <div>
-                <div className="text-xs text-[#C59B27] mb-1.5">
-                  {activeArticle.categoryLabel} · {activeArticle.publishDate} ·{' '}
-                  {activeArticle.readTime}
+                <div className="text-xs text-[#8C6D32] font-semibold mb-1.5">
+                  {activeArticle.categoryLabel} · {activeArticle.hijriDate} ({activeArticle.publishDate})
                 </div>
                 <h3 className="font-display text-2xl lg:text-3xl font-bold leading-snug">
                   {activeArticle.title}
@@ -794,57 +651,43 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setActiveArticle(null)}
-                className="p-2 rounded-lg hover:bg-slate-800/50 transition-colors cursor-pointer shrink-0"
+                className="p-1.5 border border-[#E2DFD7] hover:border-[#8C6D32] transition-colors cursor-pointer shrink-0"
                 aria-label="إغلاق"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-6 mb-8">
-              <p
-                className={`text-base lg:text-lg font-medium leading-[1.9] ${
-                  isDark ? 'text-amber-100/90' : 'text-slate-900'
-                }`}
-              >
+              <p className="font-display text-lg lg:text-xl text-[#18181B] leading-[1.95] bg-[#F3F1EC] p-5 border border-[#E2DFD7]">
                 {activeArticle.excerpt}
               </p>
 
               {activeArticle.sections.map((sec, idx) => (
                 <div key={idx} className="space-y-2">
-                  <h4
-                    className={`font-display text-xl font-bold ${
-                      isDark ? 'text-white' : 'text-slate-950'
-                    }`}
-                  >
+                  <h4 className="font-display text-xl font-bold text-[#8C6D32]">
                     {sec.heading}
                   </h4>
-                  <p
-                    className={`text-sm lg:text-base leading-[1.95] ${
-                      isDark ? 'text-slate-300' : 'text-slate-700'
-                    }`}
-                  >
+                  <p className="text-base text-zinc-800 leading-[2.0] text-justify">
                     {sec.body}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-5 border-t border-slate-700/40 text-xs">
-              <div className={isDark ? 'text-slate-400' : 'text-slate-600'}>
-                <span>إعداد: {activeArticle.author}</span>
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-5 border-t border-[#E2DFD7] text-xs text-zinc-600">
+              <div>
+                <span className="font-semibold text-[#18181B]">المصدر: {activeArticle.author}</span>
                 <span className="mx-2" aria-hidden="true">·</span>
-                <span>{activeArticle.authorRole}</span>
+                <span>{activeArticle.authorTitle}</span>
               </div>
-              <a
-                href={activeArticle.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-5 py-2.5 rounded-xl bg-[#C59B27] text-slate-950 font-semibold hover:bg-[#d4ab32] transition-colors flex items-center gap-1.5"
+              <button
+                type="button"
+                onClick={() => setActiveArticle(null)}
+                className="px-5 py-2 bg-[#18181B] text-[#F9F8F6] font-semibold hover:bg-[#8C6D32] transition-colors cursor-pointer"
               >
-                <span>فتح في المدونة الرسمية (blog.elsaidy.org)</span>
-                <ArrowUpLeft className="w-4 h-4" />
-              </a>
+                إغلاق المطالعة
+              </button>
             </div>
           </div>
         </div>

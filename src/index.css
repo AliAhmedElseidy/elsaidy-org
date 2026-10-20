@@ -9,6 +9,8 @@
 html {
   scroll-behavior: smooth;
   font-family: var(--font-sans);
+  background-color: #F9F8F6;
+  color: #18181B;
 }
 
 .font-display {
@@ -18,4 +20,5 @@ html {
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
 
