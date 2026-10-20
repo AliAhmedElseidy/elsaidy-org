@@ -3,49 +3,44 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FAMILY_BRANCHES,
-  HISTORICAL_REFERENCES,
-  INFRASTRUCTURE_SERVICES,
-  BLOG_ARTICLES,
-  FamilyBranch,
-  HistoricalReference,
+  PageRoute,
   InfrastructureService,
   BlogArticlePreview
 } from './data/familyData';
-import { HeritageAndInfraVisual } from './components/HeritageAndInfraVisual';
+import { HomePage } from './pages/HomePage';
+import { AboutPage } from './pages/AboutPage';
+import { BlogPage } from './pages/BlogPage';
+import { ProjectsPage } from './pages/ProjectsPage';
 import {
-  Sun,
-  Moon,
   ArrowUpLeft,
-  BookOpen,
-  Copy,
   Check,
-  Search,
   Globe,
   Mail,
-  ShieldCheck,
   Building2,
-  FileText,
-  X,
-  ChevronLeft
+  X
 } from 'lucide-react';
 
+function getInitialRoute(): PageRoute {
+  if (typeof window === 'undefined') return 'home';
+  const path = window.location.pathname.replace(/\/+$/, '');
+  if (path === '/about') return 'about';
+  if (path === '/blog') return 'blog';
+  if (path === '/projects') return 'projects';
+  return 'home';
+}
+
 export default function App() {
+  const [currentRoute, setCurrentRoute] = useState<PageRoute>(getInitialRoute);
   const [isDark, setIsDark] = useState<boolean>(true);
-  const [activeBranchId, setActiveBranchId] = useState<string>(FAMILY_BRANCHES[1].id); // Default highlight on Taima/Tabuk or Yanbu
-  const [refCategory, setRefCategory] = useState<string>('all');
-  const [refSearch, setRefSearch] = useState<string>('');
-  const [selectedReference, setSelectedReference] = useState<HistoricalReference>(
-    HISTORICAL_REFERENCES[0]
-  );
-  const [serviceCategory, setServiceCategory] = useState<string>('all');
+  const [activeBranchId, setActiveBranchId] = useState<string>(FAMILY_BRANCHES[1].id);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [inspectedService, setInspectedService] = useState<InfrastructureService | null>(null);
   const [activeArticle, setActiveArticle] = useState<BlogArticlePreview | null>(null);
 
-  // Contact / Request Form State
+  // Contact / Provisioning Request Form State
   const [formData, setFormData] = useState({
     fullName: '',
     branch: 'فرع صالح وعلي — حائل والرياض',
@@ -56,24 +51,24 @@ export default function App() {
   const [formError, setFormError] = useState<string>('');
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
 
-  const activeBranch: FamilyBranch =
-    FAMILY_BRANCHES.find((b) => b.id === activeBranchId) || FAMILY_BRANCHES[0];
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentRoute(getInitialRoute());
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
-  const filteredReferences = HISTORICAL_REFERENCES.filter((ref) => {
-    const matchesCat = refCategory === 'all' || ref.category === refCategory;
-    const q = refSearch.trim();
-    const matchesQuery =
-      !q ||
-      ref.title.includes(q) ||
-      ref.author.includes(q) ||
-      ref.regionFocus.includes(q) ||
-      ref.summary.includes(q);
-    return matchesCat && matchesQuery;
-  });
-
-  const filteredServices = INFRASTRUCTURE_SERVICES.filter(
-    (srv) => serviceCategory === 'all' || srv.category === serviceCategory
-  );
+  const navigateTo = (route: PageRoute) => {
+    setCurrentRoute(route);
+    const targetPath = route === 'home' ? '/' : `/${route}`;
+    try {
+      window.history.pushState({}, '', targetPath);
+    } catch {
+      // Fallback if pushState is restricted in sandboxed iframe
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
@@ -81,13 +76,6 @@ export default function App() {
     setTimeout(() => {
       setCopiedKey((prev) => (prev === key ? null : prev));
     }, 2000);
-  };
-
-  const handleSelectServiceFromMap = (serviceId: string) => {
-    const found = INFRASTRUCTURE_SERVICES.find((s) => s.id === serviceId);
-    if (found) {
-      setInspectedService(found);
-    }
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -123,13 +111,17 @@ export default function App() {
         id="top"
         className={`sticky top-0 z-40 flex items-center justify-between gap-8 px-6 lg:px-12 py-4 border-b backdrop-blur-md transition-colors duration-200 ${
           isDark
-            ? 'bg-[#090E17]/90 border-slate-800/80'
-            : 'bg-[#FAF8F5]/90 border-slate-200/90'
+            ? 'bg-[#090E17]/95 border-slate-800/80'
+            : 'bg-[#FAF8F5]/95 border-slate-200/90'
         }`}
       >
         {/* Zone 1: Single text element wordmark */}
         <a
-          href="#top"
+          href="/"
+          onClick={(e) => {
+            e.preventDefault();
+            navigateTo('home');
+          }}
           className={`text-xl font-bold font-display tracking-tight whitespace-nowrap shrink-0 ${
             isDark ? 'text-white' : 'text-slate-900'
           }`}
@@ -137,7 +129,7 @@ export default function App() {
           عائلة الصعيدي
         </a>
 
-        {/* Zone 2: 4–5 concise single-line text navigation links */}
+        {/* Zone 2: 5 concise single-line text navigation links */}
         <nav
           aria-label="التنقل الرئيسي"
           className={`hidden md:flex items-center gap-7 text-sm font-medium ${
@@ -145,32 +137,64 @@ export default function App() {
           }`}
         >
           <a
-            href="#lineage"
-            className="hover:text-[#C59B27] hover:underline underline-offset-8 transition-colors whitespace-nowrap shrink-0"
+            href="/"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateTo('home');
+            }}
+            className={`hover:text-[#C59B27] transition-colors whitespace-nowrap shrink-0 ${
+              currentRoute === 'home'
+                ? 'text-[#C59B27] underline underline-offset-8 font-semibold'
+                : ''
+            }`}
           >
-            الجذور والتاريخ
+            الرئيسية
           </a>
           <a
-            href="#branches"
-            className="hover:text-[#C59B27] hover:underline underline-offset-8 transition-colors whitespace-nowrap shrink-0"
+            href="/about"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateTo('about');
+            }}
+            className={`hover:text-[#C59B27] transition-colors whitespace-nowrap shrink-0 ${
+              currentRoute === 'about'
+                ? 'text-[#C59B27] underline underline-offset-8 font-semibold'
+                : ''
+            }`}
           >
-            فروع العائلة
+            التاريخ والأنساب
           </a>
           <a
-            href="#references"
-            className="hover:text-[#C59B27] hover:underline underline-offset-8 transition-colors whitespace-nowrap shrink-0"
+            href="/blog"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateTo('blog');
+            }}
+            className={`hover:text-[#C59B27] transition-colors whitespace-nowrap shrink-0 ${
+              currentRoute === 'blog'
+                ? 'text-[#C59B27] underline underline-offset-8 font-semibold'
+                : ''
+            }`}
           >
-            المصادر التاريخية
+            المدونة والمقالات
           </a>
           <a
-            href="#infrastructure"
-            className="hover:text-[#C59B27] hover:underline underline-offset-8 transition-colors whitespace-nowrap shrink-0"
+            href="/projects"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateTo('projects');
+            }}
+            className={`hover:text-[#C59B27] transition-colors whitespace-nowrap shrink-0 ${
+              currentRoute === 'projects'
+                ? 'text-[#C59B27] underline underline-offset-8 font-semibold'
+                : ''
+            }`}
           >
             البنية الرقمية
           </a>
           <a
-            href="#contact"
-            className="hover:text-[#C59B27] hover:underline underline-offset-8 transition-colors whitespace-nowrap shrink-0"
+            href="#contact-portal"
+            className="hover:text-[#C59B27] transition-colors whitespace-nowrap shrink-0"
           >
             تواصل معنا
           </a>
@@ -178,1083 +202,105 @@ export default function App() {
 
         {/* Zone 3: 1 Primary Action */}
         <div className="flex items-center gap-3 shrink-0">
-          <a
-            href="#infrastructure"
-            className="px-4 py-2 text-xs font-semibold rounded-lg bg-[#C59B27] text-slate-950 hover:bg-[#d4ab32] transition-colors whitespace-nowrap shrink-0"
+          <button
+            type="button"
+            onClick={() => navigateTo('projects')}
+            className="px-4 py-2 text-xs font-semibold rounded-lg bg-[#C59B27] text-slate-950 hover:bg-[#d4ab32] transition-colors cursor-pointer whitespace-nowrap shrink-0"
           >
             بوابة الأنظمة
-          </a>
+          </button>
         </div>
       </header>
 
-      {/* Main Content Container */}
+      {/* Main Multi-Page Content Container */}
       <main className="max-w-[1280px] mx-auto px-6 lg:px-12">
-        {/* Hero Section */}
-        <section className="pt-8 pb-16 lg:pt-12 lg:pb-20 border-b border-slate-200 dark:border-slate-800/80">
-          {/* Secondary Workspace & Theme Utility Bar (Placed in Hero below Header per Top Bar Contract) */}
-          <div
-            className={`flex flex-wrap items-center justify-between gap-4 pb-8 mb-8 border-b text-xs ${
-              isDark ? 'border-slate-800/80 text-slate-400' : 'border-slate-200/80 text-slate-600'
-            }`}
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-semibold text-[#C59B27]">البوابة الرسمية المعتمدة</span>
-              <span aria-hidden="true">·</span>
-              <span>قبيلة جهينة القضاعية</span>
-              <span aria-hidden="true">·</span>
-              <span>ينبع · تيماء · حائل · الرياض · تبوك · الشام · الخليج</span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => handleCopy('https://elsaidy.org', 'domain-root')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                  isDark
-                    ? 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
-                    : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
-                }`}
-              >
-                <span className="font-mono text-[11px]">elsaidy.org</span>
-                {copiedKey === 'domain-root' ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5 opacity-70" />
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setIsDark(!isDark)}
-                aria-label={isDark ? 'تفعيل الوضع النهاري' : 'تفعيل الوضع الليلي'}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg border font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                  isDark
-                    ? 'bg-slate-900 border-slate-800 text-amber-200 hover:bg-slate-800'
-                    : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-100'
-                }`}
-              >
-                {isDark ? (
-                  <>
-                    <Sun className="w-3.5 h-3.5 text-[#D4AF37]" />
-                    <span>الوضع النهاري</span>
-                  </>
-                ) : (
-                  <>
-                    <Moon className="w-3.5 h-3.5 text-slate-700" />
-                    <span>الوضع الليلي</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* 2-Column Hero Split with Equal Visual Weight */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-stretch">
-            {/* Right Column (RTL): Editorial Headline, Narrative & Primary CTA */}
-            <div className="lg:col-span-6 flex flex-col justify-between py-2">
-              <div>
-                <div
-                  className={`text-xs font-medium mb-4 flex items-center gap-2 ${
-                    isDark ? 'text-amber-300/90' : 'text-[#9A741C]'
-                  }`}
-                >
-                  <span>الأصالة التاريخية والسيادة التقنية</span>
-                  <span aria-hidden="true">/</span>
-                  <span className="font-mono">ELSAIDY FAMILY PORTAL</span>
-                </div>
-
-                <h1
-                  className={`font-display font-bold tracking-tight leading-[1.22] mb-6 ${
-                    isDark ? 'text-white' : 'text-slate-950'
-                  }`}
-                  style={{ fontSize: 'clamp(2.35rem, 4.2vw, 3.75rem)', textWrap: 'balance' }}
-                >
-                  عائلة الصعيدي — إرثٌ عريقٌ في الجزيرة العربية وبنية رقمية سيادية
-                </h1>
-
-                <p
-                  className={`text-base lg:text-lg leading-[1.8] mb-6 max-w-[65ch] ${
-                    isDark ? 'text-slate-300' : 'text-slate-700'
-                  }`}
-                >
-                  من جذورنا الضاربة في <strong className="font-semibold text-[#C59B27]">قبيلة جهينة</strong>{' '}
-                  وموطن الأجداد في <strong className="font-semibold">ينبع النخل وينبع البحر</strong>،
-                  وامتداد الفروع الكريمة في <strong className="font-semibold">تيماء وتبوك وحائل والرياض وبلاد الشام والإمارات وسلطنة عُمان</strong>،
-                  تجمع هذه البوابة بين توثيق التاريخ العائلي المعتمد ومنظومة الخدمات السحابية والمؤسسية الحديثة.
-                </p>
-
-                {/* Unboxed Heritage & Tech Metadata Summary */}
-                <div
-                  className={`text-xs leading-relaxed pb-6 mb-6 border-b ${
-                    isDark
-                      ? 'text-slate-400 border-slate-800/80'
-                      : 'text-slate-600 border-slate-200'
-                  }`}
-                >
-                  <span>النسب: جهينة من قضاعة</span>
-                  <span className="mx-2" aria-hidden="true">·</span>
-                  <span>الفروع الموثقة: عبد الله (تيماء) · سلامة (الشام) · صالح وعلي (حائل والرياض) · الخليج العربي</span>
-                  <span className="mx-2" aria-hidden="true">·</span>
-                  <span className="font-mono">ERPNext &amp; Mailcow Stack</span>
-                </div>
-              </div>
-
-              {/* Action Row */}
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <a
-                  href="#infrastructure"
-                  className="px-6 py-3.5 rounded-xl bg-[#C59B27] text-slate-950 font-semibold text-sm hover:bg-[#d4ab32] transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
-                >
-                  <span>الدخول إلى بوابة الخدمات الرقمية</span>
-                  <ArrowUpLeft className="w-4 h-4" />
-                </a>
-
-                <a
-                  href="#branches"
-                  className={`px-5 py-3.5 rounded-xl border text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
-                    isDark
-                      ? 'border-slate-700 text-slate-200 hover:bg-slate-800/70'
-                      : 'border-slate-300 text-slate-800 hover:bg-slate-100'
-                  }`}
-                >
-                  استكشاف الجذور والفروع التاريخية
-                </a>
-
-                <a
-                  href="https://blog.elsaidy.org"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`px-4 py-3.5 text-sm font-medium underline underline-offset-8 transition-colors whitespace-nowrap shrink-0 ${
-                    isDark
-                      ? 'text-amber-300/90 hover:text-amber-200'
-                      : 'text-[#9A741C] hover:text-slate-900'
-                  }`}
-                >
-                  تصفح المدونة (blog.elsaidy.org)
-                </a>
-              </div>
-            </div>
-
-            {/* Left Column (RTL): Interactive Cartographic & Sovereign Architecture Canvas */}
-            <div className="lg:col-span-6 flex">
-              <HeritageAndInfraVisual
-                activeBranchId={activeBranchId}
-                onSelectBranch={(id) => setActiveBranchId(id)}
-                onSelectService={handleSelectServiceFromMap}
-                isDark={isDark}
-              />
-            </div>
-          </div>
-
-          {/* Full-Width 4-Column Heritage & Infrastructure Fact Strip below Hero Split */}
-          <div
-            className={`mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-8 border-t ${
-              isDark ? 'border-slate-800/80' : 'border-slate-200'
-            }`}
-          >
-            <div>
-              <div className="text-xs text-[#C59B27] font-medium mb-1">العمق التاريخي والنسب</div>
-              <div
-                className={`text-2xl font-bold font-display tabular-nums ${
-                  isDark ? 'text-white' : 'text-slate-900'
-                }`}
-              >
-                قبيلة جهينة القضاعية
-              </div>
-              <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                جذور راسخة في ينبع النخل وينبع البحر وامتداد في حواضر الجزيرة
-              </p>
-            </div>
-
-            <div>
-              <div className="text-xs text-[#C59B27] font-medium mb-1">الانتشار الجغرافي الموثق</div>
-              <div
-                className={`text-2xl font-bold tabular-nums ${
-                  isDark ? 'text-white' : 'text-slate-900'
-                }`}
-              >
-                5 أقاليم رئيسية
-              </div>
-              <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                الحجاز · تيماء وتبوك · حائل والرياض · بلاد الشام · الإمارات وعُمان
-              </p>
-            </div>
-
-            <div>
-              <div className="text-xs text-[#C59B27] font-medium mb-1">منظومة الأنظمة المؤسسية</div>
-              <div
-                className={`text-2xl font-bold font-mono tabular-nums ${
-                  isDark ? 'text-white' : 'text-slate-900'
-                }`}
-              >
-                6 أنظمة سيادية
-              </div>
-              <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                ERPNext · Mailcow · المدونة المعرفية · الأرشيف السحابي · الهوية الموحدة
-              </p>
-            </div>
-
-            <div>
-              <div className="text-xs text-[#C59B27] font-medium mb-1">النطاق الرسمي الموحد</div>
-              <div
-                className={`text-2xl font-bold font-mono tabular-nums ${
-                  isDark ? 'text-white' : 'text-slate-900'
-                }`}
-              >
-                elsaidy.org
-              </div>
-              <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                بنية مشفرة ومستضافة ذاتياً بمعايير أمان مؤسسية عالية
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Section 2: Historical Background, Roots & Branches (الجذور والتاريخ وفروع العائلة) */}
-        <section
-          id="lineage"
-          className={`py-16 lg:py-24 border-b ${
-            isDark ? 'border-slate-800/80' : 'border-slate-200'
+        {/* Mobile Route Switcher Strip (Visible only on small viewports below header) */}
+        <div
+          className={`flex md:hidden items-center gap-1.5 pt-4 overflow-x-auto text-xs ${
+            isDark ? 'text-slate-300' : 'text-slate-700'
           }`}
         >
-          {/* Section Header */}
-          <div className="max-w-3xl mb-12">
-            <div className="text-xs font-medium text-[#C59B27] mb-2">
-              01. التاريخ والأنساب والانتشار الجغرافي
-            </div>
-            <h2
-              className={`font-display text-3xl lg:text-4xl font-bold tracking-tight mb-4 ${
-                isDark ? 'text-white' : 'text-slate-950'
-              }`}
-              style={{ textWrap: 'balance' }}
-            >
-              نبذة تاريخية شاملة عن عائلة الصعيدي وجذورها وفروعها
-            </h2>
-            <p
-              className={`text-base leading-[1.8] ${
-                isDark ? 'text-slate-300' : 'text-slate-700'
-              }`}
-            >
-              تُعد عائلة الصعيدي (آل صعيدي) من الأسر العربية الأصيلة التي يعود نسبها إلى{' '}
-              <strong>قبيلة جهينة بن زيد بن ليث بن سود بن أسلم بن الحاف بن قضاعة</strong>. وقد
-              ارتبط تاريخ العائلة منذ القدم بحاضرة <strong>ينبع النخل وينبع البحر</strong> في إقليم
-              الحجاز، قبل أن تمتد فروعها الكريمة عبر قرون متعاقبة إلى شمال غرب الجزيرة العربية في{' '}
-              <strong>تيماء وتبوك</strong>، وإلى <strong>حائل والرياض</strong> في نجد، وإلى{' '}
-              <strong>بلاد الشام</strong>، وصولاً إلى <strong>دولة الإمارات العربية المتحدة وسلطنة عُمان</strong>.
-            </p>
-          </div>
-
-          {/* Foundational Narrative Split */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
-            <div
-              className={`lg:col-span-7 p-6 lg:p-8 rounded-2xl border ${
-                isDark
-                  ? 'bg-[#0E1624] border-slate-800/90'
-                  : 'bg-white border-slate-200/90'
-              }`}
-            >
-              <h3
-                className={`font-display text-xl lg:text-2xl font-bold mb-4 ${
-                  isDark ? 'text-white' : 'text-slate-900'
-                }`}
-              >
-                المنطلق الحجازي في ينبع النخل وامتداد الحواضر
-              </h3>
-              <p
-                className={`text-sm lg:text-base leading-[1.85] mb-4 ${
-                  isDark ? 'text-slate-300' : 'text-slate-700'
-                }`}
-              >
-                استوطنت قبيلة جهينة ديارها التاريخية الممتدة من ساحل البحر الأحمر في ينبع البحر إلى
-                أودية وعيون ينبع النخل والعيص ويثرب. وفي هذه البيئة التي جمعت بين الزراعة في العيون
-                الجارية والتجارة على طرق القوافل البحرية والبرية، نشأت أسرة الصعيدي وحملت اسمها
-                المعروف في الوثائق والمشجرات الحجازية والنجدية والشامية.
-              </p>
-              <p
-                className={`text-sm lg:text-base leading-[1.85] ${
-                  isDark ? 'text-slate-300' : 'text-slate-700'
-                }`}
-              >
-                ومع حركة الحواضر العربية والتجارة الإقليمية بين الحجاز ونجد والشام والخليج، تفرّعت
-                الأسرة إلى أعقاب وأغصان رئيسية؛ فاستقر <strong>فرع عبد الله</strong> في واحة تيماء
-                وتبوك، واتجه <strong>فرع سلامة</strong> إلى بلاد الشام، بينما استقر{' '}
-                <strong>فرع صالح وعلي</strong> في حائل ثم الرياض، وامتدت فروع أخرى إلى حواضر الخليج
-                العربي في <strong>الإمارات وسلطنة عُمان</strong>.
-              </p>
-            </div>
-
-            <div
-              className={`lg:col-span-5 p-6 lg:p-8 rounded-2xl border flex flex-col justify-between ${
-                isDark
-                  ? 'bg-[#0E1624] border-slate-800/90'
-                  : 'bg-white border-slate-200/90'
-              }`}
-            >
-              <div>
-                <div className="text-xs font-medium text-[#C59B27] mb-2">
-                  الثوابت التاريخية الموثقة
-                </div>
-                <h3
-                  className={`font-display text-xl font-bold mb-4 ${
-                    isDark ? 'text-white' : 'text-slate-900'
-                  }`}
-                >
-                  مرتكزات الهوية والتوثيق العائلي
-                </h3>
-                <ul className="space-y-3.5 text-sm leading-relaxed">
-                  <li className="flex items-start gap-2.5">
-                    <span className="font-mono text-xs text-[#C59B27] font-semibold mt-0.5">01.</span>
-                    <span className={isDark ? 'text-slate-300' : 'text-slate-700'}>
-                      <strong>وحدة الأصل والنسب:</strong> التقاء كافة الفروع في الموروث الجهني الأصيل
-                      المنطلق من ينبع النخل وينبع البحر.
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="font-mono text-xs text-[#C59B27] font-semibold mt-0.5">02.</span>
-                    <span className={isDark ? 'text-slate-300' : 'text-slate-700'}>
-                      <strong>التوثيق بالمصادر والوثائق:</strong> الاعتماد على حجج الاستحكام،
-                      الوثائق الوقفية، ومعاجم الأنساب المعتمدة في المملكة والشام والخليج.
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="font-mono text-xs text-[#C59B27] font-semibold mt-0.5">03.</span>
-                    <span className={isDark ? 'text-slate-300' : 'text-slate-700'}>
-                      <strong>التكامل المؤسسي المعاصر:</strong> توظيف البنية الرقمية الحديثة لربط
-                      أبناء العمومة وحفظ الأرشيف العائلي للأجيال القادمة.
-                    </span>
-                  </li>
-                </ul>
-              </div>
-
-              <div
-                className={`mt-6 pt-4 border-t text-xs flex items-center justify-between ${
-                  isDark
-                    ? 'border-slate-800 text-slate-400'
-                    : 'border-slate-200 text-slate-600'
-                }`}
-              >
-                <span>إشراف: لجنة التوثيق والأنساب — عائلة الصعيدي</span>
-                <span className="font-mono tabular-nums">1448 هـ / 2026 م</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Interactive Branches Explorer (#branches) */}
-          <div id="branches" className="scroll-mt-24">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
-              <div>
-                <div className="text-xs font-medium text-[#C59B27] mb-1">
-                  الفروع التاريخية الخمسة
-                </div>
-                <h3
-                  className={`font-display text-2xl lg:text-3xl font-bold ${
-                    isDark ? 'text-white' : 'text-slate-900'
-                  }`}
-                >
-                  استعراض تفصيلي لفروع عائلة الصعيدي وديارها
-                </h3>
-              </div>
-
-              {/* Interactive Branch Selector Tabs */}
-              <div
-                className={`flex flex-wrap items-center gap-1.5 p-1.5 rounded-xl border ${
-                  isDark
-                    ? 'bg-[#0E1624] border-slate-800'
-                    : 'bg-slate-100 border-slate-200/80'
-                }`}
-                role="tablist"
-                aria-label="فروع عائلة الصعيدي"
-              >
-                {FAMILY_BRANCHES.map((branch) => {
-                  const active = branch.id === activeBranch.id;
-                  return (
-                    <button
-                      key={branch.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={active}
-                      onClick={() => setActiveBranchId(branch.id)}
-                      className={`px-3.5 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                        active
-                          ? 'bg-[#C59B27] text-slate-950 font-semibold'
-                          : isDark
-                          ? 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-                          : 'text-slate-700 hover:text-slate-950 hover:bg-white/60'
-                      }`}
-                    >
-                      {branch.index}. {branch.coordinates.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Active Branch Detailed View + All Branches Overview Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-              {/* Detailed Dossier of Selected Branch */}
-              <div
-                className={`lg:col-span-7 p-6 lg:p-8 rounded-2xl border flex flex-col justify-between ${
-                  isDark
-                    ? 'bg-[#0E1624] border-[#C59B27]/40'
-                    : 'bg-white border-[#C59B27]/50'
-                }`}
-              >
-                <div>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-[#C59B27] mb-3">
-                    <span className="font-mono font-semibold">فرع رقم {activeBranch.index}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{activeBranch.patriarch}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{activeBranch.era}</span>
-                  </div>
-
-                  <h4
-                    className={`font-display text-2xl lg:text-3xl font-bold mb-3 ${
-                      isDark ? 'text-white' : 'text-slate-950'
-                    }`}
-                  >
-                    {activeBranch.title}
-                  </h4>
-
-                  <div
-                    className={`text-xs mb-5 pb-4 border-b ${
-                      isDark
-                        ? 'text-slate-400 border-slate-800'
-                        : 'text-slate-600 border-slate-200'
-                    }`}
-                  >
-                    <span>النطاق الجغرافي: {activeBranch.region}</span>
-                    <span className="mx-2" aria-hidden="true">·</span>
-                    <span>الحواضر والمدن: {activeBranch.cities.join(' ، ')}</span>
-                  </div>
-
-                  <p
-                    className={`text-sm lg:text-base leading-[1.85] mb-6 ${
-                      isDark ? 'text-slate-200' : 'text-slate-800'
-                    }`}
-                  >
-                    {activeBranch.detailedHistory}
-                  </p>
-
-                  <div className="mb-6">
-                    <div
-                      className={`text-xs font-semibold mb-3 ${
-                        isDark ? 'text-amber-200' : 'text-slate-900'
-                      }`}
-                    >
-                      أبرز المعالم والإسهامات التاريخية والاجتماعية:
-                    </div>
-                    <ul className="space-y-2.5 text-sm">
-                      {activeBranch.notableContributions.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-2.5">
-                          <span className="font-mono text-xs text-[#C59B27] mt-0.5 tabular-nums">
-                            0{idx + 1}.
-                          </span>
-                          <span className={isDark ? 'text-slate-300' : 'text-slate-700'}>
-                            {item}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div
-                  className={`pt-4 border-t text-xs ${
-                    isDark
-                      ? 'border-slate-800 text-slate-400'
-                      : 'border-slate-200 text-slate-600'
-                  }`}
-                >
-                  <strong className="font-semibold text-[#C59B27]">التوثيق الأرشيفي: </strong>
-                  {activeBranch.archivalNotes}
-                </div>
-              </div>
-
-              {/* Quick Interactive List of All 5 Branches */}
-              <div className="lg:col-span-5 flex flex-col justify-between gap-3">
-                {FAMILY_BRANCHES.map((branch) => {
-                  const isSelected = branch.id === activeBranch.id;
-                  return (
-                    <button
-                      key={branch.id}
-                      type="button"
-                      onClick={() => setActiveBranchId(branch.id)}
-                      className={`w-full text-right p-4 rounded-xl border transition-colors cursor-pointer ${
-                        isSelected
-                          ? isDark
-                            ? 'bg-slate-900 border-[#C59B27] text-white'
-                            : 'bg-amber-50/50 border-[#C59B27] text-slate-950'
-                          : isDark
-                          ? 'bg-[#0E1624]/60 border-slate-800/80 text-slate-300 hover:border-slate-700'
-                          : 'bg-white border-slate-200/80 text-slate-700 hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <span className="text-xs font-mono text-[#C59B27] font-semibold">
-                          {branch.index}. {branch.patriarch}
-                        </span>
-                        <span
-                          className={`text-xs ${
-                            isDark ? 'text-slate-400' : 'text-slate-500'
-                          }`}
-                        >
-                          {branch.cities.slice(0, 2).join(' · ')}
-                        </span>
-                      </div>
-                      <div className="text-base font-bold font-display mb-1">
-                        {branch.title}
-                      </div>
-                      <p
-                        className={`text-xs line-clamp-2 leading-relaxed ${
-                          isDark ? 'text-slate-400' : 'text-slate-600'
-                        }`}
-                      >
-                        {branch.summary}
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Section 3: Historical References & Archival Sources (#references) */}
-        <section
-          id="references"
-          className={`py-16 lg:py-24 border-b ${
-            isDark ? 'border-slate-800/80' : 'border-slate-200'
-          }`}
-        >
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
-            <div className="max-w-2xl">
-              <div className="text-xs font-medium text-[#C59B27] mb-2">
-                02. المراجع والوثائق والمصادر التاريخية
-              </div>
-              <h2
-                className={`font-display text-3xl lg:text-4xl font-bold tracking-tight mb-3 ${
-                  isDark ? 'text-white' : 'text-slate-950'
-                }`}
-              >
-                المصادر التاريخية والمخطوطات الموثقة للنسب والديار
-              </h2>
-              <p
-                className={`text-sm lg:text-base leading-relaxed ${
-                  isDark ? 'text-slate-300' : 'text-slate-700'
-                }`}
-              >
-                تستند شجرة وتاريخ عائلة الصعيدي إلى أمهات كتب الأنساب والتاريخ الجغرافي للجزيرة
-                العربية وبلاد الشام، إضافةً إلى الوثائق الشرعية والوقفية المحفوظة في أرشيف العائلة.
-              </p>
-            </div>
-
-            {/* Search & Category Filter Controls */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="relative">
-                <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  value={refSearch}
-                  onChange={(e) => setRefSearch(e.target.value)}
-                  placeholder="ابحث في المراجع أو الحواضر..."
-                  aria-label="ابحث في المراجع التاريخية"
-                  className={`w-full sm:w-64 pr-10 pl-4 py-2 text-xs rounded-xl border outline-none transition-colors ${
-                    isDark
-                      ? 'bg-[#0E1624] border-slate-800 text-slate-100 focus:border-[#C59B27]'
-                      : 'bg-white border-slate-200 text-slate-900 focus:border-[#C59B27]'
-                  }`}
-                />
-              </div>
-
-              <div
-                className={`flex flex-wrap items-center gap-1 p-1 rounded-xl border ${
-                  isDark
-                    ? 'bg-[#0E1624] border-slate-800'
-                    : 'bg-slate-100 border-slate-200'
-                }`}
-              >
-                {[
-                  { id: 'all', label: 'الكل' },
-                  { id: 'genealogy', label: 'الأنساب' },
-                  { id: 'geography', label: 'البلدان' },
-                  { id: 'manuscripts', label: 'الوثائق' }
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setRefCategory(tab.id)}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                      refCategory === tab.id
-                        ? 'bg-[#C59B27] text-slate-950 font-semibold'
-                        : isDark
-                        ? 'text-slate-300 hover:text-white'
-                        : 'text-slate-700 hover:text-slate-950'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* List of References */}
-            <div className="lg:col-span-7 space-y-3">
-              {filteredReferences.length === 0 ? (
-                <div
-                  className={`p-8 rounded-2xl border text-center ${
-                    isDark
-                      ? 'bg-[#0E1624] border-slate-800 text-slate-400'
-                      : 'bg-white border-slate-200 text-slate-600'
-                  }`}
-                >
-                  لا توجد مراجع مطابقة لعبارة البحث الحالية. يمكنك مسح التصفية لعرض جميع المصادر.
-                </div>
-              ) : (
-                filteredReferences.map((ref) => {
-                  const isSelected = selectedReference.id === ref.id;
-                  return (
-                    <div
-                      key={ref.id}
-                      onClick={() => setSelectedReference(ref)}
-                      className={`p-5 rounded-xl border transition-colors cursor-pointer ${
-                        isSelected
-                          ? isDark
-                            ? 'bg-[#0E1624] border-[#C59B27]'
-                            : 'bg-white border-[#C59B27]'
-                          : isDark
-                          ? 'bg-[#0E1624]/60 border-slate-800/80 hover:border-slate-700'
-                          : 'bg-white border-slate-200/80 hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs mb-2">
-                        <div className="flex items-center gap-2 text-[#C59B27]">
-                          <span className="font-mono font-semibold">{ref.index}.</span>
-                          <span>{ref.categoryLabel}</span>
-                          <span aria-hidden="true">·</span>
-                          <span>{ref.regionFocus}</span>
-                        </div>
-                        <span className="font-mono text-[11px] text-slate-400 tabular-nums">
-                          {ref.archivalCode}
-                        </span>
-                      </div>
-
-                      <h3
-                        className={`font-display text-lg lg:text-xl font-bold mb-1 ${
-                          isDark ? 'text-white' : 'text-slate-900'
-                        }`}
-                      >
-                        {ref.title}
-                      </h3>
-
-                      <div
-                        className={`text-xs mb-2.5 ${
-                          isDark ? 'text-slate-400' : 'text-slate-600'
-                        }`}
-                      >
-                        <span>المؤلف / الجهة: {ref.author}</span>
-                        <span className="mx-2" aria-hidden="true">·</span>
-                        <span>{ref.publicationPeriod}</span>
-                      </div>
-
-                      <p
-                        className={`text-xs lg:text-sm leading-relaxed ${
-                          isDark ? 'text-slate-300' : 'text-slate-700'
-                        }`}
-                      >
-                        {ref.summary}
-                      </p>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            {/* Archival Excerpt Reader Card */}
-            <div
-              className={`lg:col-span-5 p-6 lg:p-8 rounded-2xl border sticky top-24 ${
-                isDark
+          {[
+            { id: 'home' as PageRoute, label: 'الرئيسية' },
+            { id: 'about' as PageRoute, label: 'التاريخ والأنساب' },
+            { id: 'blog' as PageRoute, label: 'المدونة' },
+            { id: 'projects' as PageRoute, label: 'البنية الرقمية' }
+          ].map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => navigateTo(item.id)}
+              className={`px-3 py-1.5 rounded-lg border whitespace-nowrap shrink-0 ${
+                currentRoute === item.id
+                  ? 'bg-[#C59B27] border-[#C59B27] text-slate-950 font-semibold'
+                  : isDark
                   ? 'bg-[#0E1624] border-slate-800'
                   : 'bg-white border-slate-200'
               }`}
             >
-              <div className="flex items-center justify-between gap-2 text-xs text-[#C59B27] mb-3">
-                <div className="flex items-center gap-1.5">
-                  <BookOpen className="w-4 h-4 shrink-0" />
-                  <span>بطاقة المستند والاقتباس المرجعي</span>
-                </div>
-                <span className="font-mono text-[11px] tabular-nums">
-                  {selectedReference.archivalCode}
-                </span>
-              </div>
+              {item.label}
+            </button>
+          ))}
+        </div>
 
-              <h3
-                className={`font-display text-2xl font-bold mb-2 ${
-                  isDark ? 'text-white' : 'text-slate-950'
-                }`}
-              >
-                {selectedReference.title}
-              </h3>
+        {/* Render Active Independent Page View */}
+        {currentRoute === 'home' && (
+          <HomePage
+            isDark={isDark}
+            onToggleTheme={() => setIsDark(!isDark)}
+            activeBranchId={activeBranchId}
+            onSelectBranch={(id) => setActiveBranchId(id)}
+            onNavigate={navigateTo}
+            onInspectService={(srv) => setInspectedService(srv)}
+            onReadArticle={(art) => setActiveArticle(art)}
+            copiedKey={copiedKey}
+            onCopy={handleCopy}
+          />
+        )}
 
-              <div
-                className={`text-xs pb-4 mb-5 border-b ${
-                  isDark
-                    ? 'text-slate-400 border-slate-800'
-                    : 'text-slate-600 border-slate-200'
-                }`}
-              >
-                <span>{selectedReference.author}</span>
-                <span className="mx-2" aria-hidden="true">·</span>
-                <span>{selectedReference.regionFocus}</span>
-              </div>
+        {currentRoute === 'about' && (
+          <AboutPage
+            isDark={isDark}
+            onToggleTheme={() => setIsDark(!isDark)}
+            activeBranchId={activeBranchId}
+            onSelectBranch={(id) => setActiveBranchId(id)}
+            onNavigate={navigateTo}
+            copiedKey={copiedKey}
+            onCopy={handleCopy}
+          />
+        )}
 
-              <div
-                className={`p-5 rounded-xl border mb-6 font-display text-base lg:text-lg leading-[1.9] ${
-                  isDark
-                    ? 'bg-[#090E17] border-slate-800/90 text-amber-100/95'
-                    : 'bg-[#FAF8F5] border-slate-200 text-slate-900'
-                }`}
-              >
-                {selectedReference.excerpt}
-              </div>
+        {currentRoute === 'blog' && (
+          <BlogPage
+            isDark={isDark}
+            onToggleTheme={() => setIsDark(!isDark)}
+            onNavigate={navigateTo}
+            onReadArticle={(art) => setActiveArticle(art)}
+          />
+        )}
 
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleCopy(
-                      `${selectedReference.title} — ${selectedReference.author}: ${selectedReference.excerpt}`,
-                      `ref-${selectedReference.id}`
-                    )
-                  }
-                  className={`px-4 py-2.5 rounded-xl border text-xs font-medium flex items-center gap-2 transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                    isDark
-                      ? 'bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800'
-                      : 'bg-slate-100 border-slate-300 text-slate-800 hover:bg-slate-200'
-                  }`}
-                >
-                  {copiedKey === `ref-${selectedReference.id}` ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>تم نسخ الاقتباس المرجعي</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>نسخ التوثيق المرجعي</span>
-                    </>
-                  )}
-                </button>
+        {currentRoute === 'projects' && (
+          <ProjectsPage
+            isDark={isDark}
+            onToggleTheme={() => setIsDark(!isDark)}
+            onNavigate={navigateTo}
+            onInspectService={(srv) => setInspectedService(srv)}
+            copiedKey={copiedKey}
+            onCopy={handleCopy}
+          />
+        )}
 
-                <a
-                  href="#contact"
-                  className="text-xs font-medium text-[#C59B27] hover:underline underline-offset-4 whitespace-nowrap shrink-0"
-                >
-                  إرسال وثيقة أو مخطوطة للجنة ←
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Section 4: Services & Digital Infrastructure Portal (#infrastructure) */}
+        {/* Shared Interactive Contact & Account Provisioning Section (#contact-portal) */}
         <section
-          id="infrastructure"
-          className={`py-16 lg:py-24 border-b ${
+          id="contact-portal"
+          className={`py-16 lg:py-24 border-t scroll-mt-20 ${
             isDark ? 'border-slate-800/80' : 'border-slate-200'
           }`}
         >
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12">
-            <div className="max-w-2xl">
-              <div className="text-xs font-medium text-[#C59B27] mb-2">
-                03. بوابة الخدمات والبنية التحتية الرقمية — elsaidy.org
-              </div>
-              <h2
-                className={`font-display text-3xl lg:text-4xl font-bold tracking-tight mb-3 ${
-                  isDark ? 'text-white' : 'text-slate-950'
-                }`}
-              >
-                المنظومة الرقمية والأنظمة المؤسسية لعائلة الصعيدي
-              </h2>
-              <p
-                className={`text-sm lg:text-base leading-relaxed ${
-                  isDark ? 'text-slate-300' : 'text-slate-700'
-                }`}
-              >
-                بنية سحابية سيادية متكاملة تخدم أعمال العائلة، الأوقاف، الاتصالات الرسمية المشفرة،
-                والنشر المعرفي عبر حزمة متطورة من الأنظمة المؤسسية المفتوحة المصدر والمؤمّنة بالكامل.
-              </p>
-            </div>
-
-            {/* Interactive Category Filter */}
-            <div
-              className={`flex flex-wrap items-center gap-1 p-1.5 rounded-xl border self-start lg:self-end ${
-                isDark
-                  ? 'bg-[#0E1624] border-slate-800'
-                  : 'bg-slate-100 border-slate-200'
-              }`}
-              role="tablist"
-              aria-label="تصفية الأنظمة الرقمية"
-            >
-              {[
-                { id: 'all', label: 'جميع الأنظمة' },
-                { id: 'enterprise', label: 'الأنظمة الإدارية (ERPNext)' },
-                { id: 'communication', label: 'البريد والاتصال (Mailcow)' },
-                { id: 'publishing', label: 'المدونة والنشر' },
-                { id: 'security', label: 'الهوية والشبكات' }
-              ].map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={serviceCategory === cat.id}
-                  onClick={() => setServiceCategory(cat.id)}
-                  className={`px-3.5 py-2 text-xs font-medium rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                    serviceCategory === cat.id
-                      ? 'bg-[#C59B27] text-slate-950 font-semibold'
-                      : isDark
-                      ? 'text-slate-300 hover:text-white'
-                      : 'text-slate-700 hover:text-slate-950'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Asymmetric Bento Grid of Infrastructure Systems */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {filteredServices.map((service, idx) => {
-              // Give marquee prominence (col-span-6 or col-span-8/4 asymmetric rhythm)
-              const spanClass =
-                filteredServices.length >= 3 && idx < 2
-                  ? 'lg:col-span-6'
-                  : 'lg:col-span-4';
-
-              return (
-                <div
-                  key={service.id}
-                  className={`${spanClass} p-6 lg:p-7 rounded-2xl border flex flex-col justify-between transition-colors ${
-                    isDark
-                      ? 'bg-[#0E1624] border-slate-800/90 hover:border-[#C59B27]/60'
-                      : 'bg-white border-slate-200/90 hover:border-[#C59B27]/60'
-                  }`}
-                >
-                  <div>
-                    {/* Unboxed Metadata Kicker */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs mb-3">
-                      <div className="flex items-center gap-2 text-[#C59B27]">
-                        <span className="font-mono font-semibold">{service.index}.</span>
-                        <span>{service.categoryLabel}</span>
-                      </div>
-                      <span className="font-mono text-xs text-emerald-500 font-medium">
-                        {service.domain}
-                      </span>
-                    </div>
-
-                    <h3
-                      className={`font-display text-xl lg:text-2xl font-bold mb-2 ${
-                        isDark ? 'text-white' : 'text-slate-950'
-                      }`}
-                    >
-                      {service.arabicTitle}
-                    </h3>
-
-                    <div
-                      className={`text-xs font-mono mb-4 pb-3 border-b ${
-                        isDark
-                          ? 'text-slate-400 border-slate-800'
-                          : 'text-slate-500 border-slate-200'
-                      }`}
-                    >
-                      {service.name} · {service.protocol}
-                    </div>
-
-                    <p
-                      className={`text-sm leading-[1.75] mb-5 ${
-                        isDark ? 'text-slate-300' : 'text-slate-700'
-                      }`}
-                    >
-                      {service.description}
-                    </p>
-
-                    <ul className="space-y-2 mb-6 text-xs">
-                      {service.capabilities.map((cap, cIdx) => (
-                        <li key={cIdx} className="flex items-start gap-2">
-                          <span className="font-mono text-[#C59B27] font-semibold">·</span>
-                          <span className={isDark ? 'text-slate-300' : 'text-slate-700'}>
-                            {cap}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Card Footer Actions */}
-                  <div
-                    className={`pt-4 border-t flex flex-wrap items-center justify-between gap-3 ${
-                      isDark ? 'border-slate-800' : 'border-slate-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={service.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 py-2 rounded-lg bg-[#C59B27] text-slate-950 text-xs font-semibold hover:bg-[#d4ab32] transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0"
-                      >
-                        <span>فتح النظام</span>
-                        <ArrowUpLeft className="w-3.5 h-3.5" />
-                      </a>
-
-                      <button
-                        type="button"
-                        onClick={() => setInspectedService(service)}
-                        className={`px-3.5 py-2 rounded-lg border text-xs font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                          isDark
-                            ? 'border-slate-700 text-slate-300 hover:bg-slate-800'
-                            : 'border-slate-300 text-slate-700 hover:bg-slate-100'
-                        }`}
-                      >
-                        المواصفات والصلاحيات
-                      </button>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleCopy(service.url, `srv-${service.id}`)}
-                      title="نسخ رابط النظام"
-                      className={`p-2 rounded-lg border transition-colors cursor-pointer ${
-                        isDark
-                          ? 'border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-                          : 'border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-                      }`}
-                    >
-                      {copiedKey === `srv-${service.id}` ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-500" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Section 5: Knowledge & Heritage Blog Highlights (blog.elsaidy.org) */}
-        <section
-          id="blog-highlights"
-          className={`py-16 lg:py-24 border-b ${
-            isDark ? 'border-slate-800/80' : 'border-slate-200'
-          }`}
-        >
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
-            <div>
-              <div className="text-xs font-medium text-[#C59B27] mb-2">
-                04. المدونة والأرشيف المعرفي — blog.elsaidy.org
-              </div>
-              <h2
-                className={`font-display text-3xl lg:text-4xl font-bold tracking-tight ${
-                  isDark ? 'text-white' : 'text-slate-950'
-                }`}
-              >
-                أحدث الدراسات التاريخية والمقالات التقنية
-              </h2>
-            </div>
-
-            <a
-              href="https://blog.elsaidy.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-5 py-2.5 rounded-xl border border-[#C59B27]/50 text-[#C59B27] text-xs font-semibold hover:bg-[#C59B27] hover:text-slate-950 transition-colors flex items-center gap-2 self-start sm:self-end whitespace-nowrap shrink-0"
-            >
-              <span>زيارة المدونة الرسمية (blog.elsaidy.org)</span>
-              <ArrowUpLeft className="w-4 h-4" />
-            </a>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {BLOG_ARTICLES.map((post, index) => (
-              <article
-                key={post.id}
-                className={`p-6 rounded-2xl border flex flex-col justify-between transition-colors ${
-                  isDark
-                    ? 'bg-[#0E1624] border-slate-800/90 hover:border-slate-700'
-                    : 'bg-white border-slate-200/90 hover:border-slate-300'
-                }`}
-              >
-                <div>
-                  {/* Clean Unboxed Metadata */}
-                  <div
-                    className={`flex flex-wrap items-center gap-2 text-xs mb-3 ${
-                      isDark ? 'text-slate-400' : 'text-slate-500'
-                    }`}
-                  >
-                    <span className="text-[#C59B27] font-medium">0{index + 1}. {post.category}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{post.publishDate}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{post.readTime}</span>
-                  </div>
-
-                  <h3
-                    className={`font-display text-xl font-bold leading-snug mb-3 ${
-                      isDark ? 'text-white' : 'text-slate-950'
-                    }`}
-                  >
-                    {post.title}
-                  </h3>
-
-                  <p
-                    className={`text-sm leading-relaxed mb-6 ${
-                      isDark ? 'text-slate-300' : 'text-slate-700'
-                    }`}
-                  >
-                    {post.excerpt}
-                  </p>
-                </div>
-
-                <div
-                  className={`pt-4 border-t flex items-center justify-between gap-2 text-xs ${
-                    isDark ? 'border-slate-800' : 'border-slate-200'
-                  }`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setActiveArticle(post)}
-                    className="font-semibold text-[#C59B27] hover:underline underline-offset-4 cursor-pointer flex items-center gap-1 whitespace-nowrap shrink-0"
-                  >
-                    <span>قراءة الملخص الكامل</span>
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                  </button>
-
-                  <a
-                    href={post.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`font-mono text-[11px] hover:underline ${
-                      isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
-                    }`}
-                  >
-                    blog.elsaidy.org ↗
-                  </a>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* Section 6: Interactive Contact & Access Request Portal (#contact) */}
-        <section id="contact" className="py-16 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
             <div className="lg:col-span-5">
               <div className="text-xs font-medium text-[#C59B27] mb-2">
-                05. التواصل وطلبات الحسابات والتوثيق
+                بوابة التواصل والخدمات الذاتية — elsaidy.org
               </div>
               <h2
                 className={`font-display text-3xl lg:text-4xl font-bold tracking-tight mb-4 ${
@@ -1282,25 +328,40 @@ export default function App() {
                 <div className="flex items-start gap-3">
                   <Globe className="w-4 h-4 text-[#C59B27] mt-1 shrink-0" />
                   <div>
-                    <div className="text-xs font-semibold text-[#C59B27]">النطاق الرسمي والمدونة</div>
-                    <div className="text-sm font-mono mt-0.5">elsaidy.org · blog.elsaidy.org</div>
+                    <div className="text-xs font-semibold text-[#C59B27]">
+                      صفحات المنصة والنطاقات الرسمية
+                    </div>
+                    <div className="text-xs font-mono mt-0.5">
+                      elsaidy.org · /about · /blog · /projects
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
                   <Mail className="w-4 h-4 text-[#C59B27] mt-1 shrink-0" />
                   <div>
-                    <div className="text-xs font-semibold text-[#C59B27]">البريد الرسمي والاتصال الموحد</div>
-                    <div className="text-sm font-mono mt-0.5">info@elsaidy.org · mail.elsaidy.org</div>
+                    <div className="text-xs font-semibold text-[#C59B27]">
+                      البريد الرسمي والاتصال الموحد
+                    </div>
+                    <div className="text-xs font-mono mt-0.5">
+                      info@elsaidy.org · mail.elsaidy.org · erp.elsaidy.org
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
                   <Building2 className="w-4 h-4 text-[#C59B27] mt-1 shrink-0" />
                   <div>
-                    <div className="text-xs font-semibold text-[#C59B27]">الحواضر والفروع الممثلة</div>
-                    <div className={`text-xs mt-0.5 leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                      ينبع · تيماء · تبوك · حائل · الرياض · بلاد الشام · الإمارات · سلطنة عُمان
+                    <div className="text-xs font-semibold text-[#C59B27]">
+                      الحواضر والفروع الممثلة
+                    </div>
+                    <div
+                      className={`text-xs mt-0.5 leading-relaxed ${
+                        isDark ? 'text-slate-300' : 'text-slate-600'
+                      }`}
+                    >
+                      ينبع النخل وينبع البحر · تيماء وتبوك · حائل والرياض · بلاد الشام · الإمارات ·
+                      سلطنة عُمان
                     </div>
                   </div>
                 </div>
@@ -1551,25 +612,41 @@ export default function App() {
           </div>
 
           <div className="flex flex-wrap items-center gap-6">
-            <a href="#lineage" className="hover:text-[#C59B27] transition-colors">
-              الجذور والتاريخ
-            </a>
-            <a href="#branches" className="hover:text-[#C59B27] transition-colors">
-              فروع العائلة
-            </a>
-            <a href="#references" className="hover:text-[#C59B27] transition-colors">
-              المصادر التاريخية
-            </a>
-            <a href="#infrastructure" className="hover:text-[#C59B27] transition-colors">
-              منظومة ERPNext &amp; Mailcow
-            </a>
+            <button
+              type="button"
+              onClick={() => navigateTo('home')}
+              className="hover:text-[#C59B27] transition-colors cursor-pointer"
+            >
+              الرئيسية (elsaidy.org)
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateTo('about')}
+              className="hover:text-[#C59B27] transition-colors cursor-pointer"
+            >
+              التاريخ والأنساب (/about)
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateTo('blog')}
+              className="hover:text-[#C59B27] transition-colors cursor-pointer"
+            >
+              المدونة والمقالات (/blog)
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateTo('projects')}
+              className="hover:text-[#C59B27] transition-colors cursor-pointer"
+            >
+              البنية الرقمية (/projects)
+            </button>
             <a
               href="https://blog.elsaidy.org"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-[#C59B27] transition-colors font-mono"
             >
-              blog.elsaidy.org
+              blog.elsaidy.org ↗
             </a>
           </div>
         </div>
@@ -1622,7 +699,11 @@ export default function App() {
             </div>
 
             <div className="space-y-4 text-sm">
-              <p className={isDark ? 'text-slate-300 leading-relaxed' : 'text-slate-700 leading-relaxed'}>
+              <p
+                className={
+                  isDark ? 'text-slate-300 leading-relaxed' : 'text-slate-700 leading-relaxed'
+                }
+              >
                 {inspectedService.description}
               </p>
 
@@ -1659,7 +740,9 @@ export default function App() {
                       ...prev,
                       requestType: `طلب صلاحية: ${srvTitle}`
                     }));
-                    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+                    document
+                      .getElementById('contact-portal')
+                      ?.scrollIntoView({ behavior: 'smooth' });
                   }}
                   className={`px-4 py-2.5 rounded-xl border text-xs font-medium cursor-pointer ${
                     isDark
@@ -1684,26 +767,27 @@ export default function App() {
         </div>
       )}
 
-      {/* Interactive Blog Article Reader Modal */}
+      {/* Interactive Full Article Reader Modal */}
       {activeArticle && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto"
           onClick={() => setActiveArticle(null)}
         >
           <div
-            className={`w-full max-w-2xl rounded-2xl border p-6 lg:p-8 ${
+            className={`w-full max-w-3xl rounded-2xl border p-6 lg:p-10 my-8 ${
               isDark
                 ? 'bg-[#0E1624] border-slate-700 text-slate-100'
                 : 'bg-white border-slate-200 text-slate-900'
             }`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-4 pb-4 mb-5 border-b border-slate-700/40">
+            <div className="flex items-start justify-between gap-4 pb-5 mb-6 border-b border-slate-700/40">
               <div>
-                <div className="text-xs text-[#C59B27] mb-1">
-                  {activeArticle.category} · {activeArticle.publishDate} · {activeArticle.readTime}
+                <div className="text-xs text-[#C59B27] mb-1.5">
+                  {activeArticle.categoryLabel} · {activeArticle.publishDate} ·{' '}
+                  {activeArticle.readTime}
                 </div>
-                <h3 className="font-display text-2xl font-bold leading-snug">
+                <h3 className="font-display text-2xl lg:text-3xl font-bold leading-snug">
                   {activeArticle.title}
                 </h3>
               </div>
@@ -1717,25 +801,48 @@ export default function App() {
               </button>
             </div>
 
-            <p
-              className={`text-base leading-[1.95] mb-6 ${
-                isDark ? 'text-slate-200' : 'text-slate-800'
-              }`}
-            >
-              {activeArticle.fullText}
-            </p>
+            <div className="space-y-6 mb-8">
+              <p
+                className={`text-base lg:text-lg font-medium leading-[1.9] ${
+                  isDark ? 'text-amber-100/90' : 'text-slate-900'
+                }`}
+              >
+                {activeArticle.excerpt}
+              </p>
 
-            <div className="flex items-center justify-between gap-4 pt-4 border-t border-slate-700/40 text-xs">
-              <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>
-                إعداد: {activeArticle.author}
-              </span>
+              {activeArticle.sections.map((sec, idx) => (
+                <div key={idx} className="space-y-2">
+                  <h4
+                    className={`font-display text-xl font-bold ${
+                      isDark ? 'text-white' : 'text-slate-950'
+                    }`}
+                  >
+                    {sec.heading}
+                  </h4>
+                  <p
+                    className={`text-sm lg:text-base leading-[1.95] ${
+                      isDark ? 'text-slate-300' : 'text-slate-700'
+                    }`}
+                  >
+                    {sec.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-5 border-t border-slate-700/40 text-xs">
+              <div className={isDark ? 'text-slate-400' : 'text-slate-600'}>
+                <span>إعداد: {activeArticle.author}</span>
+                <span className="mx-2" aria-hidden="true">·</span>
+                <span>{activeArticle.authorRole}</span>
+              </div>
               <a
                 href={activeArticle.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-5 py-2.5 rounded-xl bg-[#C59B27] text-slate-950 font-semibold hover:bg-[#d4ab32] transition-colors flex items-center gap-1.5"
               >
-                <span>متابعة القراءة في blog.elsaidy.org</span>
+                <span>فتح في المدونة الرسمية (blog.elsaidy.org)</span>
                 <ArrowUpLeft className="w-4 h-4" />
               </a>
             </div>
