@@ -4,6 +4,7 @@ import {
   VERBATIM_ABOUT_PARAGRAPH_2,
   VERBATIM_TITLE_REASON_HEADING,
   VERBATIM_TITLE_REASON,
+  EGYPT_HISTORICAL_EXTENSION_TEXT,
   DOCUMENTED_REFERENCES,
   MARGINALIA_NOTES,
   PageRoute
@@ -50,8 +51,11 @@ export const AboutPage: React.FC<AboutPageProps> = ({
             <a href="#doc-title-origin" className="hover:text-[#8C6D32] transition-colors">
               ٢. سبب التسمية بـ الصعيدي . !
             </a>
+            <a href="#doc-egypt-arabia" className="hover:text-[#8C6D32] transition-colors">
+              ٣. الامتداد في مصر والحجاز
+            </a>
             <a href="#doc-references" className="hover:text-[#8C6D32] transition-colors">
-              ٣. المراجع التاريخية الموثقة
+              ٤. المراجع التاريخية الموثقة
             </a>
           </div>
         </div>
@@ -59,7 +63,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="max-w-4xl">
             <div className="text-xs font-semibold text-[#8C6D32] mb-2">
-              الأرشيف التاريخي المعتمد · الموقع الرسمي لعائلة الصعيدي
+              الأرشيف التاريخي المعتمد · الموقع الرسمي لعائلة الصعيدي (elsaidy.org)
             </div>
             <h1
               className="font-display font-bold text-[#141413] tracking-tight leading-[1.2] mb-4"
@@ -67,9 +71,11 @@ export const AboutPage: React.FC<AboutPageProps> = ({
             >
               من نحن والتاريخ — الوثيقة الكاملة لنسب العائلة وسبب التسمية والمراجع الموثقة
             </h1>
-            <p className="text-base text-zinc-700 leading-[1.85] max-w-[70ch]">
-              صفحة وثائقية مستقلة تعرض النص التاريخي المعتمد لعائلة الصعيدي الراجعة إلى الجد السابع
-              إبراهيم الصعيدي من قبيلة جهينة من ينبع النخل، مع تحقيق سبب التسمية والمصادر التاريخية.
+            <p className="text-base text-zinc-700 leading-[1.85] max-w-[72ch]">
+              صفحة وثائقية مستقلة تعرض النص التاريخي المعتمد لعائلة الصعيدي (آل الصعيدي — Elsaidy /
+              Elseidy / Alsaidi) الراجعة إلى الجد السابع إبراهيم الصعيدي من قبيلة جهينة من ينبع
+              النخل، مع تحقيق سبب التسمية، الامتداد التاريخي في مصر والجزيرة العربية والشام والخليج،
+              والمصادر التاريخية الموثقة.
             </p>
           </div>
 
@@ -238,6 +244,70 @@ export const AboutPage: React.FC<AboutPageProps> = ({
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 2.5: Encyclopedic Bridge — Egypt (Gharbia, Tanta, Delta, Cairo, Upper Egypt) & Hijaz */}
+      <section
+        id="doc-egypt-arabia"
+        className="py-14 lg:py-20 border-b border-[#DCD9D0] scroll-mt-20"
+      >
+        <div className="bg-[#F1EFEA] border border-[#DCD9D0] p-7 sm:p-10 lg:p-12">
+          <div className="max-w-4xl mb-8">
+            <div className="text-xs font-semibold text-[#8C6D32] mb-2">
+              التوثيق الجغرافي والتاريخي المقارن · الحجاز ومصر والشام والخليج
+            </div>
+            <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#141413] mb-4">
+              الامتداد التاريخي لعائلة الصعيدي في جمهورية مصر العربية والجزيرة العربية
+            </h2>
+            <p className="font-display text-xl lg:text-[21px] text-[#141413] leading-[2.05] text-justify bg-[#F8F7F4] p-6 sm:p-8 border border-[#DCD9D0]">
+              {EGYPT_HISTORICAL_EXTENSION_TEXT}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-6 bg-[#F8F7F4] border border-[#DCD9D0]">
+              <div className="text-xs font-semibold text-[#8C6D32] mb-1.5">
+                ٠١ · حاضرة الغربية ومدينة طنطا والدلتا
+              </div>
+              <h3 className="font-display text-2xl font-bold text-[#141413] mb-2">
+                الصعيدي في الغربية وطنطا والدلتا
+              </h3>
+              <p className="text-xs text-zinc-700 leading-[1.85]">
+                تمثل محافظة الغربية وحاضرتها مدينة طنطا ومراكزها أحد أهم معاقل عائلة الصعيدي (آل
+                الصعيدي — Elsaidy / Elseidy) في الوجه البحري ودلتا مصر، إلى جانب الفروع المستقرة في
+                كفر الشيخ والمنوفية والدقهلية والشرقية والبحيرة.
+              </p>
+            </div>
+
+            <div className="p-6 bg-[#F8F7F4] border border-[#DCD9D0]">
+              <div className="text-xs font-semibold text-[#8C6D32] mb-1.5">
+                ٠٢ · القاهرة الكبرى وصعيد مصر
+              </div>
+              <h3 className="font-display text-2xl font-bold text-[#141413] mb-2">
+                الصعيدي في القاهرة والصعيد
+              </h3>
+              <p className="text-xs text-zinc-700 leading-[1.85]">
+                من المنطلق التاريخي لارتياع قبيلة جهينة في أرياف وحواضر صعيد مصر منذ الفتوحات
+                الإسلامية وتحرير مصر من الحملة الفرنسية، امتدت بيوتات عائلة الصعيدي في محافظات
+                الصعيد والقاهرة الكبرى والإسكندرية.
+              </p>
+            </div>
+
+            <div className="p-6 bg-[#F8F7F4] border border-[#DCD9D0]">
+              <div className="text-xs font-semibold text-[#8C6D32] mb-1.5">
+                ٠٣ · المملكة العربية السعودية والشام والخليج
+              </div>
+              <h3 className="font-display text-2xl font-bold text-[#141413] mb-2">
+                ينبع وتيماء وحائل والرياض والشام والخليج
+              </h3>
+              <p className="text-xs text-zinc-700 leading-[1.85]">
+                الفرع الأصيل الراجع إلى الجد السابع إبراهيم الصعيدي من ينبع النخل وابنه عوض البراهيم
+                في محافظة تيماء، ومنطقة حائل (حي الزبارة)، والرياض، وتبوك، وجبل العرب (قرية أم ولد)،
+                وعجمان (حي مشرف والجرف)، وسلطنة عُمان (الباطنة - الخابورة).
+              </p>
             </div>
           </div>
         </div>

@@ -25,7 +25,7 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
           <Compass className="w-4 h-4 text-[#8C6D32] shrink-0" />
           <span className="font-semibold text-[#1B3B2B]">اللوحة الوثائقية والنسبية</span>
           <span aria-hidden="true" className="text-[#8C6D32]">·</span>
-          <span className="text-zinc-600">قبيلة جهينة — ينبع النخل</span>
+          <span className="text-zinc-600">قبيلة جهينة — ينبع النخل ومصر والشام والخليج</span>
         </div>
 
         {/* Interactive Segmented Plate Switcher */}
@@ -67,7 +67,7 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
       <div className="p-5 flex-1 flex flex-col justify-center">
         {plateMode === 'genealogy' ? (
           /* Archival Genealogical Chart from 7th Grandfather Ibrahim Elsaidy */
-          <div className="space-y-4 text-center">
+          <div className="space-y-3.5 text-center">
             {/* Root Patriarch */}
             <div className="inline-block border border-[#1B3B2B] bg-[#1B3B2B] text-[#F8F7F4] px-5 py-2.5">
               <div className="text-[11px] text-[#D6C295] font-medium">
@@ -78,22 +78,22 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
               </div>
             </div>
 
-            <div className="w-px h-3 bg-[#8C6D32] mx-auto" />
+            <div className="w-px h-2.5 bg-[#8C6D32] mx-auto" />
 
             {/* Son: Awad Al-Brahim */}
             <div>
               <div className="inline-block border border-[#8C6D32] bg-[#F8F7F4] px-5 py-2">
-                <div className="text-[11px] text-[#8C6D32] font-semibold">عمود التفرع</div>
+                <div className="text-[11px] text-[#8C6D32] font-semibold">عمود التفرع الجامع</div>
                 <div className="font-display text-base font-bold text-[#141413]">
                   عوض البراهيم
                 </div>
               </div>
             </div>
 
-            <div className="w-px h-3 bg-[#8C6D32] mx-auto" />
+            <div className="w-px h-2.5 bg-[#8C6D32] mx-auto" />
 
             {/* Three Sons of Awad Al-Brahim */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-right pt-2 border-t border-[#8C6D32]/50">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-right pt-2 border-t border-[#8C6D32]/50">
               {/* Branch 1: Abdullah (Taima) */}
               <button
                 type="button"
@@ -159,8 +159,8 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
               </button>
             </div>
 
-            {/* Sub-branches of Abdullah bin Saleh */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-right pt-2 border-t border-[#DCD9D0]">
+            {/* Sub-branches of Abdullah bin Saleh + Egyptian Historical Extension */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-right pt-2 border-t border-[#DCD9D0]">
               <button
                 type="button"
                 onClick={() => onSelectBranch('hail-zubarah')}
@@ -170,7 +170,7 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
                   إبراهيم بن عبد الله
                 </div>
                 <div className="text-[11px] text-zinc-600 mt-0.5">
-                  مدينة حائل — حي الزبارة
+                  حائل — حي الزبارة
                 </div>
               </button>
 
@@ -180,10 +180,10 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
                 className="p-2.5 bg-[#F8F7F4] border border-[#DCD9D0] hover:border-[#8C6D32] text-right transition-colors cursor-pointer"
               >
                 <div className="text-[11px] font-bold text-[#1B3B2B]">
-                  ناصر (وابنه حمود شئون البادية)
+                  ناصر (وابنه حمود)
                 </div>
                 <div className="text-[11px] text-zinc-600 mt-0.5">
-                  مدينة الرياض — نجد
+                  الرياض — شئون البادية
                 </div>
               </button>
 
@@ -193,22 +193,35 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
                 className="p-2.5 bg-[#F8F7F4] border border-[#DCD9D0] hover:border-[#8C6D32] text-right transition-colors cursor-pointer"
               >
                 <div className="text-[11px] font-bold text-[#1B3B2B]">
-                  علي (عبد الله وعمر ومحمد وخليفة)
+                  علي بن عبد الله وأبناؤه
                 </div>
                 <div className="text-[11px] text-zinc-600 mt-0.5">
-                  عجمان (مشرف والجرف) · عُمان (الخابورة)
+                  عجمان · عُمان (الخابورة)
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onSelectBranch('egypt-gharbia-tanta')}
+                className="p-2.5 bg-[#F8F7F4] border border-[#DCD9D0] hover:border-[#8C6D32] text-right transition-colors cursor-pointer"
+              >
+                <div className="text-[11px] font-bold text-[#8C6D32]">
+                  حواضر مصر (آل الصعيدي)
+                </div>
+                <div className="text-[11px] text-zinc-600 mt-0.5">
+                  الغربية (طنطا) · الدلتا · القاهرة · الصعيد
                 </div>
               </button>
             </div>
           </div>
         ) : (
-          /* Engraved Archival Atlas View on Warm Alabaster Paper */
+          /* Engraved Archival Atlas View on Warm Alabaster Paper (Egypt + Arabia + Levant + Gulf) */
           <div className="w-full">
             <svg
               viewBox="0 0 680 370"
               className="w-full h-auto max-h-[290px] select-none bg-[#F8F7F4] border border-[#DCD9D0]"
               role="img"
-              aria-label="خارطة منازل وفروع عائلة الصعيدي في الجزيرة العربية وبلاد الشام والخليج العربي"
+              aria-label="خارطة منازل وفروع عائلة الصعيدي في الجزيرة العربية ومصر وبلاد الشام والخليج العربي"
             >
               {/* Archival Grid Lines */}
               <line x1="0" y1="90" x2="680" y2="90" stroke="#DCD9D0" strokeDasharray="3 3" />
@@ -218,9 +231,17 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
               <line x1="340" y1="0" x2="340" y2="370" stroke="#DCD9D0" strokeDasharray="3 3" />
               <line x1="510" y1="0" x2="510" y2="370" stroke="#DCD9D0" strokeDasharray="3 3" />
 
-              {/* Arabian Peninsula Classical Cartographic Contour */}
+              {/* Egypt & Nile Basin Classical Contour */}
               <path
-                d="M140,75 L260,65 L350,110 L450,180 L585,245 L620,315 L550,355 L330,360 L230,345 L180,250 L145,170 Z"
+                d="M65,135 L165,135 L180,295 L155,345 L70,345 Z"
+                fill="#F1EFEA"
+                stroke="#C5BFA8"
+                strokeWidth="1.5"
+              />
+
+              {/* Arabian Peninsula & Levant Classical Cartographic Contour */}
+              <path
+                d="M190,75 L270,65 L355,110 L455,180 L585,245 L620,315 L550,355 L330,360 L230,345 L195,250 L185,170 Z"
                 fill="#F1EFEA"
                 stroke="#C5BFA8"
                 strokeWidth="1.5"
@@ -240,6 +261,14 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
                 stroke="#1B3B2B"
                 strokeWidth="1.5"
               />
+              {/* Historical Route between Yanbu, Upper Egypt, Cairo/Delta & Gharbia/Tanta */}
+              <path
+                d="M235,300 L135,255 L125,182 L118,155"
+                fill="none"
+                stroke="#8C6D32"
+                strokeWidth="1.5"
+                strokeDasharray="3 3"
+              />
 
               {/* Interactive Location Markers */}
               {GEOGRAPHICAL_PRESENCE.map((loc) => {
@@ -250,30 +279,31 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
                     onClick={() => onSelectBranch(loc.id)}
                     className="cursor-pointer"
                   >
+                    {isSelected && (
+                      <circle
+                        cx={loc.coordinates.x}
+                        cy={loc.coordinates.y}
+                        r="12"
+                        fill="none"
+                        stroke="#8C6D32"
+                        strokeWidth="1.5"
+                      />
+                    )}
                     <circle
                       cx={loc.coordinates.x}
                       cy={loc.coordinates.y}
-                      r={isSelected ? '7.5' : '5'}
-                      fill={isSelected ? '#8C6D32' : '#F8F7F4'}
-                      stroke="#1B3B2B"
-                      strokeWidth="1.75"
-                    />
-                    <rect
-                      x={loc.coordinates.x - 54}
-                      y={loc.coordinates.y - 30}
-                      width="108"
-                      height="19"
-                      fill={isSelected ? '#1B3B2B' : '#F8F7F4'}
-                      stroke={isSelected ? '#1B3B2B' : '#CFCBC0'}
-                      strokeWidth="1"
+                      r={isSelected ? '5.5' : '4'}
+                      fill={isSelected ? '#1B3B2B' : '#8C6D32'}
+                      stroke="#F8F7F4"
+                      strokeWidth="1.5"
                     />
                     <text
                       x={loc.coordinates.x}
-                      y={loc.coordinates.y - 17}
+                      y={loc.coordinates.y - 10}
                       textAnchor="middle"
-                      fill={isSelected ? '#F8F7F4' : '#141413'}
-                      fontSize="10"
-                      fontWeight={isSelected ? '700' : '500'}
+                      fill={isSelected ? '#141413' : '#52525B'}
+                      fontSize={isSelected ? '11' : '9.5'}
+                      fontWeight={isSelected ? '700' : '600'}
                     >
                       {loc.coordinates.label}
                     </text>
@@ -285,23 +315,23 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
         )}
       </div>
 
-      {/* Bottom Selected Station Caption Footer */}
-      <div className="px-5 py-3.5 border-t border-[#DCD9D0] bg-[#F8F7F4]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <div className="flex items-center gap-2 text-xs text-[#8C6D32]">
-              <MapPin className="w-3.5 h-3.5 shrink-0" />
-              <span className="font-semibold text-[#1B3B2B]">
-                {selectedRegion.index} · {selectedRegion.regionName}
-              </span>
-              <span aria-hidden="true">·</span>
-              <span className="text-zinc-600">{selectedRegion.keyFigures}</span>
-            </div>
-            <p className="text-xs text-[#141413] mt-1 leading-relaxed">
-              {selectedRegion.description}
-            </p>
+      {/* Bottom Selected Node Inspector */}
+      <div className="p-4 border-t border-[#DCD9D0] bg-[#F8F7F4] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#8C6D32]">
+            <MapPin className="w-3.5 h-3.5 text-[#1B3B2B]" />
+            <span>
+              المقر المحدد ({selectedRegion.index}): {selectedRegion.regionName}
+            </span>
           </div>
+          <p className="text-xs text-zinc-700 mt-1">
+            <strong className="text-[#141413]">{selectedRegion.keyFigures}</strong> —{' '}
+            {selectedRegion.subLocation}
+          </p>
         </div>
+        <span className="text-[11px] font-mono text-zinc-500 shrink-0">
+          انقر على الفروع للمعاينة
+        </span>
       </div>
     </div>
   );

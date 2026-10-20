@@ -15,7 +15,8 @@ import { AboutPage } from './pages/AboutPage';
 import { FamilyTreePage } from './pages/FamilyTreePage';
 import { BlogPage } from './pages/BlogPage';
 import { ProjectsPage } from './pages/ProjectsPage';
-import { ArrowUpLeft, Lock, X, Check } from 'lucide-react';
+import { SEOManager } from './components/SEOManager';
+import { ArrowUpLeft, Lock, X } from 'lucide-react';
 
 function getInitialRoute(): PageRoute {
   if (typeof window === 'undefined') return 'home';
@@ -99,6 +100,9 @@ export default function App() {
       dir="rtl"
       className="min-h-screen flex flex-col justify-between bg-[#F8F7F4] text-[#141413] selection:bg-[#8C6D32]/20 selection:text-[#141413]"
     >
+      {/* Dynamic SEO & JSON-LD Structured Data Engine */}
+      <SEOManager currentRoute={currentRoute} />
+
       <div>
         {/* Official Top Institutional Header — Strict 3-Zone Contract */}
         <header
@@ -164,7 +168,9 @@ export default function App() {
             <div className="flex items-center gap-2">
               <span>النسب: قبيلة جهينة (ينبع النخل)</span>
               <span aria-hidden="true">·</span>
-              <span className="font-mono text-[11px] text-[#8C6D32]">elsaidy.org</span>
+              <span className="font-mono text-[11px] text-[#8C6D32]">
+                elsaidy.org · Elsaidy / Elseidy / Alsaidi
+              </span>
             </div>
           </div>
         </div>
@@ -231,14 +237,15 @@ export default function App() {
       {/* Formal Institutional Footer Across All Pages */}
       <footer className="border-t border-[#DCD9D0] bg-[#F1EFEA] py-12 px-6 lg:px-12 text-xs text-zinc-600 mt-12">
         <div className="max-w-[1280px] mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-          <div>
+          <div className="max-w-3xl">
             <div className="font-display text-xl font-bold text-[#141413] mb-1">
-              الموقع الرسمي لعائلة الصعيدي - elsaidy.org
+              الموقع الرسمي لعائلة الصعيدي (آل الصعيدي) — elsaidy.org | Elsaidy & Elseidy Family Portal
             </div>
             <p className="leading-relaxed text-zinc-700">
-              الجد السابع إبراهيم الصعيدي · قبيلة جهينة · ينبع النخل · تيماء · حائل (حي الزبارة) ·
-              الرياض · تبوك · بلاد الشام (جبل العرب - أم ولد) · الإمارات (عجمان - مشرف والجرف) ·
-              سلطنة عمان (الباطنة - الخابورة)
+              الجد السابع إبراهيم الصعيدي · قبيلة جهينة · ينبع النخل · محافظة تيماء · منطقة حائل
+              (حي الزبارة) · مدينة الرياض · منطقة تبوك · جمهورية مصر العربية (محافظة الغربية، طنطا،
+              الدلتا، القاهرة الكبرى، وصعيد مصر) · بلاد الشام (جبل العرب - قرية أم ولد) · دولة
+              الإمارات العربية المتحدة (عجمان - حي مشرف والجرف) · سلطنة عُمان (الباطنة - الخابورة).
             </p>
           </div>
 
@@ -264,7 +271,8 @@ export default function App() {
             محفوظة للأمانة العامة ولجنة التوثيق التاريخي.
           </div>
           <div className="text-[11px] text-zinc-500">
-            منظومة الإدارة والموارد المركزية · نظام البريد والمراسلات الرسمية · الأرشيف الوثائقي والمنصة المعرفية · بوابة الخدمات التقنية والسحابية
+            منظومة الإدارة والموارد المركزية · نظام البريد والمراسلات الرسمية · الأرشيف الوثائقي
+            والمنصة المعرفية · بوابة الخدمات التقنية والسحابية
           </div>
         </div>
       </footer>

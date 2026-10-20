@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   OFFICIAL_FAMILY_TREE_IMAGE_URL,
-  GEOGRAPHICAL_PRESENCE,
+  COMPOUND_NAMES_INDEX,
   PageRoute
 } from '../data/familyData';
 import {
@@ -12,8 +12,7 @@ import {
   ExternalLink,
   ArrowRight,
   X,
-  GitBranch,
-  MapPin
+  Search
 } from 'lucide-react';
 
 interface FamilyTreePageProps {
@@ -26,10 +25,23 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
   const [lightboxZoom, setLightboxZoom] = useState<number>(1.35);
   const [imageError, setImageError] = useState<boolean>(false);
   const [highlightedBranch, setHighlightedBranch] = useState<'all' | 'b1' | 'b2' | 'b3'>('all');
+  const [nameSearchQuery, setNameSearchQuery] = useState<string>('');
 
   const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 0.25, 2.5));
   const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 0.25, 0.75));
   const handleResetZoom = () => setZoomLevel(1);
+
+  const filteredNames = COMPOUND_NAMES_INDEX.filter((entry) => {
+    const q = nameSearchQuery.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      entry.arabicName.includes(q) ||
+      entry.englishElsaidy.toLowerCase().includes(q) ||
+      entry.englishElseidy.toLowerCase().includes(q) ||
+      entry.englishAlsaidi.toLowerCase().includes(q) ||
+      entry.regions.includes(q)
+    );
+  });
 
   return (
     <div>
@@ -48,7 +60,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
             <span aria-hidden="true">/</span>
             <span className="font-semibold text-[#1B3B2B]">شجرة وفروع العائلة</span>
             <span aria-hidden="true">·</span>
-            <span className="font-mono text-[11px] text-zinc-500">الأرشيف النسبي المصوّر</span>
+            <span className="font-mono text-[11px] text-zinc-500">الأرشيف النسبي المصوّر وفهرس الأعلام</span>
           </div>
 
           <div className="text-xs text-zinc-600">
@@ -59,18 +71,18 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
 
         <div className="max-w-4xl">
           <div className="text-xs font-semibold text-[#8C6D32] mb-2">
-            سجل المشجرات الوثائقية · الأمانة العامة لعائلة الصعيدي
+            سجل المشجرات الوثائقية · الأمانة العامة لعائلة الصعيدي (elsaidy.org)
           </div>
           <h1
             className="font-display font-bold text-[#141413] tracking-tight leading-[1.2] mb-4"
             style={{ fontSize: 'clamp(2.25rem, 4vw, 3.5rem)', textWrap: 'balance' }}
           >
-            وثيقة شجرة عائلة الصعيدي ودليل تفرع الأبناء والحواضر
+            وثيقة شجرة عائلة الصعيدي ودليل تفرع الأبناء والحواضر وفهرس الأعلام
           </h1>
           <p className="text-base text-zinc-700 leading-[1.85] max-w-[72ch]">
             تضم هذه الصفحة الوثيقة المصوّرة المعتمدة لشجرة عائلة الصعيدي مع أدوات التكبير والفحص
             المباشر، متبوعةً بالدليل الهيكلي المفصّل لتفرع العائلة من الجد السابع إبراهيم الصعيدي
-            وابنه عوض البراهيم.
+            وابنه عوض البراهيم، والفهرس الموسوعي لأسماء وأعلام العائلة باللغتين العربية والإنجليزية.
           </p>
         </div>
       </section>
@@ -151,7 +163,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
             >
               <img
                 src={OFFICIAL_FAMILY_TREE_IMAGE_URL}
-                alt="وثيقة شجرة عائلة الصعيدي الرسمية"
+                alt="وثيقة شجرة عائلة الصعيدي الرسمية — Elsaidy Family Tree"
                 referrerPolicy="no-referrer"
                 onClick={() => setIsLightboxOpen(true)}
                 onError={() => setImageError(true)}
@@ -200,8 +212,8 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
         </div>
       </section>
 
-      {/* Section 2: Structured Lineage Directory (Bottom Section) */}
-      <section className="py-14 lg:py-20">
+      {/* Section 2: Structured Lineage Directory (Middle Section) */}
+      <section className="py-14 lg:py-20 border-b border-[#DCD9D0]">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
           <div>
             <div className="text-xs font-semibold text-[#8C6D32] mb-2">
@@ -299,19 +311,22 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                     <div className="text-xs font-semibold text-[#8C6D32] mb-1">
                       أبناء عبد الله بن عوض الأربعة في تيماء:
                     </div>
-                    {['١. عوض بن عبد الله', '٢. حامد بن عبد الله', '٣. حمدان بن عبد الله', '٤. بشير بن عبد الله'].map(
-                      (son, idx) => (
-                        <div
-                          key={idx}
-                          className="p-3 bg-[#F1EFEA] border border-[#DCD9D0] font-display text-lg font-bold text-[#141413] flex items-center justify-between"
-                        >
-                          <span>{son}</span>
-                          <span className="font-sans text-[11px] font-normal text-zinc-600">
-                            تيماء
-                          </span>
-                        </div>
-                      )
-                    )}
+                    {[
+                      '١. عوض بن عبد الله',
+                      '٢. حامد بن عبد الله',
+                      '٣. حمدان بن عبد الله',
+                      '٤. بشير بن عبد الله'
+                    ].map((son, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 bg-[#F1EFEA] border border-[#DCD9D0] font-display text-lg font-bold text-[#141413] flex items-center justify-between"
+                      >
+                        <span>{son}</span>
+                        <span className="font-sans text-[11px] font-normal text-zinc-600">
+                          تيماء
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -365,7 +380,9 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                 <div>
                   <div className="flex items-center justify-between gap-2 text-xs pb-3 mb-4 border-b border-[#DCD9D0]">
                     <span className="font-semibold text-[#8C6D32]">الفرع الثالث</span>
-                    <span className="text-[#1B3B2B] font-semibold">حائل · الرياض · الإمارات · عُمان</span>
+                    <span className="text-[#1B3B2B] font-semibold">
+                      حائل · الرياض · الإمارات · عُمان
+                    </span>
                   </div>
 
                   <h3 className="font-display text-2xl font-bold text-[#141413] mb-1">
@@ -385,7 +402,9 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                     {/* Sub-branch A: Ibrahim */}
                     <div className="p-3.5 bg-[#F1EFEA] border border-[#DCD9D0]">
                       <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="font-bold text-[#1B3B2B]">أ. إبراهيم بن عبد الله بن صالح</span>
+                        <span className="font-bold text-[#1B3B2B]">
+                          أ. إبراهيم بن عبد الله بن صالح
+                        </span>
                         <span className="text-[#8C6D32] font-semibold">حائل — حي الزبارة</span>
                       </div>
                       <p className="text-xs text-zinc-700 leading-relaxed">
@@ -396,7 +415,9 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                     {/* Sub-branch B: Nasser -> Hamoud */}
                     <div className="p-3.5 bg-[#F1EFEA] border border-[#DCD9D0]">
                       <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="font-bold text-[#1B3B2B]">ب. ناصر بن عبد الله بن صالح</span>
+                        <span className="font-bold text-[#1B3B2B]">
+                          ب. ناصر بن عبد الله بن صالح
+                        </span>
                         <span className="text-[#8C6D32] font-semibold">مدينة الرياض</span>
                       </div>
                       <p className="text-xs text-zinc-700 leading-relaxed">
@@ -432,11 +453,80 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                 </div>
 
                 <div className="mt-6 pt-3 border-t border-[#DCD9D0] text-xs text-zinc-500">
-                  المقار التاريخية: حائل (حي الزبارة) · الرياض · عجمان (مشرف والجرف) · الباطنة (الخابورة)
+                  المقار التاريخية: حائل (حي الزبارة) · الرياض · عجمان (مشرف والجرف) · الباطنة
+                  (الخابورة)
                 </div>
               </div>
             )}
           </div>
+        </div>
+      </section>
+
+      {/* Section 3: Encyclopedic Searchable Compound Name & Transliteration Directory */}
+      <section className="py-14 lg:py-20">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
+          <div className="max-w-3xl">
+            <div className="text-xs font-semibold text-[#8C6D32] mb-2">
+              الفهرس المعجمي للأعلام والأسماء المركبة · مطابقة البحث بالعربية والإنجليزية
+            </div>
+            <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#141413]">
+              دليل أعلام وأسماء عائلة الصعيدي (Elsaidy / Elseidy / Alsaidi)
+            </h2>
+            <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
+              يوفر هذا الفهرس المرجعي توثيقاً للأسماء المركبة المتداولة لأجداد وأعلام وأبناء عائلة
+              الصعيدي في المملكة العربية السعودية وجمهورية مصر العربية (الغربية، طنطا، الدلتا،
+              القاهرة، الصعيد) وبلاد الشام والخليج العربي، مع صيغ كتابتها المعتمدة باللغة
+              الإنجليزية.
+            </p>
+          </div>
+
+          {/* Search Input */}
+          <div className="relative w-full lg:w-80">
+            <Search className="w-4 h-4 text-zinc-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={nameSearchQuery}
+              onChange={(e) => setNameSearchQuery(e.target.value)}
+              placeholder="ابحث بالاسم (مثال: علي الصعيدي / Aly Elsaidy)..."
+              className="w-full pr-10 pl-4 py-2.5 bg-[#F8F7F4] border border-[#DCD9D0] text-xs text-[#141413] outline-none focus:border-[#8C6D32]"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-t border-r border-[#DCD9D0]">
+          {filteredNames.map((entry, idx) => (
+            <div
+              key={idx}
+              className="p-5 border-b border-l border-[#DCD9D0] bg-[#F8F7F4] hover:bg-[#F1EFEA]/60 transition-colors flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2 text-[11px] text-[#8C6D32] font-semibold mb-1.5">
+                  <span>{entry.category}</span>
+                </div>
+                <h3 className="font-display text-2xl font-bold text-[#141413] mb-2">
+                  {entry.arabicName}
+                </h3>
+                <div
+                  dir="ltr"
+                  className="text-left font-mono text-[11px] text-zinc-700 bg-[#F1EFEA] p-2.5 border border-[#DCD9D0] space-y-0.5 mb-3"
+                >
+                  <div>
+                    <strong className="text-[#1B3B2B]">Elsaidy:</strong> {entry.englishElsaidy}
+                  </div>
+                  <div>
+                    <strong className="text-[#8C6D32]">Elseidy:</strong> {entry.englishElseidy}
+                  </div>
+                  <div>
+                    <strong className="text-zinc-600">Alsaidi:</strong> {entry.englishAlsaidi}
+                  </div>
+                </div>
+              </div>
+              <div className="pt-2.5 border-t border-[#DCD9D0] text-[11px] text-zinc-600">
+                <strong className="text-[#141413]">النطاق الجغرافي: </strong>
+                {entry.regions}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
