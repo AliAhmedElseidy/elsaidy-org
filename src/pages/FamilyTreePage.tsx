@@ -44,21 +44,21 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
   });
 
   return (
-    <div>
+    <div className="space-y-14 lg:space-y-20 py-8 lg:py-12">
       {/* Page Breadcrumb & Institutional Header */}
-      <section className="pt-8 pb-10 border-b border-[#DCD9D0]">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-8 border-b border-[#DCD9D0] text-xs text-zinc-600">
+      <section className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-10 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-6 border-b border-[#E6E2D8] text-xs text-zinc-600">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => onNavigate('home')}
-              className="hover:text-[#8C6D32] transition-colors flex items-center gap-1 cursor-pointer"
+              className="hover:text-[#9A7B3E] font-bold transition-colors flex items-center gap-1 cursor-pointer"
             >
               <ArrowRight className="w-3.5 h-3.5" />
               <span>الرئيسية</span>
             </button>
             <span aria-hidden="true">/</span>
-            <span className="font-semibold text-[#1B3B2B]">شجرة وفروع العائلة</span>
+            <span className="font-bold text-[#0F291E]">شجرة وفروع العائلة</span>
             <span aria-hidden="true">·</span>
             <span className="font-mono text-[11px] text-zinc-500">الأرشيف النسبي المصوّر وفهرس الأعلام</span>
           </div>
@@ -70,34 +70,34 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
         </div>
 
         <div className="max-w-4xl">
-          <div className="text-xs font-semibold text-[#8C6D32] mb-2">
-            سجل المشجرات الوثائقية · الأمانة العامة لعائلة الصعيدي (elsaidy.org)
+          <div className="text-xs font-bold text-[#9A7B3E] mb-2">
+            سجل المشجرات الوثائقية · الموقع الرسمي لعائلات الصعيدي في الوطن العربي (elsaidy.org)
           </div>
           <h1
-            className="font-display font-bold text-[#141413] tracking-tight leading-[1.2] mb-4"
-            style={{ fontSize: 'clamp(2.25rem, 4vw, 3.5rem)', textWrap: 'balance' }}
+            className="font-extrabold text-[#141413] tracking-tight leading-[1.25] mb-4"
+            style={{ fontSize: 'clamp(1.85rem, 3.5vw, 2.85rem)', textWrap: 'balance' }}
           >
             وثيقة شجرة عائلة الصعيدي ودليل تفرع الأبناء والحواضر وفهرس الأعلام
           </h1>
-          <p className="text-base text-zinc-700 leading-[1.85] max-w-[72ch]">
+          <p className="text-sm sm:text-base text-zinc-700 leading-[1.85] max-w-[75ch]">
             تضم هذه الصفحة الوثيقة المصوّرة المعتمدة لشجرة عائلة الصعيدي مع أدوات التكبير والفحص
             المباشر، متبوعةً بالدليل الهيكلي المفصّل لتفرع العائلة من الجد السابع إبراهيم الصعيدي
-            وابنه عوض البراهيم، والفهرس الموسوعي لأسماء وأعلام العائلة باللغتين العربية والإنجليزية.
+            وابنه عوض البراهيم، والفهرس الموسوعي لأسماء وأعلام العائلة في مصر والسعودية والوطن العربي.
           </p>
         </div>
       </section>
 
-      {/* Section 1: Official Family Tree Document Viewer (Top Section) */}
-      <section className="py-12 lg:py-16 border-b border-[#DCD9D0]">
-        <div className="bg-[#F1EFEA] border border-[#DCD9D0]">
+      {/* Section 1: Official Family Tree Document Viewer (100% Mobile Responsive) */}
+      <section>
+        <div className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] shadow-sm overflow-hidden">
           {/* Archival Frame Top Bar & Interactive Controls */}
-          <div className="px-6 py-4 bg-[#F8F7F4] border-b border-[#DCD9D0] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="px-6 py-5 bg-[#F7F6F2] border-b border-[#E6E2D8] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
-              <div className="text-xs font-semibold text-[#8C6D32] mb-0.5">
+              <div className="text-xs font-bold text-[#9A7B3E] mb-1">
                 الوثيقة المصوّرة المعتمدة · رقم القيد: ARCH-TREE-01
               </div>
-              <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#141413]">
-                وثيقة شجرة عائلة الصعيدي
+              <h2 className="text-xl sm:text-2xl font-extrabold text-[#141413]">
+                وثيقة شجرة عائلة الصعيدي الرسمية
               </h2>
             </div>
 
@@ -106,25 +106,25 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
               <button
                 type="button"
                 onClick={handleZoomIn}
-                className="px-3.5 py-2 bg-[#F1EFEA] border border-[#DCD9D0] text-[#141413] text-xs font-semibold hover:border-[#8C6D32] transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                className="px-3.5 py-2 rounded-lg bg-white border border-[#E6E2D8] text-[#141413] text-xs font-bold hover:border-[#9A7B3E] transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
               >
-                <ZoomIn className="w-3.5 h-3.5 text-[#8C6D32]" />
-                <span>تكبير الوثيقة +</span>
+                <ZoomIn className="w-3.5 h-3.5 text-[#9A7B3E]" />
+                <span>تكبير +</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleZoomOut}
-                className="px-3.5 py-2 bg-[#F1EFEA] border border-[#DCD9D0] text-[#141413] text-xs font-semibold hover:border-[#8C6D32] transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                className="px-3.5 py-2 rounded-lg bg-white border border-[#E6E2D8] text-[#141413] text-xs font-bold hover:border-[#9A7B3E] transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
               >
-                <ZoomOut className="w-3.5 h-3.5 text-[#8C6D32]" />
+                <ZoomOut className="w-3.5 h-3.5 text-[#9A7B3E]" />
                 <span>تصغير -</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleResetZoom}
-                className="px-3 py-2 bg-[#F1EFEA] border border-[#DCD9D0] text-zinc-700 text-xs font-medium hover:border-[#8C6D32] transition-colors flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0"
+                className="px-3 py-2 rounded-lg bg-white border border-[#E6E2D8] text-zinc-700 text-xs font-bold hover:border-[#9A7B3E] transition-colors flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0"
                 title="إعادة ضبط الحجم"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -134,9 +134,9 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
               <button
                 type="button"
                 onClick={() => setIsLightboxOpen(true)}
-                className="px-4 py-2 bg-[#1B3B2B] text-[#F8F7F4] text-xs font-semibold hover:bg-[#141413] transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                className="px-4 py-2 rounded-lg bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
               >
-                <Maximize2 className="w-3.5 h-3.5" />
+                <Maximize2 className="w-3.5 h-3.5 text-[#C5A059]" />
                 <span>عرض بملء الشاشة</span>
               </button>
 
@@ -144,21 +144,21 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                 href={OFFICIAL_FAMILY_TREE_IMAGE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 bg-[#141413] text-[#F8F7F4] text-xs font-semibold hover:bg-[#8C6D32] transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0"
+                className="px-4 py-2 rounded-lg bg-[#9A7B3E] text-white text-xs font-bold hover:bg-[#826631] transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0"
               >
-                <span>فتح الوثيقة الأصلية بالحجم الكامل</span>
+                <span>فتح الوثيقة الأصلية</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
           </div>
 
-          {/* Archival Image Viewport Container */}
-          <div className="p-4 sm:p-8 overflow-auto max-h-[720px] bg-[#F1EFEA] flex flex-col items-center justify-center">
+          {/* Archival Image Viewport Container (Safe Mobile Scroll) */}
+          <div className="p-4 sm:p-8 overflow-auto max-h-[720px] max-w-full bg-[#F7F6F2] flex flex-col items-center justify-center">
             <div
-              className="bg-[#F8F7F4] border-2 border-[#8C6D32]/60 p-3 sm:p-5 transition-transform duration-150 origin-top"
+              className="bg-white rounded-xl border-2 border-[#9A7B3E]/50 p-3 sm:p-5 shadow-md transition-transform duration-150 origin-top max-w-full"
               style={{
                 transform: `scale(${zoomLevel})`,
-                marginBottom: zoomLevel > 1 ? `${(zoomLevel - 1) * 360}px` : '0px'
+                marginBottom: zoomLevel > 1 ? `${(zoomLevel - 1) * 320}px` : '0px'
               }}
             >
               <img
@@ -167,12 +167,12 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                 referrerPolicy="no-referrer"
                 onClick={() => setIsLightboxOpen(true)}
                 onError={() => setImageError(true)}
-                className="max-w-full h-auto mx-auto block cursor-zoom-in border border-[#DCD9D0]"
+                className="max-w-full h-auto mx-auto block cursor-zoom-in rounded-lg border border-[#E6E2D8]"
               />
 
               {imageError && (
-                <div className="p-8 text-center bg-[#F8F7F4] border border-[#DCD9D0] mt-3 space-y-3 max-w-xl mx-auto">
-                  <div className="font-display text-xl font-bold text-[#141413]">
+                <div className="p-8 text-center bg-white rounded-xl border border-[#E6E2D8] mt-3 space-y-3 max-w-xl mx-auto">
+                  <div className="text-xl font-extrabold text-[#141413]">
                     معاينة وثيقة شجرة عائلة الصعيدي المصوّرة
                   </div>
                   <p className="text-xs text-zinc-600 leading-relaxed">
@@ -184,7 +184,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                     href={OFFICIAL_FAMILY_TREE_IMAGE_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#141413] text-[#F8F7F4] text-xs font-semibold hover:bg-[#8C6D32] transition-colors"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0F291E] text-white text-xs font-bold hover:bg-[#9A7B3E] transition-colors"
                   >
                     <span>فتح الوثيقة الأصلية بالحجم الكامل</span>
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -195,7 +195,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
           </div>
 
           {/* Archival Plate Footer Caption */}
-          <div className="px-6 py-3.5 bg-[#F8F7F4] border-t border-[#DCD9D0] flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600">
+          <div className="px-6 py-4 bg-white border-t border-[#E6E2D8] flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600">
             <div>
               <span>انقر على صورة الوثيقة أو زر «عرض بملء الشاشة» لتفحص الأسماء والتفرعات بدقة عالية.</span>
             </div>
@@ -203,7 +203,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
               href={OFFICIAL_FAMILY_TREE_IMAGE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold text-[#8C6D32] hover:text-[#141413] underline underline-offset-4 flex items-center gap-1"
+              className="font-bold text-[#9A7B3E] hover:text-[#0F291E] underline underline-offset-4 flex items-center gap-1"
             >
               <span>رابط المصدر المصوّر المباشر</span>
               <ExternalLink className="w-3 h-3" />
@@ -212,21 +212,21 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
         </div>
       </section>
 
-      {/* Section 2: Structured Lineage Directory (Middle Section) */}
-      <section className="py-14 lg:py-20 border-b border-[#DCD9D0]">
+      {/* Section 2: Structured Lineage Directory */}
+      <section>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
           <div>
-            <div className="text-xs font-semibold text-[#8C6D32] mb-2">
+            <div className="text-xs font-bold text-[#9A7B3E] mb-2">
               الدليل الهيكلي الموثق · تسلسل الأجداد والفروع
             </div>
-            <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#141413]">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#141413]">
               المشجرة التفصيلية لأعقاب الجد السابع إبراهيم الصعيدي وابنه عوض البراهيم
             </h2>
           </div>
 
           {/* Interactive Branch Filter */}
           <div
-            className="flex flex-wrap items-center gap-1 bg-[#F1EFEA] border border-[#DCD9D0] p-1"
+            className="flex flex-wrap items-center gap-1.5 bg-white border border-[#E6E2D8] rounded-xl p-1.5 shadow-sm"
             role="tablist"
             aria-label="تصفية فروع الشجرة"
           >
@@ -242,9 +242,9 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                 role="tab"
                 aria-selected={highlightedBranch === tab.id}
                 onClick={() => setHighlightedBranch(tab.id)}
-                className={`px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   highlightedBranch === tab.id
-                    ? 'bg-[#1B3B2B] text-[#F8F7F4] font-semibold'
+                    ? 'bg-[#0F291E] text-white shadow-sm'
                     : 'text-zinc-700 hover:text-[#141413]'
                 }`}
               >
@@ -255,47 +255,47 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
         </div>
 
         {/* Visual Hierarchy Container */}
-        <div className="bg-[#F1EFEA] border border-[#DCD9D0] p-6 sm:p-10">
+        <div className="bg-white rounded-2xl border border-[#E6E2D8] p-6 sm:p-10 shadow-sm">
           {/* Root & Trunk: 7th Grandfather Ibrahim Elsaidy -> Awad Al-Brahim */}
           <div className="max-w-xl mx-auto text-center">
-            <div className="bg-[#1B3B2B] text-[#F8F7F4] border border-[#141413] p-5">
-              <div className="text-xs text-[#D6C295] font-medium mb-1">
+            <div className="rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] text-white border border-[#9A7B3E]/40 p-6 shadow-md">
+              <div className="text-xs text-[#C5A059] font-bold mb-1">
                 الجد السابع الجامع للعائلة · قبيلة جهينة
               </div>
               <div className="font-display text-2xl sm:text-3xl font-bold">
                 إبراهيم الصعيدي
               </div>
-              <div className="text-xs text-zinc-300 mt-1">
+              <div className="text-xs text-zinc-300 mt-1.5">
                 من قبيلة جهينة من ينبع النخل بالساحل الغربي لشبه الجزيرة العربية
               </div>
             </div>
 
-            <div className="w-px h-6 bg-[#8C6D32] mx-auto" />
+            <div className="w-0.5 h-6 bg-[#9A7B3E] mx-auto" />
 
-            <div className="bg-[#F8F7F4] border-2 border-[#8C6D32] p-5">
-              <div className="text-xs text-[#8C6D32] font-semibold mb-1">
+            <div className="rounded-xl bg-[#F7F6F2] border-2 border-[#9A7B3E] p-6 shadow-sm">
+              <div className="text-xs text-[#9A7B3E] font-bold mb-1">
                 عمود التفرع الجامع
               </div>
               <div className="font-display text-2xl font-bold text-[#141413]">
                 عوض البراهيم
               </div>
-              <div className="text-xs text-zinc-600 mt-1">
+              <div className="text-xs text-zinc-600 mt-1.5">
                 تفرعت العائلة من ابنه عوض البراهيم من خلال أبنائه الثلاثة: عبد الله، وسلامة، وصالح
               </div>
             </div>
 
-            <div className="w-px h-6 bg-[#8C6D32] mx-auto" />
+            <div className="w-0.5 h-6 bg-[#9A7B3E] mx-auto" />
           </div>
 
           {/* Horizontal Connector Bar */}
-          <div className="border-t-2 border-[#8C6D32] pt-6 grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div className="border-t-2 border-[#9A7B3E] pt-8 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
             {/* Branch 1: Abdullah (Taima) */}
             {(highlightedBranch === 'all' || highlightedBranch === 'b1') && (
-              <div className="bg-[#F8F7F4] border border-[#DCD9D0] p-6 flex flex-col justify-between">
+              <div className="bg-[#F7F6F2] rounded-xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-8 shadow-sm flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between gap-2 text-xs pb-3 mb-4 border-b border-[#DCD9D0]">
-                    <span className="font-semibold text-[#8C6D32]">الفرع الأول</span>
-                    <span className="text-[#1B3B2B] font-semibold">محافظة تيماء</span>
+                  <div className="flex items-center justify-between gap-2 text-xs pb-3 mb-4 border-b border-[#E6E2D8]">
+                    <span className="font-bold text-[#9A7B3E]">الفرع الأول</span>
+                    <span className="text-[#0F291E] font-bold">محافظة تيماء</span>
                   </div>
 
                   <h3 className="font-display text-2xl font-bold text-[#141413] mb-2">
@@ -308,7 +308,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                   </p>
 
                   <div className="space-y-2.5">
-                    <div className="text-xs font-semibold text-[#8C6D32] mb-1">
+                    <div className="text-xs font-bold text-[#9A7B3E] mb-1">
                       أبناء عبد الله بن عوض الأربعة في تيماء:
                     </div>
                     {[
@@ -319,10 +319,10 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                     ].map((son, idx) => (
                       <div
                         key={idx}
-                        className="p-3 bg-[#F1EFEA] border border-[#DCD9D0] font-display text-lg font-bold text-[#141413] flex items-center justify-between"
+                        className="p-3.5 rounded-lg bg-white border border-[#E6E2D8] font-display text-lg font-bold text-[#141413] flex items-center justify-between"
                       >
                         <span>{son}</span>
-                        <span className="font-sans text-[11px] font-normal text-zinc-600">
+                        <span className="font-sans text-[11px] font-bold text-[#0F291E]">
                           تيماء
                         </span>
                       </div>
@@ -330,7 +330,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                   </div>
                 </div>
 
-                <div className="mt-6 pt-3 border-t border-[#DCD9D0] text-xs text-zinc-500">
+                <div className="mt-6 pt-3 border-t border-[#E6E2D8] text-xs text-zinc-500">
                   المقر التاريخي: محافظة تيماء — شمال غرب الجزيرة العربية
                 </div>
               </div>
@@ -338,11 +338,11 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
 
             {/* Branch 2: Salama (Jabal Al-Arab - Umm Walad) */}
             {(highlightedBranch === 'all' || highlightedBranch === 'b2') && (
-              <div className="bg-[#F8F7F4] border border-[#DCD9D0] p-6 flex flex-col justify-between">
+              <div className="bg-[#F7F6F2] rounded-xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-8 shadow-sm flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between gap-2 text-xs pb-3 mb-4 border-b border-[#DCD9D0]">
-                    <span className="font-semibold text-[#8C6D32]">الفرع الثاني</span>
-                    <span className="text-[#1B3B2B] font-semibold">بلاد الشام — جبل العرب</span>
+                  <div className="flex items-center justify-between gap-2 text-xs pb-3 mb-4 border-b border-[#E6E2D8]">
+                    <span className="font-bold text-[#9A7B3E]">الفرع الثاني</span>
+                    <span className="text-[#0F291E] font-bold">بلاد الشام — جبل العرب</span>
                   </div>
 
                   <h3 className="font-display text-2xl font-bold text-[#141413] mb-2">
@@ -353,8 +353,8 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                     اتجه شمالاً واستقر في بلاد الشام، حيث سكن جبل العرب بقرية أم ولد في سوريا:
                   </p>
 
-                  <div className="p-4 bg-[#F1EFEA] border border-[#DCD9D0] space-y-2">
-                    <div className="text-xs font-semibold text-[#8C6D32]">
+                  <div className="p-5 rounded-xl bg-white border border-[#E6E2D8] space-y-2">
+                    <div className="text-xs font-bold text-[#9A7B3E]">
                       مقر الاستقرار والامتداد العائلي:
                     </div>
                     <div className="font-display text-xl font-bold text-[#141413]">
@@ -363,12 +363,12 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                     <p className="text-xs text-zinc-700 leading-relaxed">
                       يمثل ذرية سلامة بن عوض البراهيم الامتداد التاريخي الأصيل لعائلة الصعيدي في
                       بلاد الشام، محافظين على نسبهم الجهني وروابطهم مع أبناء عمومتهم في الجزيرة
-                      العربية والخليج.
+                      العربية ومصر والخليج.
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-6 pt-3 border-t border-[#DCD9D0] text-xs text-zinc-500">
+                <div className="mt-6 pt-3 border-t border-[#E6E2D8] text-xs text-zinc-500">
                   المقر التاريخي: بلاد الشام (سوريا) — جبل العرب — قرية أم ولد
                 </div>
               </div>
@@ -376,11 +376,11 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
 
             {/* Branch 3: Saleh -> Abdullah (Hail, Riyadh, UAE, Oman) */}
             {(highlightedBranch === 'all' || highlightedBranch === 'b3') && (
-              <div className="bg-[#F8F7F4] border border-[#DCD9D0] p-6 flex flex-col justify-between">
+              <div className="bg-[#F7F6F2] rounded-xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-8 shadow-sm flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between gap-2 text-xs pb-3 mb-4 border-b border-[#DCD9D0]">
-                    <span className="font-semibold text-[#8C6D32]">الفرع الثالث</span>
-                    <span className="text-[#1B3B2B] font-semibold">
+                  <div className="flex items-center justify-between gap-2 text-xs pb-3 mb-4 border-b border-[#E6E2D8]">
+                    <span className="font-bold text-[#9A7B3E]">الفرع الثالث</span>
+                    <span className="text-[#0F291E] font-bold">
                       حائل · الرياض · الإمارات · عُمان
                     </span>
                   </div>
@@ -388,7 +388,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                   <h3 className="font-display text-2xl font-bold text-[#141413] mb-1">
                     صالح بن عوض البراهيم
                   </h3>
-                  <div className="text-xs font-semibold text-[#8C6D32] mb-3">
+                  <div className="text-xs font-bold text-[#9A7B3E] mb-3">
                     ↓ ابنه: عبد الله بن صالح (استقر داخل مدينة حائل)
                   </div>
 
@@ -397,28 +397,25 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                     من الأبناء ثلاثة (<strong>إبراهيم، وناصر، وعلي</strong>):
                   </p>
 
-                  {/* The 3 Sons of Abdullah bin Saleh */}
                   <div className="space-y-3">
-                    {/* Sub-branch A: Ibrahim */}
-                    <div className="p-3.5 bg-[#F1EFEA] border border-[#DCD9D0]">
+                    <div className="p-4 rounded-xl bg-white border border-[#E6E2D8]">
                       <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="font-bold text-[#1B3B2B]">
+                        <span className="font-bold text-[#0F291E]">
                           أ. إبراهيم بن عبد الله بن صالح
                         </span>
-                        <span className="text-[#8C6D32] font-semibold">حائل — حي الزبارة</span>
+                        <span className="text-[#9A7B3E] font-bold">حائل — حي الزبارة</span>
                       </div>
                       <p className="text-xs text-zinc-700 leading-relaxed">
                         استقر إبراهيم وأحفاده بمدينة حائل وتحديداً في <strong>حي الزبارة</strong>.
                       </p>
                     </div>
 
-                    {/* Sub-branch B: Nasser -> Hamoud */}
-                    <div className="p-3.5 bg-[#F1EFEA] border border-[#DCD9D0]">
+                    <div className="p-4 rounded-xl bg-white border border-[#E6E2D8]">
                       <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="font-bold text-[#1B3B2B]">
+                        <span className="font-bold text-[#0F291E]">
                           ب. ناصر بن عبد الله بن صالح
                         </span>
-                        <span className="text-[#8C6D32] font-semibold">مدينة الرياض</span>
+                        <span className="text-[#9A7B3E] font-bold">مدينة الرياض</span>
                       </div>
                       <p className="text-xs text-zinc-700 leading-relaxed">
                         انتقل أبناؤه وأحفاده إلى <strong>مدينة الرياض</strong> بعد أن تولى ابنه{' '}
@@ -426,16 +423,15 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                       </p>
                     </div>
 
-                    {/* Sub-branch C: Ali -> Abdullah, Omar, Mohammed, Khalifa */}
-                    <div className="p-3.5 bg-[#F1EFEA] border border-[#DCD9D0]">
+                    <div className="p-4 rounded-xl bg-white border border-[#E6E2D8]">
                       <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="font-bold text-[#1B3B2B]">ج. علي بن عبد الله بن صالح</span>
-                        <span className="text-[#8C6D32] font-semibold">الإمارات وسلطنة عُمان</span>
+                        <span className="font-bold text-[#0F291E]">ج. علي بن عبد الله بن صالح</span>
+                        <span className="text-[#9A7B3E] font-bold">الإمارات وسلطنة عُمان</span>
                       </div>
                       <p className="text-xs text-zinc-700 leading-relaxed mb-2">
                         تنقل بين نجد وساحل الخليج العربي حتى استقر بالإمارات، وله من الأبناء أربعة:
                       </p>
-                      <ul className="space-y-1 text-xs text-[#141413] pr-2 border-r-2 border-[#8C6D32]">
+                      <ul className="space-y-1 text-xs text-[#141413] pr-2 border-r-2 border-[#9A7B3E]">
                         <li>
                           · <strong>عبد الله بن علي</strong>: المعروف بـ (النجدي القصيمي).
                         </li>
@@ -452,7 +448,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                   </div>
                 </div>
 
-                <div className="mt-6 pt-3 border-t border-[#DCD9D0] text-xs text-zinc-500">
+                <div className="mt-6 pt-3 border-t border-[#E6E2D8] text-xs text-zinc-500">
                   المقار التاريخية: حائل (حي الزبارة) · الرياض · عجمان (مشرف والجرف) · الباطنة
                   (الخابورة)
                 </div>
@@ -463,20 +459,20 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
       </section>
 
       {/* Section 3: Encyclopedic Searchable Compound Name & Transliteration Directory */}
-      <section className="py-14 lg:py-20">
+      <section>
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
           <div className="max-w-3xl">
-            <div className="text-xs font-semibold text-[#8C6D32] mb-2">
+            <div className="text-xs font-bold text-[#9A7B3E] mb-2">
               الفهرس المعجمي للأعلام والأسماء المركبة · مطابقة البحث بالعربية والإنجليزية
             </div>
-            <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#141413]">
-              دليل أعلام وأسماء عائلة الصعيدي (Elsaidy / Elseidy / Alsaidi)
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#141413]">
+              دليل أعلام وأسماء عائلات الصعيدي (Elsaidy / Elseidy / Alsaidi)
             </h2>
-            <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-              يوفر هذا الفهرس المرجعي توثيقاً للأسماء المركبة المتداولة لأجداد وأعلام وأبناء عائلة
-              الصعيدي في المملكة العربية السعودية وجمهورية مصر العربية (الغربية، طنطا، الدلتا،
-              القاهرة، الصعيد) وبلاد الشام والخليج العربي، مع صيغ كتابتها المعتمدة باللغة
-              الإنجليزية.
+            <p className="text-xs sm:text-sm text-zinc-600 mt-2 leading-relaxed">
+              يوفر هذا الفهرس المرجعي توثيقاً للأسماء المركبة المتداولة لأجداد وأعلام وأبناء عائلات
+              الصعيدي في جمهورية مصر العربية (الغربية، طنطا، الدلتا، القاهرة، الصعيد) والمملكة
+              العربية السعودية وبلاد الشام والخليج العربي والمغرب العربي، مع صيغ كتابتها المعتمدة
+              باللغة الإنجليزية.
             </p>
           </div>
 
@@ -488,40 +484,40 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
               value={nameSearchQuery}
               onChange={(e) => setNameSearchQuery(e.target.value)}
               placeholder="ابحث بالاسم (مثال: علي الصعيدي / Aly Elsaidy)..."
-              className="w-full pr-10 pl-4 py-2.5 bg-[#F8F7F4] border border-[#DCD9D0] text-xs text-[#141413] outline-none focus:border-[#8C6D32]"
+              className="w-full pr-10 pl-4 py-3 rounded-xl bg-white border border-[#E6E2D8] text-xs text-[#141413] shadow-sm outline-none focus:border-[#9A7B3E]"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-t border-r border-[#DCD9D0]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredNames.map((entry, idx) => (
             <div
               key={idx}
-              className="p-5 border-b border-l border-[#DCD9D0] bg-[#F8F7F4] hover:bg-[#F1EFEA]/60 transition-colors flex flex-col justify-between"
+              className="p-6 rounded-xl bg-white border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between"
             >
               <div>
-                <div className="flex items-center justify-between gap-2 text-[11px] text-[#8C6D32] font-semibold mb-1.5">
+                <div className="flex items-center justify-between gap-2 text-[11px] text-[#9A7B3E] font-bold mb-1.5">
                   <span>{entry.category}</span>
                 </div>
-                <h3 className="font-display text-2xl font-bold text-[#141413] mb-2">
+                <h3 className="text-xl font-extrabold text-[#141413] mb-3">
                   {entry.arabicName}
                 </h3>
                 <div
                   dir="ltr"
-                  className="text-left font-mono text-[11px] text-zinc-700 bg-[#F1EFEA] p-2.5 border border-[#DCD9D0] space-y-0.5 mb-3"
+                  className="text-left font-mono text-[11px] text-zinc-700 bg-[#F7F6F2] p-3 rounded-lg border border-[#E6E2D8] space-y-1 mb-3"
                 >
                   <div>
-                    <strong className="text-[#1B3B2B]">Elsaidy:</strong> {entry.englishElsaidy}
+                    <strong className="text-[#0F291E]">Elsaidy:</strong> {entry.englishElsaidy}
                   </div>
                   <div>
-                    <strong className="text-[#8C6D32]">Elseidy:</strong> {entry.englishElseidy}
+                    <strong className="text-[#9A7B3E]">Elseidy:</strong> {entry.englishElseidy}
                   </div>
                   <div>
                     <strong className="text-zinc-600">Alsaidi:</strong> {entry.englishAlsaidi}
                   </div>
                 </div>
               </div>
-              <div className="pt-2.5 border-t border-[#DCD9D0] text-[11px] text-zinc-600">
+              <div className="pt-3 border-t border-[#E6E2D8] text-xs text-zinc-600">
                 <strong className="text-[#141413]">النطاق الجغرافي: </strong>
                 {entry.regions}
               </div>
@@ -538,11 +534,11 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
         >
           {/* Lightbox Top Bar */}
           <div
-            className="bg-[#F8F7F4] border border-[#DCD9D0] px-5 py-3 flex flex-wrap items-center justify-between gap-4"
+            className="bg-white rounded-xl border border-[#E6E2D8] px-5 py-3.5 flex flex-wrap items-center justify-between gap-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div>
-              <span className="font-display text-lg font-bold text-[#141413]">
+              <span className="text-base sm:text-lg font-extrabold text-[#141413]">
                 فحص وثيقة شجرة عائلة الصعيدي بالحجم المكبّر
               </span>
             </div>
@@ -551,21 +547,21 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
               <button
                 type="button"
                 onClick={() => setLightboxZoom((z) => Math.min(z + 0.3, 3.5))}
-                className="px-3 py-1.5 bg-[#F1EFEA] border border-[#DCD9D0] text-xs font-semibold text-[#141413] hover:border-[#8C6D32] cursor-pointer"
+                className="px-3 py-1.5 rounded-lg bg-[#F7F6F2] border border-[#E6E2D8] text-xs font-bold text-[#141413] hover:border-[#9A7B3E] cursor-pointer"
               >
                 تكبير +
               </button>
               <button
                 type="button"
                 onClick={() => setLightboxZoom((z) => Math.max(z - 0.3, 0.75))}
-                className="px-3 py-1.5 bg-[#F1EFEA] border border-[#DCD9D0] text-xs font-semibold text-[#141413] hover:border-[#8C6D32] cursor-pointer"
+                className="px-3 py-1.5 rounded-lg bg-[#F7F6F2] border border-[#E6E2D8] text-xs font-bold text-[#141413] hover:border-[#9A7B3E] cursor-pointer"
               >
                 تصغير -
               </button>
               <button
                 type="button"
                 onClick={() => setLightboxZoom(1)}
-                className="px-3 py-1.5 bg-[#F1EFEA] border border-[#DCD9D0] text-xs font-mono text-zinc-700 cursor-pointer"
+                className="px-3 py-1.5 rounded-lg bg-[#F7F6F2] border border-[#E6E2D8] text-xs font-mono text-zinc-700 cursor-pointer"
               >
                 {Math.round(lightboxZoom * 100)}%
               </button>
@@ -573,7 +569,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                 href={OFFICIAL_FAMILY_TREE_IMAGE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-3.5 py-1.5 bg-[#1B3B2B] text-[#F8F7F4] text-xs font-semibold flex items-center gap-1"
+                className="px-3.5 py-1.5 rounded-lg bg-[#0F291E] text-white text-xs font-bold flex items-center gap-1"
               >
                 <span>فتح الأصل في نافذة جديدة</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -581,7 +577,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
               <button
                 type="button"
                 onClick={() => setIsLightboxOpen(false)}
-                className="p-1.5 bg-[#141413] text-[#F8F7F4] hover:bg-[#8C6D32] cursor-pointer"
+                className="p-1.5 rounded-lg bg-[#141413] text-white hover:bg-[#9A7B3E] cursor-pointer"
                 aria-label="إغلاق"
               >
                 <X className="w-4 h-4" />
@@ -591,7 +587,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
 
           {/* Scrollable Zoom Viewport */}
           <div
-            className="flex-1 overflow-auto my-4 bg-[#141413]/50 border border-[#DCD9D0]/30 p-6 flex items-start justify-center"
+            className="flex-1 overflow-auto my-4 rounded-xl bg-[#0D131A]/70 border border-white/15 p-4 sm:p-6 flex items-start justify-center"
             onClick={(e) => e.stopPropagation()}
           >
             <img
@@ -602,19 +598,19 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
                 transform: `scale(${lightboxZoom})`,
                 transformOrigin: 'top center'
               }}
-              className="max-w-full h-auto bg-[#F8F7F4] p-2 border border-[#8C6D32] transition-transform duration-150"
+              className="max-w-full h-auto bg-white p-2 rounded-lg border border-[#9A7B3E] transition-transform duration-150"
             />
           </div>
 
           <div
-            className="bg-[#F8F7F4] border border-[#DCD9D0] px-5 py-2.5 text-xs text-zinc-600 flex items-center justify-between"
+            className="bg-white rounded-xl border border-[#E6E2D8] px-5 py-3 text-xs text-zinc-600 flex items-center justify-between"
             onClick={(e) => e.stopPropagation()}
           >
             <span>يمكنك التمرير أفقياً وعمودياً لقراءة تفاصيل الأسماء والفروع داخل الوثيقة.</span>
             <button
               type="button"
               onClick={() => setIsLightboxOpen(false)}
-              className="font-semibold text-[#8C6D32] hover:text-[#141413] cursor-pointer"
+              className="font-bold text-[#9A7B3E] hover:text-[#141413] cursor-pointer"
             >
               إغلاق العرض المكبّر
             </button>

@@ -11,317 +11,287 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
   activeBranchId,
   onSelectBranch
 }) => {
-  const [plateMode, setPlateMode] = useState<'genealogy' | 'atlas'>('genealogy');
+  const [plateMode, setPlateMode] = useState<'atlas' | 'genealogy'>('atlas');
 
   const selectedRegion =
     GEOGRAPHICAL_PRESENCE.find((b) => b.id === activeBranchId) ||
     GEOGRAPHICAL_PRESENCE[0];
 
   return (
-    <div className="w-full h-full bg-[#F1EFEA] border border-[#DCD9D0] flex flex-col justify-between">
-      {/* Top Archival Plate Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-3.5 border-b border-[#DCD9D0] bg-[#F8F7F4]">
+    <div className="w-full h-full bg-white rounded-xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] shadow-md flex flex-col justify-between overflow-hidden">
+      {/* Top Luxury Plate Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 border-b border-[#E6E2D8] bg-[#F7F6F2]">
         <div className="flex items-center gap-2 text-xs text-[#141413]">
-          <Compass className="w-4 h-4 text-[#8C6D32] shrink-0" />
-          <span className="font-semibold text-[#1B3B2B]">اللوحة الوثائقية والنسبية</span>
-          <span aria-hidden="true" className="text-[#8C6D32]">·</span>
-          <span className="text-zinc-600">قبيلة جهينة — ينبع النخل ومصر والشام والخليج</span>
+          <Compass className="w-4 h-4 text-[#9A7B3E] shrink-0" />
+          <span className="font-bold text-[#0F291E]">اللوحة الجغرافية والنسبية التفاعلية</span>
+          <span aria-hidden="true" className="text-[#9A7B3E]">·</span>
+          <span className="text-zinc-600">مصر · السعودية · الشام · الخليج · المغرب العربي</span>
         </div>
 
         {/* Interactive Segmented Plate Switcher */}
         <div
-          className="flex items-center border border-[#DCD9D0] bg-[#F1EFEA] p-0.5"
+          className="flex items-center rounded-lg border border-[#E2DDD3] bg-white p-1"
           role="tablist"
-          aria-label="تبديل اللوحة الوثائقية"
+          aria-label="تبديل اللوحة التفاعلية"
         >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={plateMode === 'genealogy'}
-            onClick={() => setPlateMode('genealogy')}
-            className={`px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-              plateMode === 'genealogy'
-                ? 'bg-[#1B3B2B] text-[#F8F7F4]'
-                : 'text-zinc-700 hover:text-[#141413]'
-            }`}
-          >
-            مشجرة النسب والتفرع
-          </button>
           <button
             type="button"
             role="tab"
             aria-selected={plateMode === 'atlas'}
             onClick={() => setPlateMode('atlas')}
-            className={`px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
+            className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
               plateMode === 'atlas'
-                ? 'bg-[#1B3B2B] text-[#F8F7F4]'
+                ? 'bg-[#0F291E] text-white shadow-sm'
                 : 'text-zinc-700 hover:text-[#141413]'
             }`}
           >
-            خارطة المنازل والحواضر
+            خارطة الانتشار العربي
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={plateMode === 'genealogy'}
+            onClick={() => setPlateMode('genealogy')}
+            className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+              plateMode === 'genealogy'
+                ? 'bg-[#0F291E] text-white shadow-sm'
+                : 'text-zinc-700 hover:text-[#141413]'
+            }`}
+          >
+            عمود النسب والتفرع
           </button>
         </div>
       </div>
 
       {/* Main Plate Body */}
-      <div className="p-5 flex-1 flex flex-col justify-center">
-        {plateMode === 'genealogy' ? (
-          /* Archival Genealogical Chart from 7th Grandfather Ibrahim Elsaidy */
+      <div className="p-6 flex-1 flex flex-col justify-center bg-white">
+        {plateMode === 'atlas' ? (
+          /* Sleek Pan-Arab Interactive Atlas (Egypt, Arabia, Levant, Gulf, Maghreb) */
+          <div className="w-full space-y-4">
+            <div className="rounded-xl overflow-hidden border border-[#E6E2D8] bg-[#F7F6F2] p-2">
+              <svg
+                viewBox="0 0 680 370"
+                className="w-full h-auto max-h-[290px] select-none"
+                role="img"
+                aria-label="خارطة انتشار عائلات الصعيدي في مصر والسعودية والشام والخليج والمغرب العربي"
+              >
+                {/* Subtle Coordinate Grid Lines */}
+                <line x1="0" y1="90" x2="680" y2="90" stroke="#E2DDD3" strokeDasharray="3 3" />
+                <line x1="0" y1="180" x2="680" y2="180" stroke="#E2DDD3" strokeDasharray="3 3" />
+                <line x1="0" y1="270" x2="680" y2="270" stroke="#E2DDD3" strokeDasharray="3 3" />
+                <line x1="170" y1="0" x2="170" y2="370" stroke="#E2DDD3" strokeDasharray="3 3" />
+                <line x1="340" y1="0" x2="340" y2="370" stroke="#E2DDD3" strokeDasharray="3 3" />
+                <line x1="510" y1="0" x2="510" y2="370" stroke="#E2DDD3" strokeDasharray="3 3" />
+
+                {/* North Africa, Egypt & Sudan Contour */}
+                <path
+                  d="M25,145 L168,135 L182,300 L155,350 L30,350 Z"
+                  fill="#EFECE4"
+                  stroke="#C5A059"
+                  strokeWidth="1.2"
+                />
+
+                {/* Arabian Peninsula, Levant & Iraq Contour */}
+                <path
+                  d="M190,72 L285,62 L365,110 L460,180 L590,245 L625,315 L550,355 L330,360 L230,345 L195,250 L185,170 Z"
+                  fill="#EFECE4"
+                  stroke="#C5A059"
+                  strokeWidth="1.2"
+                />
+
+                {/* Historical & Regional Connection Routes */}
+                <path
+                  d="M235,300 L135,255 L125,182 L118,155 L75,230"
+                  fill="none"
+                  stroke="#9A7B3E"
+                  strokeWidth="1.75"
+                  strokeDasharray="4 3"
+                />
+                <path
+                  d="M235,300 L255,205 L205,132 L225,110"
+                  fill="none"
+                  stroke="#9A7B3E"
+                  strokeWidth="1.5"
+                  strokeDasharray="4 3"
+                />
+                <path
+                  d="M235,300 L335,215 L390,270 L520,280 L565,325"
+                  fill="none"
+                  stroke="#0F291E"
+                  strokeWidth="1.75"
+                />
+
+                {/* Interactive Location Markers */}
+                {GEOGRAPHICAL_PRESENCE.map((loc) => {
+                  const isSelected = loc.id === selectedRegion.id;
+                  return (
+                    <g
+                      key={loc.id}
+                      onClick={() => onSelectBranch(loc.id)}
+                      className="cursor-pointer"
+                    >
+                      {isSelected && (
+                        <circle
+                          cx={loc.coordinates.x}
+                          cy={loc.coordinates.y}
+                          r="13"
+                          fill="#9A7B3E"
+                          fillOpacity="0.18"
+                          stroke="#9A7B3E"
+                          strokeWidth="1.5"
+                        />
+                      )}
+                      <circle
+                        cx={loc.coordinates.x}
+                        cy={loc.coordinates.y}
+                        r={isSelected ? '6' : '4.5'}
+                        fill={isSelected ? '#0F291E' : '#9A7B3E'}
+                        stroke="#FFFFFF"
+                        strokeWidth="1.5"
+                      />
+                      <text
+                        x={loc.coordinates.x}
+                        y={loc.coordinates.y - 11}
+                        textAnchor="middle"
+                        fill={isSelected ? '#0F291E' : '#3F3F46'}
+                        fontSize={isSelected ? '11' : '9.5'}
+                        fontWeight={isSelected ? '800' : '600'}
+                      >
+                        {loc.coordinates.label}
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+
+            {/* Quick Country Selector Pills */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              {[
+                { id: 'egypt-gharbia-tanta', label: '١. مصر (الغربية وطنطا والصعيد)' },
+                { id: 'yanbu-alnakhl', label: '٢. السعودية (ينبع وتيماء وحائل والرياض)' },
+                { id: 'levant-jabal-alarab', label: '٣. الشام والعراق' },
+                { id: 'uae-ajman', label: '٤. الخليج العربي' },
+                { id: 'maghreb-sudan', label: '٥. المغرب العربي والسودان' }
+              ].map((item) => {
+                const isActive = activeBranchId === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => onSelectBranch(item.id)}
+                    className={`px-2.5 py-2 rounded-lg text-[11px] font-bold border transition-all cursor-pointer truncate ${
+                      isActive
+                        ? 'bg-[#0F291E] text-white border-[#0F291E]'
+                        : 'bg-[#F7F6F2] text-[#141413] border-[#E6E2D8] hover:border-[#9A7B3E]'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          /* Genealogical Chart from 7th Grandfather Ibrahim Elsaidy + Pan-Arab Hubs */
           <div className="space-y-3.5 text-center">
-            {/* Root Patriarch */}
-            <div className="inline-block border border-[#1B3B2B] bg-[#1B3B2B] text-[#F8F7F4] px-5 py-2.5">
-              <div className="text-[11px] text-[#D6C295] font-medium">
+            <div className="inline-block rounded-xl border border-[#0F291E] bg-gradient-to-l from-[#0F291E] to-[#141E28] text-white px-6 py-3 shadow-sm">
+              <div className="text-[11px] text-[#C5A059] font-semibold">
                 الجد السابع الجامع · قبيلة جهينة (ينبع النخل)
               </div>
-              <div className="font-display text-lg font-bold">
+              <div className="font-display text-xl font-bold mt-0.5">
                 إبراهيم الصعيدي
               </div>
             </div>
 
-            <div className="w-px h-2.5 bg-[#8C6D32] mx-auto" />
+            <div className="w-px h-3 bg-[#9A7B3E] mx-auto" />
 
-            {/* Son: Awad Al-Brahim */}
             <div>
-              <div className="inline-block border border-[#8C6D32] bg-[#F8F7F4] px-5 py-2">
-                <div className="text-[11px] text-[#8C6D32] font-semibold">عمود التفرع الجامع</div>
-                <div className="font-display text-base font-bold text-[#141413]">
+              <div className="inline-block rounded-xl border-2 border-[#9A7B3E] bg-[#F7F6F2] px-6 py-2">
+                <div className="text-[11px] text-[#9A7B3E] font-bold">عمود التفرع الجامع</div>
+                <div className="font-display text-lg font-bold text-[#141413]">
                   عوض البراهيم
                 </div>
               </div>
             </div>
 
-            <div className="w-px h-2.5 bg-[#8C6D32] mx-auto" />
+            <div className="w-px h-3 bg-[#9A7B3E] mx-auto" />
 
-            {/* Three Sons of Awad Al-Brahim */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-right pt-2 border-t border-[#8C6D32]/50">
-              {/* Branch 1: Abdullah (Taima) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-right pt-2 border-t border-[#E6E2D8]">
               <button
                 type="button"
                 onClick={() => onSelectBranch('taima')}
-                className={`p-3 border text-right transition-colors cursor-pointer ${
+                className={`p-3.5 rounded-xl border text-right transition-all cursor-pointer ${
                   activeBranchId === 'taima'
-                    ? 'bg-[#F8F7F4] border-[#8C6D32]'
-                    : 'bg-[#F8F7F4]/80 border-[#DCD9D0] hover:border-[#8C6D32]/60'
+                    ? 'bg-[#F7F6F2] border-[#9A7B3E] shadow-sm'
+                    : 'bg-white border-[#E6E2D8] hover:border-[#9A7B3E]'
                 }`}
               >
-                <div className="text-[11px] text-[#8C6D32] font-semibold mb-0.5">
-                  ١. فرع تيماء
+                <div className="text-[11px] text-[#9A7B3E] font-bold mb-0.5">
+                  ١. فرع تيماء وتبوك
                 </div>
                 <div className="font-display text-base font-bold text-[#141413] mb-1">
                   عبد الله بن عوض
                 </div>
                 <p className="text-[11px] text-zinc-600 leading-relaxed">
-                  استقر بتيماء مع أبنائه: <strong>عوض، حامد، حمدان، بشير</strong>.
+                  أبناؤه بتيماء: <strong>عوض، حامد، حمدان، بشير</strong>.
                 </p>
               </button>
 
-              {/* Branch 2: Salama (Jabal Al-Arab - Syria) */}
               <button
                 type="button"
                 onClick={() => onSelectBranch('levant-jabal-alarab')}
-                className={`p-3 border text-right transition-colors cursor-pointer ${
+                className={`p-3.5 rounded-xl border text-right transition-all cursor-pointer ${
                   activeBranchId === 'levant-jabal-alarab'
-                    ? 'bg-[#F8F7F4] border-[#8C6D32]'
-                    : 'bg-[#F8F7F4]/80 border-[#DCD9D0] hover:border-[#8C6D32]/60'
+                    ? 'bg-[#F7F6F2] border-[#9A7B3E] shadow-sm'
+                    : 'bg-white border-[#E6E2D8] hover:border-[#9A7B3E]'
                 }`}
               >
-                <div className="text-[11px] text-[#8C6D32] font-semibold mb-0.5">
+                <div className="text-[11px] text-[#9A7B3E] font-bold mb-0.5">
                   ٢. فرع بلاد الشام
                 </div>
                 <div className="font-display text-base font-bold text-[#141413] mb-1">
                   سلامة بن عوض
                 </div>
                 <p className="text-[11px] text-zinc-600 leading-relaxed">
-                  سكن <strong>جبل العرب بقرية أم ولد</strong> في بلاد الشام (سوريا).
+                  سكن <strong>جبل العرب (قرية أم ولد)</strong> وامتد في الشام.
                 </p>
               </button>
 
-              {/* Branch 3: Saleh (Hail, Riyadh, UAE, Oman) */}
               <button
                 type="button"
                 onClick={() => onSelectBranch('hail-zubarah')}
-                className={`p-3 border text-right transition-colors cursor-pointer ${
-                  ['hail-zubarah', 'riyadh', 'uae-ajman', 'oman-khaburah'].includes(activeBranchId)
-                    ? 'bg-[#F8F7F4] border-[#8C6D32]'
-                    : 'bg-[#F8F7F4]/80 border-[#DCD9D0] hover:border-[#8C6D32]/60'
+                className={`p-3.5 rounded-xl border text-right transition-all cursor-pointer ${
+                  ['hail-zubarah', 'riyadh', 'uae-ajman', 'oman-khaburah-gulf'].includes(
+                    activeBranchId
+                  )
+                    ? 'bg-[#F7F6F2] border-[#9A7B3E] shadow-sm'
+                    : 'bg-white border-[#E6E2D8] hover:border-[#9A7B3E]'
                 }`}
               >
-                <div className="text-[11px] text-[#8C6D32] font-semibold mb-0.5">
+                <div className="text-[11px] text-[#9A7B3E] font-bold mb-0.5">
                   ٣. فرع حائل والرياض والخليج
                 </div>
                 <div className="font-display text-base font-bold text-[#141413] mb-1">
                   صالح ← عبد الله
                 </div>
                 <p className="text-[11px] text-zinc-600 leading-relaxed">
-                  أبناء عبد الله الثلاثة: <strong>إبراهيم</strong> (حائل)، <strong>ناصر</strong>{' '}
-                  (الرياض)، <strong>علي</strong> (الإمارات وعُمان).
+                  أبناؤه: <strong>إبراهيم</strong> (حائل)، <strong>ناصر</strong> (الرياض)،{' '}
+                  <strong>علي</strong> (الإمارات وعُمان).
                 </p>
               </button>
             </div>
-
-            {/* Sub-branches of Abdullah bin Saleh + Egyptian Historical Extension */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-right pt-2 border-t border-[#DCD9D0]">
-              <button
-                type="button"
-                onClick={() => onSelectBranch('hail-zubarah')}
-                className="p-2.5 bg-[#F8F7F4] border border-[#DCD9D0] hover:border-[#8C6D32] text-right transition-colors cursor-pointer"
-              >
-                <div className="text-[11px] font-bold text-[#1B3B2B]">
-                  إبراهيم بن عبد الله
-                </div>
-                <div className="text-[11px] text-zinc-600 mt-0.5">
-                  حائل — حي الزبارة
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onSelectBranch('riyadh')}
-                className="p-2.5 bg-[#F8F7F4] border border-[#DCD9D0] hover:border-[#8C6D32] text-right transition-colors cursor-pointer"
-              >
-                <div className="text-[11px] font-bold text-[#1B3B2B]">
-                  ناصر (وابنه حمود)
-                </div>
-                <div className="text-[11px] text-zinc-600 mt-0.5">
-                  الرياض — شئون البادية
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onSelectBranch('uae-ajman')}
-                className="p-2.5 bg-[#F8F7F4] border border-[#DCD9D0] hover:border-[#8C6D32] text-right transition-colors cursor-pointer"
-              >
-                <div className="text-[11px] font-bold text-[#1B3B2B]">
-                  علي بن عبد الله وأبناؤه
-                </div>
-                <div className="text-[11px] text-zinc-600 mt-0.5">
-                  عجمان · عُمان (الخابورة)
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onSelectBranch('egypt-gharbia-tanta')}
-                className="p-2.5 bg-[#F8F7F4] border border-[#DCD9D0] hover:border-[#8C6D32] text-right transition-colors cursor-pointer"
-              >
-                <div className="text-[11px] font-bold text-[#8C6D32]">
-                  حواضر مصر (آل الصعيدي)
-                </div>
-                <div className="text-[11px] text-zinc-600 mt-0.5">
-                  الغربية (طنطا) · الدلتا · القاهرة · الصعيد
-                </div>
-              </button>
-            </div>
-          </div>
-        ) : (
-          /* Engraved Archival Atlas View on Warm Alabaster Paper (Egypt + Arabia + Levant + Gulf) */
-          <div className="w-full">
-            <svg
-              viewBox="0 0 680 370"
-              className="w-full h-auto max-h-[290px] select-none bg-[#F8F7F4] border border-[#DCD9D0]"
-              role="img"
-              aria-label="خارطة منازل وفروع عائلة الصعيدي في الجزيرة العربية ومصر وبلاد الشام والخليج العربي"
-            >
-              {/* Archival Grid Lines */}
-              <line x1="0" y1="90" x2="680" y2="90" stroke="#DCD9D0" strokeDasharray="3 3" />
-              <line x1="0" y1="180" x2="680" y2="180" stroke="#DCD9D0" strokeDasharray="3 3" />
-              <line x1="0" y1="270" x2="680" y2="270" stroke="#DCD9D0" strokeDasharray="3 3" />
-              <line x1="170" y1="0" x2="170" y2="370" stroke="#DCD9D0" strokeDasharray="3 3" />
-              <line x1="340" y1="0" x2="340" y2="370" stroke="#DCD9D0" strokeDasharray="3 3" />
-              <line x1="510" y1="0" x2="510" y2="370" stroke="#DCD9D0" strokeDasharray="3 3" />
-
-              {/* Egypt & Nile Basin Classical Contour */}
-              <path
-                d="M65,135 L165,135 L180,295 L155,345 L70,345 Z"
-                fill="#F1EFEA"
-                stroke="#C5BFA8"
-                strokeWidth="1.5"
-              />
-
-              {/* Arabian Peninsula & Levant Classical Cartographic Contour */}
-              <path
-                d="M190,75 L270,65 L355,110 L455,180 L585,245 L620,315 L550,355 L330,360 L230,345 L195,250 L185,170 Z"
-                fill="#F1EFEA"
-                stroke="#C5BFA8"
-                strokeWidth="1.5"
-              />
-
-              {/* Historical Lineage Routes from Yanbu Al-Nakhl (235, 300) */}
-              <path
-                d="M235,300 L255,205 L210,180 L225,110"
-                fill="none"
-                stroke="#8C6D32"
-                strokeWidth="1.5"
-                strokeDasharray="4 3"
-              />
-              <path
-                d="M235,300 L335,215 L390,270 L520,280 L565,325"
-                fill="none"
-                stroke="#1B3B2B"
-                strokeWidth="1.5"
-              />
-              {/* Historical Route between Yanbu, Upper Egypt, Cairo/Delta & Gharbia/Tanta */}
-              <path
-                d="M235,300 L135,255 L125,182 L118,155"
-                fill="none"
-                stroke="#8C6D32"
-                strokeWidth="1.5"
-                strokeDasharray="3 3"
-              />
-
-              {/* Interactive Location Markers */}
-              {GEOGRAPHICAL_PRESENCE.map((loc) => {
-                const isSelected = loc.id === selectedRegion.id;
-                return (
-                  <g
-                    key={loc.id}
-                    onClick={() => onSelectBranch(loc.id)}
-                    className="cursor-pointer"
-                  >
-                    {isSelected && (
-                      <circle
-                        cx={loc.coordinates.x}
-                        cy={loc.coordinates.y}
-                        r="12"
-                        fill="none"
-                        stroke="#8C6D32"
-                        strokeWidth="1.5"
-                      />
-                    )}
-                    <circle
-                      cx={loc.coordinates.x}
-                      cy={loc.coordinates.y}
-                      r={isSelected ? '5.5' : '4'}
-                      fill={isSelected ? '#1B3B2B' : '#8C6D32'}
-                      stroke="#F8F7F4"
-                      strokeWidth="1.5"
-                    />
-                    <text
-                      x={loc.coordinates.x}
-                      y={loc.coordinates.y - 10}
-                      textAnchor="middle"
-                      fill={isSelected ? '#141413' : '#52525B'}
-                      fontSize={isSelected ? '11' : '9.5'}
-                      fontWeight={isSelected ? '700' : '600'}
-                    >
-                      {loc.coordinates.label}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
           </div>
         )}
       </div>
 
       {/* Bottom Selected Node Inspector */}
-      <div className="p-4 border-t border-[#DCD9D0] bg-[#F8F7F4] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="px-6 py-4 border-t border-[#E6E2D8] bg-[#F7F6F2] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#8C6D32]">
-            <MapPin className="w-3.5 h-3.5 text-[#1B3B2B]" />
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#9A7B3E]">
+            <MapPin className="w-3.5 h-3.5 text-[#0F291E]" />
             <span>
-              المقر المحدد ({selectedRegion.index}): {selectedRegion.regionName}
+              الحاضرة المحددة ({selectedRegion.index}): {selectedRegion.regionName}
             </span>
           </div>
           <p className="text-xs text-zinc-700 mt-1">
@@ -329,8 +299,8 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
             {selectedRegion.subLocation}
           </p>
         </div>
-        <span className="text-[11px] font-mono text-zinc-500 shrink-0">
-          انقر على الفروع للمعاينة
+        <span className="text-[11px] font-semibold text-[#0F291E] shrink-0">
+          {selectedRegion.countryLabel}
         </span>
       </div>
     </div>

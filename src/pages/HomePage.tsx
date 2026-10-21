@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  PAN_ARAB_REGIONS,
   GEOGRAPHICAL_PRESENCE,
   WHITE_LABELED_PORTALS,
   DIWAN_ARTICLES,
@@ -10,7 +11,17 @@ import {
   DiwanArticle
 } from '../data/familyData';
 import { HeritageAndInfraVisual } from '../components/HeritageAndInfraVisual';
-import { ArrowUpLeft, ChevronLeft, FileText, GitBranch, Shield, Search } from 'lucide-react';
+import {
+  ArrowUpLeft,
+  ChevronLeft,
+  FileText,
+  GitBranch,
+  Shield,
+  Search,
+  Building2,
+  Globe2,
+  Mail
+} from 'lucide-react';
 
 interface HomePageProps {
   activeBranchId: string;
@@ -18,6 +29,7 @@ interface HomePageProps {
   onNavigate: (route: PageRoute) => void;
   onInspectPortal: (portal: WhiteLabeledPortal) => void;
   onReadArticle: (article: DiwanArticle) => void;
+  onOpenCorporateInquiry: () => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -25,325 +37,442 @@ export const HomePage: React.FC<HomePageProps> = ({
   onSelectBranch,
   onNavigate,
   onInspectPortal,
-  onReadArticle
+  onReadArticle,
+  onOpenCorporateInquiry
 }) => {
-  const [regionFilter, setRegionFilter] = useState<'all' | 'saudi' | 'egypt' | 'levant-gulf'>('all');
+  const [regionFilter, setRegionFilter] = useState<
+    'all' | 'egypt' | 'saudi' | 'levant-iraq' | 'gulf' | 'maghreb-sudan'
+  >('all');
 
   const filteredPresence = GEOGRAPHICAL_PRESENCE.filter((b) =>
     regionFilter === 'all' ? true : b.countryGroup === regionFilter
   );
 
   return (
-    <div>
-      {/* Authoritative Hero Banner */}
-      <section className="py-12 lg:py-16 border-b border-[#DCD9D0]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-stretch">
-          {/* Right Column: Royal/National Archive Editorial Statement */}
-          <div className="lg:col-span-6 flex flex-col justify-between">
-            <div>
-              <div className="text-xs font-semibold text-[#1B3B2B] mb-3 flex flex-wrap items-center gap-2">
-                <span>بسم الله الرحمن الرحيم</span>
-                <span aria-hidden="true" className="text-[#8C6D32]">·</span>
-                <span className="text-[#8C6D32]">
-                  البوابة الوثائقية والتاريخية الرسمية (Elsaidy / Elseidy / Alsaidi Family)
-                </span>
-              </div>
+    <div className="space-y-16 lg:space-y-24 py-8 lg:py-12">
+      {/* 1. Regal Luxury Hero Section with Emerald/Navy Gradient & 4% Geometric SVG Pattern */}
+      <section className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#0F291E] via-[#112323] to-[#141E28] text-white border border-[#9A7B3E]/40 shadow-xl">
+        {/* Subtle 4% Opacity Arabic Geometric SVG Watermark Pattern */}
+        <svg
+          className="absolute inset-0 w-full h-full opacity-[0.04] pointer-events-none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <defs>
+            <pattern id="arabesque-grid" width="80" height="80" patternUnits="userSpaceOnUse">
+              <path
+                d="M40 0 L80 40 L40 80 L0 40 Z M20 20 L60 20 L60 60 L20 60 Z"
+                fill="none"
+                stroke="#C5A059"
+                strokeWidth="1.5"
+              />
+              <circle cx="40" cy="40" r="12" fill="none" stroke="#C5A059" strokeWidth="1.2" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#arabesque-grid)" />
+        </svg>
 
-              <h1
-                className="font-display font-bold text-[#141413] tracking-tight leading-[1.2] mb-6"
-                style={{ fontSize: 'clamp(2.35rem, 4.2vw, 3.65rem)', textWrap: 'balance' }}
-              >
-                الموقع الرسمي لعائلة الصعيدي — إرثٌ راسخٌ في الجزيرة العربية ومصر وبلاد الشام والخليج
-              </h1>
-
-              <p className="font-display text-lg lg:text-xl text-zinc-800 leading-[1.9] mb-5 text-justify">
-                مرحباً بكم في البوابة الرسمية والموسوعة الوثائقية لـ{' '}
-                <strong className="text-[#1B3B2B]">عائلة الصعيدي (آل الصعيدي)</strong> بمحافظة تيماء
-                ومنطقة حائل والرياض وتبوك والخليج العربي (الإمارات وسلطنة عُمان) وجبل العرب ببلاد
-                الشام وجمهورية مصر العربية (محافظة الغربية وطنطا والدلتا والقاهرة والصعيد)، التي
-                ترجع في عمود نسبها إلى{' '}
-                <strong className="text-[#8C6D32]">الجد السابع إبراهيم الصعيدي</strong> من{' '}
-                <strong className="text-[#141413]">قبيلة جهينة</strong> من{' '}
-                <strong className="text-[#141413]">ينبع النخل</strong> بالساحل الغربي لشبه الجزيرة
-                العربية، وتفرعت من ابنه <strong className="text-[#141413]">عوض البراهيم</strong> عبر
-                أبنائه الثلاثة: <strong>عبد الله، وسلامة، وصالح</strong>.
-              </p>
-
-              <p className="text-sm text-zinc-600 leading-[1.8] pb-6 mb-6 border-b border-[#DCD9D0]">
-                أُنشئت هذه المنصة المؤسسية (<span className="font-mono text-[#8C6D32]">elsaidy.org</span>)
-                لاستغلال الوسائل الحديثة التي تلمّ الشمل وتزيد من حبل التواصل وتزرع المحبة بين أبناء
-                العائلة في كافة الأقطار، ونقل إرث الآباء والأجداد الذين كانوا مضرباً للمثل بالشهامة
-                والمروءة والوفاء للأجيال الحالية والقادمة.
-              </p>
-            </div>
-
-            {/* Primary Hero Actions */}
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={() => onNavigate('about')}
-                className="px-6 py-3 bg-[#1B3B2B] text-[#F8F7F4] text-xs font-semibold hover:bg-[#141413] transition-colors flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0"
-              >
-                <span>مطالعة الوثيقة التاريخية الكاملة</span>
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onNavigate('tree')}
-                className="px-5 py-3 bg-[#F1EFEA] border border-[#DCD9D0] text-[#141413] text-xs font-semibold hover:border-[#8C6D32] transition-colors cursor-pointer whitespace-nowrap shrink-0"
-              >
-                وثيقة شجرة وفروع العائلة
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onNavigate('portals')}
-                className="px-4 py-3 text-xs font-semibold text-[#8C6D32] hover:text-[#141413] underline underline-offset-8 transition-colors cursor-pointer whitespace-nowrap shrink-0"
-              >
-                البوابات والأنظمة الرقمية
-              </button>
-            </div>
-          </div>
-
-          {/* Left Column: Interactive Archival Genealogy & Map Plate */}
-          <div className="lg:col-span-6 flex">
-            <HeritageAndInfraVisual
-              activeBranchId={activeBranchId}
-              onSelectBranch={onSelectBranch}
-            />
-          </div>
-        </div>
-
-        {/* Executive Quick-Access Bar (Leading to Historical Document, Family Tree, and Official Digital Portals) */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 border-t border-r border-[#DCD9D0] bg-[#F1EFEA]">
-          <button
-            type="button"
-            onClick={() => onNavigate('about')}
-            className="p-6 border-b border-l border-[#DCD9D0] text-right hover:bg-[#F8F7F4] transition-colors flex flex-col justify-between cursor-pointer group"
-          >
-            <div>
-              <div className="flex items-center justify-between text-xs text-[#8C6D32] font-semibold mb-2">
-                <span>٠١ · الوثيقة التاريخية والمراجع</span>
-                <FileText className="w-4 h-4 text-[#1B3B2B]" />
-              </div>
-              <h2 className="font-display text-2xl font-bold text-[#141413] mb-1">
-                من نحن والتاريخ وسبب التسمية
-              </h2>
-              <p className="text-xs text-zinc-600 leading-relaxed">
-                النص التوثيقي الكامل لنسب العائلة، سبب التسمية بـ «الصعيدي»، الامتداد في مصر
-                والحجاز والشام والخليج، والمراجع التاريخية الموثقة للخطيب والجاسر والبتنوني.
-              </p>
-            </div>
-            <div className="mt-4 pt-3 border-t border-[#DCD9D0] text-xs font-semibold text-[#1B3B2B] flex items-center justify-between">
-              <span>الانتقال إلى صفحة الوثيقة التاريخية</span>
-              <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onNavigate('tree')}
-            className="p-6 border-b border-l border-[#DCD9D0] text-right hover:bg-[#F8F7F4] transition-colors flex flex-col justify-between cursor-pointer group"
-          >
-            <div>
-              <div className="flex items-center justify-between text-xs text-[#8C6D32] font-semibold mb-2">
-                <span>٠٢ · المشجرة الوثائقية وفهرس الأعلام</span>
-                <GitBranch className="w-4 h-4 text-[#1B3B2B]" />
-              </div>
-              <h2 className="font-display text-2xl font-bold text-[#141413] mb-1">
-                شجرة وفروع وأعلام عائلة الصعيدي
-              </h2>
-              <p className="text-xs text-zinc-600 leading-relaxed">
-                مستعرض وثيقة شجرة العائلة الرسمية بالتكبير التفاعلي، الدليل الهيكلي لأعقاب إبراهيم
-                الصعيدي، والفهرس الشامل لأسماء وأعلام العائلة بالعربية والإنجليزية.
-              </p>
-            </div>
-            <div className="mt-4 pt-3 border-t border-[#DCD9D0] text-xs font-semibold text-[#1B3B2B] flex items-center justify-between">
-              <span>الانتقال إلى شجرة وفروع العائلة</span>
-              <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onNavigate('portals')}
-            className="p-6 border-b border-l border-[#DCD9D0] text-right hover:bg-[#F8F7F4] transition-colors flex flex-col justify-between cursor-pointer group"
-          >
-            <div>
-              <div className="flex items-center justify-between text-xs text-[#8C6D32] font-semibold mb-2">
-                <span>٠٣ · المنظومة الرقمية والخدمات</span>
-                <Shield className="w-4 h-4 text-[#1B3B2B]" />
-              </div>
-              <h2 className="font-display text-2xl font-bold text-[#141413] mb-1">
-                البوابات والأنظمة الرقمية الرسمية
-              </h2>
-              <p className="text-xs text-zinc-600 leading-relaxed">
-                الدخول الموحد إلى منظومة الإدارة والموارد المركزية، نظام البريد الرسمي
-                (@elsaidy.org)، الأرشيف الوثائقي، والخدمات السحابية.
-              </p>
-            </div>
-            <div className="mt-4 pt-3 border-t border-[#DCD9D0] text-xs font-semibold text-[#1B3B2B] flex items-center justify-between">
-              <span>الانتقال إلى دليل البوابات الرقمية</span>
-              <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            </div>
-          </button>
-        </div>
-      </section>
-
-      {/* Structured Geographical Distribution Grid (شبكة الانتشار الجغرافي ومنازل العائلة) */}
-      <section className="py-16 lg:py-20 border-b border-[#DCD9D0]">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
-          <div>
-            <div className="text-xs font-semibold text-[#8C6D32] mb-2">
-              الأطلس الجغرافي الموسوعي الموثق · الحواضر والمنازل العربية
-            </div>
-            <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#141413]">
-              الانتشار الجغرافي لعائلة الصعيدي في السعودية ومصر وبلاد الشام والخليج
-            </h2>
-          </div>
-
-          {/* Regional Filter Tabs */}
-          <div
-            className="flex flex-wrap items-center gap-1 bg-[#F1EFEA] border border-[#DCD9D0] p-1"
-            role="tablist"
-            aria-label="تصفية الأقاليم الجغرافية"
-          >
-            {[
-              { id: 'all' as const, label: 'كافة الأقطار (١١ حاضرة)' },
-              { id: 'saudi' as const, label: 'السعودية (ينبع وتيماء وحائل والرياض وتبوك)' },
-              { id: 'egypt' as const, label: 'مصر (الغربية وطنطا والدلتا والقاهرة والصعيد)' },
-              { id: 'levant-gulf' as const, label: 'الشام والإمارات وعُمان' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={regionFilter === tab.id}
-                onClick={() => setRegionFilter(tab.id)}
-                className={`px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                  regionFilter === tab.id
-                    ? 'bg-[#1B3B2B] text-[#F8F7F4] font-semibold'
-                    : 'text-zinc-700 hover:text-[#141413]'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Crisp 1px Structural Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-t border-r border-[#DCD9D0]">
-          {filteredPresence.map((branch) => {
-            const isSelected = branch.id === activeBranchId;
-            return (
-              <div
-                key={branch.id}
-                onClick={() => onSelectBranch(branch.id)}
-                className={`p-6 border-b border-l border-[#DCD9D0] flex flex-col justify-between transition-colors cursor-pointer ${
-                  isSelected ? 'bg-[#F1EFEA]' : 'bg-[#F8F7F4] hover:bg-[#F1EFEA]/60'
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 text-xs mb-3">
-                    <span className="font-mono font-semibold text-[#8C6D32]">
-                      المقر {branch.index} · {branch.countryLabel}
-                    </span>
-                  </div>
-
-                  <h3 className="font-display text-2xl font-bold text-[#141413] mb-2">
-                    {branch.regionName}
-                  </h3>
-
-                  <div className="text-xs font-semibold text-[#1B3B2B] mb-3 pb-2.5 border-b border-[#DCD9D0]">
-                    {branch.keyFigures}
-                  </div>
-
-                  <p className="text-xs text-zinc-700 leading-[1.85] mb-4">
-                    {branch.description}
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-[#DCD9D0] text-[11px] text-zinc-500">
-                  {branch.lineagePath}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Executive Summary of the 4 Official Digital Portals */}
-      <section className="py-16 lg:py-20 border-b border-[#DCD9D0]">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
-          <div className="max-w-2xl">
-            <div className="text-xs font-semibold text-[#8C6D32] mb-2">
-              البنية المؤسسية الرقمية · نطاق elsaidy.org الموحد
-            </div>
-            <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#141413]">
-              المنظومات والبوابات الرقمية الرسمية المعتمدة
-            </h2>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => onNavigate('portals')}
-            className="px-5 py-2.5 bg-[#141413] text-[#F8F7F4] text-xs font-semibold hover:bg-[#1B3B2B] transition-colors cursor-pointer whitespace-nowrap shrink-0 self-start md:self-end"
-          >
-            استعراض الدليل الكامل للبوابات الرقمية
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 border-t border-r border-[#DCD9D0] mb-16">
-          {WHITE_LABELED_PORTALS.map((portal) => (
-            <div
-              key={portal.id}
-              onClick={() => onInspectPortal(portal)}
-              className="p-7 border-b border-l border-[#DCD9D0] bg-[#F8F7F4] hover:bg-[#F1EFEA]/70 transition-colors flex flex-col justify-between cursor-pointer"
-            >
+        <div className="relative z-10 p-6 sm:p-10 lg:p-14">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
+            {/* Right Column: Grand Institutional & Corporate Brand Statement */}
+            <div className="lg:col-span-7 flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between gap-2 text-xs text-[#8C6D32] font-semibold mb-2">
-                  <span>المنظومة {portal.index} · {portal.accessClassification}</span>
-                  <span className="font-mono text-[11px] text-zinc-500">{portal.domain}</span>
+                <div className="inline-flex flex-wrap items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white/5 border border-[#C5A059]/30 text-xs font-bold text-[#C5A059] mb-5">
+                  <span>بسم الله الرحمن الرحيم</span>
+                  <span aria-hidden="true">·</span>
+                  <span>ELSAIDY OFFICIAL PORTAL & BRAND HUB</span>
                 </div>
 
-                <h3 className="font-display text-2xl font-bold text-[#141413] mb-1">
-                  {portal.officialName}
-                </h3>
+                <h1
+                  className="font-bold text-white tracking-tight leading-[1.28] mb-5"
+                  style={{ fontSize: 'clamp(1.95rem, 3.6vw, 3.15rem)', textWrap: 'balance' }}
+                >
+                  الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي
+                  <span className="block text-[#C5A059] font-display text-2xl sm:text-3xl mt-2 font-normal">
+                    أصالة التاريخ الممتد من مصر والحجاز إلى الشام والخليج · وريادة البراند المؤسسي الحديث
+                  </span>
+                </h1>
 
-                <div className="text-xs font-medium text-[#1B3B2B] mb-3">
-                  {portal.portalSubTitle}
-                </div>
+                <p className="text-base sm:text-lg text-zinc-200 leading-[1.9] mb-5 text-justify">
+                  مرحباً بكم في المظلة الرسمية الجامعة لـ{' '}
+                  <strong className="text-[#C5A059]">عائلات الصعيدي في الوطن العربي</strong>{' '}
+                  (في <strong>جمهورية مصر العربية</strong> بصعيدها ومحافظة الغربية وطنطا والدلتا
+                  والقاهرة والإسكندرية ومدن القناة، وفي <strong>المملكة العربية السعودية</strong>{' '}
+                  بينبع النخل وتيماء وحائل والرياض وتبوك، وفي <strong>بلاد الشام والعراق</strong>،
+                  و<strong>دول الخليج العربي</strong> بالإمارات وسلطنة عُمان والكويت وقطر والبحرين،
+                  و<strong>المغرب العربي والسودان</strong>)، والواجهة المؤسسية الرسمية لـ{' '}
+                  <strong className="text-white">مجموعة وبراند الصعيدي (ELSAIDY Group)</strong>.
+                </p>
 
-                <p className="text-xs text-zinc-700 leading-[1.85] mb-5">
-                  {portal.summary}
+                <p className="font-display text-base sm:text-lg text-[#E6DEC8] leading-[1.85] p-4 rounded-xl bg-white/5 border border-[#C5A059]/25 mb-8">
+                  «ترجع العائلة في عمود نسبها الموثق إلى الجد السابع إبراهيم الصعيدي من قبيلة جهينة
+                  من ينبع النخل، وتفرعت من ابنه عوض البراهيم عبر أبنائه الثلاثة: عبد الله، وسلامة،
+                  وصالح، مع الامتداد التاريخي العريق لقبيلة جهينة وعائلات الصعيدي في الديار المصرية
+                  وسائر الأقطار العربية.»
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-[#DCD9D0] flex items-center justify-between text-xs font-semibold text-[#1B3B2B]">
-                <span>فتح نافذة الدخول والتوجيه المباشر</span>
-                <ArrowUpLeft className="w-4 h-4 text-[#8C6D32]" />
+              {/* Dual Primary Call-To-Action Buttons */}
+              <div className="flex flex-wrap items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => onNavigate('tree')}
+                  className="px-6 py-3.5 rounded-xl bg-[#C5A059] text-[#0D131A] text-sm font-extrabold hover:bg-[#d4b26e] shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <GitBranch className="w-4 h-4" />
+                  <span>الأرشيف التاريخي وشجرة العائلة</span>
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate('portals')}
+                  className="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-[#C5A059]/50 text-sm font-bold transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Building2 className="w-4 h-4 text-[#C5A059]" />
+                  <span>مجموعة وأعمال الصعيدي (ELSAIDY Brand & Portals)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onOpenCorporateInquiry}
+                  className="px-4 py-3 text-xs font-bold text-[#C5A059] hover:text-white underline underline-offset-8 transition-colors cursor-pointer"
+                >
+                  طلب بريد رسمي (@elsaidy.org) أو تواصل للأعمال ←
+                </button>
+              </div>
+            </div>
+
+            {/* Left Column: Interactive Pan-Arab Atlas & Genealogy Plate */}
+            <div className="lg:col-span-5 flex text-[#141413]">
+              <HeritageAndInfraVisual
+                activeBranchId={activeBranchId}
+                onSelectBranch={onSelectBranch}
+              />
+            </div>
+          </div>
+
+          {/* Executive Quick-Access Cards Inside Hero Bottom */}
+          <div className="mt-10 pt-8 border-t border-white/15 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <button
+              type="button"
+              onClick={() => onNavigate('about')}
+              className="p-5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-right transition-all flex items-start justify-between gap-4 cursor-pointer group"
+            >
+              <div>
+                <div className="text-xs font-bold text-[#C5A059] mb-1">
+                  ٠١ · الوثيقة التاريخية والمراجع
+                </div>
+                <div className="text-base font-bold text-white mb-1">
+                  من نحن والتاريخ وسبب التسمية
+                </div>
+                <p className="text-xs text-zinc-300 leading-relaxed">
+                  النص الكامل للوثيقة التاريخية، سبب التسمية بـ «الصعيدي»، والمراجع الموثقة.
+                </p>
+              </div>
+              <FileText className="w-5 h-5 text-[#C5A059] shrink-0 mt-1 group-hover:-translate-x-1 transition-transform" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onNavigate('tree')}
+              className="p-5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-right transition-all flex items-start justify-between gap-4 cursor-pointer group"
+            >
+              <div>
+                <div className="text-xs font-bold text-[#C5A059] mb-1">
+                  ٠٢ · المشجرة المصورة وفهرس الأعلام
+                </div>
+                <div className="text-base font-bold text-white mb-1">
+                  وثيقة شجرة العائلة وفروعها
+                </div>
+                <p className="text-xs text-zinc-300 leading-relaxed">
+                  مستعرض الشجرة بالتكبير التفاعلي والدليل الهيكلي لأعقاب إبراهيم الصعيدي.
+                </p>
+              </div>
+              <GitBranch className="w-5 h-5 text-[#C5A059] shrink-0 mt-1 group-hover:-translate-x-1 transition-transform" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onNavigate('portals')}
+              className="p-5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-right transition-all flex items-start justify-between gap-4 cursor-pointer group"
+            >
+              <div>
+                <div className="text-xs font-bold text-[#C5A059] mb-1">
+                  ٠٣ · براند ومشاريع الصعيدي
+                </div>
+                <div className="text-base font-bold text-white mb-1">
+                  ELSAIDY Brand & Digital Portals
+                </div>
+                <p className="text-xs text-zinc-300 leading-relaxed">
+                  مجموعة الصعيدي للأعمال، منظومة الإدارة، البريد الرسمي (@elsaidy.org)، والسحابة.
+                </p>
+              </div>
+              <Shield className="w-5 h-5 text-[#C5A059] shrink-0 mt-1 group-hover:-translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. PAN-ARAB EXPANSION: تجمع عائلات الصعيدي في الوطن العربي (Egypt First, then Saudi, Levant, Gulf, Maghreb) */}
+      <section>
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 text-xs font-bold text-[#9A7B3E] mb-2">
+              <Globe2 className="w-4 h-4 text-[#0F291E]" />
+              <span>المظلة العربية الكبرى · انتشار عائلات الصعيدي في ١٤+ دولة عربية</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#141413] tracking-tight">
+              تجمع عائلات الصعيدي في الوطن العربي
+            </h2>
+            <p className="text-sm sm:text-base text-zinc-600 mt-2 leading-relaxed">
+              توثيق شامل للأقاليم الخمسة الكبرى لتجمع عائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy)
+              مرتبةً حسب الثقل السكاني والركائز التاريخية في مصر والسعودية والشام والخليج والمغرب
+              العربي والسودان.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('about')}
+            className="px-5 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors cursor-pointer self-start lg:self-end shrink-0"
+          >
+            مطالعة التاريخ التفصيلي للأقاليم ←
+          </button>
+        </div>
+
+        {/* The 5 Pan-Arab Umbrella Regions (Luxury Cards) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12">
+          {PAN_ARAB_REGIONS.map((region, idx) => (
+            <div
+              key={region.id}
+              className={`bg-white rounded-xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-8 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between ${
+                idx === 0 ? 'md:col-span-2 lg:col-span-2 bg-gradient-to-br from-white to-[#F7F6F2]' : ''
+              }`}
+            >
+              <div>
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <span className="px-3 py-1 rounded-md bg-[#0F291E]/10 text-[#0F291E] text-xs font-extrabold">
+                    الإقليم {region.orderIndex}
+                  </span>
+                  <span className="font-mono text-[11px] text-[#9A7B3E] font-semibold" dir="ltr">
+                    {region.englishTitle.split('(')[0]}
+                  </span>
+                </div>
+
+                <h3 className="text-xl sm:text-2xl font-extrabold text-[#141413] mb-2">
+                  {region.title}
+                </h3>
+
+                <div className="text-xs font-bold text-[#9A7B3E] mb-4">
+                  {region.historicalRole}
+                </div>
+
+                <p className="text-sm text-zinc-700 leading-[1.85] mb-5 text-justify">
+                  {region.summary}
+                </p>
+
+                <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]">
+                  <div className="text-xs font-bold text-[#0F291E] mb-2">
+                    أبرز الحواضر والمراكز المسجلة:
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {region.keyHubs.map((hub, hIdx) => (
+                      <span
+                        key={hIdx}
+                        className="px-2.5 py-1 rounded-lg bg-white border border-[#E6E2D8] text-xs font-semibold text-[#141413]"
+                      >
+                        {hub}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Latest Diwan Articles Strip */}
-        <div className="bg-[#F1EFEA] border border-[#DCD9D0] p-6 sm:p-8">
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-5 mb-6 border-b border-[#DCD9D0]">
+        {/* Detailed Interactive Regional Hubs Filter & Cards */}
+        <div className="bg-white rounded-2xl border border-[#E6E2D8] p-6 sm:p-8 lg:p-10 shadow-sm">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 mb-8 border-b border-[#E6E2D8]">
             <div>
-              <div className="text-xs font-semibold text-[#8C6D32]">
-                الأرشيف الوثائقي والمنصة المعرفية
+              <div className="text-xs font-bold text-[#9A7B3E] mb-1">
+                الأطلس التفصيلي للحواضر والمقار التاريخية
               </div>
-              <h3 className="font-display text-2xl font-bold text-[#141413] mt-0.5">
-                أحدث الدراسات والبيانات في ديوان العائلة
+              <h3 className="text-xl sm:text-2xl font-extrabold text-[#141413]">
+                دليل الحواضر والمنازل التفصيلية لعائلات الصعيدي
+              </h3>
+            </div>
+
+            <div
+              className="flex flex-wrap items-center gap-1.5 bg-[#F7F6F2] border border-[#E2DDD3] rounded-xl p-1.5"
+              role="tablist"
+              aria-label="تصفية الحواضر العربية"
+            >
+              {[
+                { id: 'all' as const, label: 'جميع الأقطار (١٢)' },
+                { id: 'egypt' as const, label: '١. مصر' },
+                { id: 'saudi' as const, label: '٢. السعودية' },
+                { id: 'levant-iraq' as const, label: '٣. الشام والعراق' },
+                { id: 'gulf' as const, label: '٤. الخليج العربي' },
+                { id: 'maghreb-sudan' as const, label: '٥. المغرب العربي والسودان' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={regionFilter === tab.id}
+                  onClick={() => setRegionFilter(tab.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                    regionFilter === tab.id
+                      ? 'bg-[#0F291E] text-white shadow-sm'
+                      : 'text-zinc-700 hover:text-[#141413]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPresence.map((branch) => {
+              const isSelected = branch.id === activeBranchId;
+              return (
+                <div
+                  key={branch.id}
+                  onClick={() => onSelectBranch(branch.id)}
+                  className={`rounded-xl border border-t-4 border-t-[#9A7B3E] p-6 flex flex-col justify-between transition-all duration-300 cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#F7F6F2] border-[#9A7B3E] shadow-md'
+                      : 'bg-white border-[#E6E2D8] shadow-sm hover:shadow-xl hover:-translate-y-0.5'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 text-xs mb-3">
+                      <span className="font-bold text-[#9A7B3E]">
+                        الحاضرة {branch.index} · {branch.countryLabel}
+                      </span>
+                    </div>
+
+                    <h4 className="text-lg sm:text-xl font-extrabold text-[#141413] mb-2">
+                      {branch.regionName}
+                    </h4>
+
+                    <div className="text-xs font-bold text-[#0F291E] mb-3 pb-2.5 border-b border-[#E6E2D8]">
+                      {branch.keyFigures}
+                    </div>
+
+                    <p className="text-xs text-zinc-700 leading-[1.85] mb-4">
+                      {branch.description}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-[#E6E2D8] text-[11px] font-medium text-zinc-500">
+                    {branch.lineagePath}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 3. ELSAIDY BRAND & ENTERPRISE VENTURES (مجموعة وبراند الصعيدي — ELSAIDY Group & Digital Infrastructure) */}
+      <section>
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 text-xs font-bold text-[#9A7B3E] mb-2">
+              <Building2 className="w-4 h-4 text-[#0F291E]" />
+              <span>مجموعة وبراند الصعيدي · ELSAIDY GROUP & DIGITAL INFRASTRUCTURE</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#141413] tracking-tight">
+              براند ومشاريع الصعيدي والمنظومات الرقمية المعتمدة
+            </h2>
+            <p className="text-sm sm:text-base text-zinc-600 mt-2 leading-relaxed">
+              تعمل مجموعة وبراند الصعيدي (<span className="font-mono font-semibold">elsaidy.org</span>)
+              كمظلة مؤسسية وتقنية حديثة تجمع بين واجهة المشروعات وتطوير الأعمال وبين الأنظمة الرقمية
+              والبريد الرسمي الموحد والأرشيف المعرفي.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={onOpenCorporateInquiry}
+              className="px-5 py-3 rounded-xl bg-[#9A7B3E] text-white text-xs font-extrabold hover:bg-[#826631] shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Mail className="w-4 h-4" />
+              <span>طلب بريد رسمي (@elsaidy.org) أو تواصل للأعمال والمشاريع</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onNavigate('portals')}
+              className="px-5 py-3 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-all cursor-pointer"
+            >
+              الدليل الكامل للأنظمة والبراند ←
+            </button>
+          </div>
+        </div>
+
+        {/* 5 Official ELSAIDY Brand Pillars Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          {WHITE_LABELED_PORTALS.map((portal, idx) => (
+            <div
+              key={portal.id}
+              onClick={() => onInspectPortal(portal)}
+              className={`bg-white rounded-xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-8 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between cursor-pointer group ${
+                idx === 0 ? 'md:col-span-2 lg:col-span-2 bg-gradient-to-br from-white to-[#F7F6F2]' : ''
+              }`}
+            >
+              <div>
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-[#9A7B3E] mb-3">
+                  <span>الركيزة {portal.index} · {portal.accessClassification}</span>
+                  <span className="font-mono text-[11px] px-2.5 py-0.5 rounded bg-[#F7F6F2] border border-[#E6E2D8] text-[#0F291E]">
+                    {portal.domain}
+                  </span>
+                </div>
+
+                <h3 className="text-xl sm:text-2xl font-extrabold text-[#141413] mb-2 leading-snug">
+                  {portal.officialName}
+                </h3>
+
+                <div className="text-xs font-bold text-[#0F291E] mb-3">
+                  {portal.portalSubTitle}
+                </div>
+
+                <p className="text-sm text-zinc-700 leading-[1.85] mb-6">
+                  {portal.summary}
+                </p>
+              </div>
+
+              <div className="pt-4 border-t border-[#E6E2D8] flex items-center justify-between text-xs font-extrabold text-[#0F291E] group-hover:text-[#9A7B3E] transition-colors">
+                <span>الدخول للبوابة / استعراض البطاقة المؤسسية</span>
+                <ArrowUpLeft className="w-4 h-4 text-[#9A7B3E]" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 4. Latest Diwan Studies & Encyclopedic FAQ Section */}
+      <section className="space-y-12">
+        {/* Latest Diwan Articles Card */}
+        <div className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-10 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-8 border-b border-[#E6E2D8]">
+            <div>
+              <div className="text-xs font-bold text-[#9A7B3E] mb-1">
+                الأرشيف الوثائقي والمنصة المعرفية (ELSAIDY Knowledge Cloud)
+              </div>
+              <h3 className="text-2xl font-extrabold text-[#141413]">
+                أحدث الدراسات والبيانات في ديوان عائلات الصعيدي
               </h3>
             </div>
             <button
               type="button"
               onClick={() => onNavigate('diwan')}
-              className="text-xs font-semibold text-[#1B3B2B] hover:text-[#8C6D32] underline underline-offset-8 cursor-pointer"
+              className="px-4 py-2 rounded-lg bg-[#F7F6F2] border border-[#E6E2D8] text-xs font-bold text-[#0F291E] hover:border-[#9A7B3E] transition-colors cursor-pointer"
             >
               تصفح كافة مقالات الديوان ({DIWAN_ARTICLES.length} دراسات) ←
             </button>
@@ -354,113 +483,113 @@ export const HomePage: React.FC<HomePageProps> = ({
               <article
                 key={art.id}
                 onClick={() => onReadArticle(art)}
-                className="p-5 bg-[#F8F7F4] border border-[#DCD9D0] hover:border-[#8C6D32] transition-colors flex flex-col justify-between cursor-pointer"
+                className="p-6 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] hover:border-[#9A7B3E] hover:bg-white shadow-sm hover:shadow-md transition-all flex flex-col justify-between cursor-pointer"
               >
                 <div>
-                  <div className="text-[11px] text-[#8C6D32] font-semibold mb-2">
+                  <div className="text-[11px] text-[#9A7B3E] font-bold mb-2">
                     {art.categoryLabel} · {art.hijriDate}
                   </div>
-                  <h4 className="font-display text-lg font-bold text-[#141413] leading-snug mb-2">
+                  <h4 className="text-base sm:text-lg font-extrabold text-[#141413] leading-snug mb-2.5">
                     {art.title}
                   </h4>
                   <p className="text-xs text-zinc-600 leading-relaxed line-clamp-3">
                     {art.excerpt}
                   </p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-[#DCD9D0] text-xs font-semibold text-[#1B3B2B] flex items-center justify-between">
-                  <span>مطالعة الدراسة</span>
-                  <ChevronLeft className="w-3.5 h-3.5" />
+                <div className="mt-5 pt-3 border-t border-[#E6E2D8] text-xs font-bold text-[#0F291E] flex items-center justify-between">
+                  <span>مطالعة الدراسة الكاملة</span>
+                  <ChevronLeft className="w-3.5 h-3.5 text-[#9A7B3E]" />
                 </div>
               </article>
             ))}
           </div>
         </div>
-      </section>
 
-      {/* Encyclopedic Reference FAQ & Search Index Section */}
-      <section className="py-16 lg:py-20">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
-          <div className="max-w-3xl">
-            <div className="text-xs font-semibold text-[#8C6D32] mb-2 flex items-center gap-1.5">
-              <Search className="w-3.5 h-3.5 text-[#1B3B2B]" />
-              <span>الدليل المرجعي والموسوعي الشامل · فهرس البحث المعتمد</span>
+        {/* Encyclopedic FAQ & Orthographic Index */}
+        <div>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+            <div className="max-w-3xl">
+              <div className="text-xs font-bold text-[#9A7B3E] mb-2 flex items-center gap-1.5">
+                <Search className="w-3.5 h-3.5 text-[#0F291E]" />
+                <span>الدليل المرجعي والموسوعي الشامل · فهرس البحث المعتمد</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#141413]">
+                الأسئلة المرجعية الشائعة حول تاريخ وتجمع عائلات وبراند الصعيدي
+              </h2>
             </div>
-            <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#141413]">
-              الأسئلة المرجعية الشائعة حول تاريخ ونسب وحواضر عائلة الصعيدي
-            </h2>
+
+            <button
+              type="button"
+              onClick={() => onNavigate('tree')}
+              className="text-xs font-bold text-[#0F291E] hover:text-[#9A7B3E] underline underline-offset-8 cursor-pointer whitespace-nowrap shrink-0"
+            >
+              الانتقال إلى فهرس الأعلام والأسماء المركبة ←
+            </button>
           </div>
 
-          <button
-            type="button"
-            onClick={() => onNavigate('tree')}
-            className="text-xs font-semibold text-[#1B3B2B] hover:text-[#8C6D32] underline underline-offset-8 cursor-pointer whitespace-nowrap shrink-0"
-          >
-            الانتقال إلى فهرس الأعلام والأسماء المركبة ←
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 border-t border-r border-[#DCD9D0] mb-10">
-          {ENCYCLOPEDIC_FAQS.map((faq, idx) => (
-            <div
-              key={faq.id}
-              className="p-7 border-b border-l border-[#DCD9D0] bg-[#F8F7F4] flex flex-col justify-between"
-            >
-              <div>
-                <div className="text-xs font-mono font-semibold text-[#8C6D32] mb-2">
-                  مسألة مرجعية ٠{idx + 1}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {ENCYCLOPEDIC_FAQS.map((faq, idx) => (
+              <div
+                key={faq.id}
+                className="p-6 sm:p-8 rounded-xl bg-white border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="text-xs font-mono font-bold text-[#9A7B3E] mb-2">
+                    مسألة مرجعية ٠{idx + 1}
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-[#141413] mb-3">
+                    {faq.question}
+                  </h3>
+                  <p className="text-sm text-zinc-700 leading-[1.9] text-justify">
+                    {faq.answer}
+                  </p>
                 </div>
-                <h3 className="font-display text-2xl font-bold text-[#141413] mb-3">
-                  {faq.question}
-                </h3>
-                <p className="text-sm text-zinc-700 leading-[1.9] text-justify">
-                  {faq.answer}
+                <div className="mt-5 pt-3 border-t border-[#E6E2D8] flex flex-wrap items-center gap-2 text-[11px] text-zinc-500">
+                  <span className="font-bold text-[#0F291E]">الكلمات الدلالية:</span>
+                  <span>{faq.keywords.join(' · ')}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Orthographic & Linguistic Index Box */}
+          <div className="bg-white rounded-xl border border-[#E6E2D8] p-6 sm:p-8 space-y-5 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E6E2D8] pb-4">
+              <h3 className="text-lg font-extrabold text-[#141413]">
+                فهرس المطابقة اللغوية والجغرافية المعتمد في محركات البحث والأرشيف الدولي
+              </h3>
+              <span className="font-mono text-xs text-[#9A7B3E] font-semibold">
+                Official Orthographic & Regional Index — elsaidy.org
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-xs leading-relaxed">
+              <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]">
+                <div className="font-bold text-[#0F291E] mb-1.5">
+                  ١. الصيغ والمسميات العربية المعتمدة:
+                </div>
+                <p className="text-zinc-700">
+                  {SEO_KEYWORD_CLUSTERS.arabicCore.join(' · ')}
                 </p>
               </div>
-              <div className="mt-5 pt-3 border-t border-[#DCD9D0] flex flex-wrap items-center gap-2 text-[11px] text-zinc-500">
-                <span className="font-semibold text-[#1B3B2B]">الكلمات الدلالية:</span>
-                <span>{faq.keywords.join(' · ')}</span>
-              </div>
-            </div>
-          ))}
-        </div>
 
-        {/* Orthographic & Linguistic Index Box (Arabic & English Variations) */}
-        <div className="bg-[#F1EFEA] border border-[#DCD9D0] p-6 sm:p-8 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#DCD9D0] pb-3">
-            <h3 className="font-display text-xl font-bold text-[#141413]">
-              فهرس المطابقة اللغوية والجغرافية المعتمد في محركات البحث والأرشيف الدولي
-            </h3>
-            <span className="font-mono text-xs text-[#8C6D32]">
-              Official Orthographic & Regional Index — elsaidy.org
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-xs leading-relaxed">
-            <div className="p-4 bg-[#F8F7F4] border border-[#DCD9D0]">
-              <div className="font-semibold text-[#1B3B2B] mb-1.5">
-                ١. الصيغ والمسميات العربية المعتمدة:
+              <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]">
+                <div className="font-bold text-[#0F291E] mb-1.5">
+                  ٢. النطاق الجغرافي والحواضر العربية الموثقة:
+                </div>
+                <p className="text-zinc-700">
+                  {SEO_KEYWORD_CLUSTERS.arabicRegions.join(' · ')}
+                </p>
               </div>
-              <p className="text-zinc-700">
-                {SEO_KEYWORD_CLUSTERS.arabicCore.join(' · ')}
-              </p>
-            </div>
 
-            <div className="p-4 bg-[#F8F7F4] border border-[#DCD9D0]">
-              <div className="font-semibold text-[#1B3B2B] mb-1.5">
-                ٢. النطاق الجغرافي والحواضر الموثقة:
+              <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]" dir="ltr">
+                <div className="font-bold text-[#0F291E] mb-1.5 text-right" dir="rtl">
+                  ٣. الصيغ الإنجليزية المعتمدة (English Transliterations):
+                </div>
+                <p className="font-mono text-[11px] text-zinc-700 leading-relaxed">
+                  {SEO_KEYWORD_CLUSTERS.englishVariations.join(' · ')}
+                </p>
               </div>
-              <p className="text-zinc-700">
-                {SEO_KEYWORD_CLUSTERS.arabicRegions.join(' · ')}
-              </p>
-            </div>
-
-            <div className="p-4 bg-[#F8F7F4] border border-[#DCD9D0]" dir="ltr">
-              <div className="font-semibold text-[#1B3B2B] mb-1.5 text-right" dir="rtl">
-                ٣. الصيغ الإنجليزية المعتمدة (English Transliterations):
-              </div>
-              <p className="font-mono text-[11px] text-zinc-700 leading-relaxed">
-                {SEO_KEYWORD_CLUSTERS.englishVariations.join(' · ')}
-              </p>
             </div>
           </div>
         </div>
