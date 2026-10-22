@@ -5,41 +5,26 @@ import {
   ArrowRight,
   ChevronLeft,
   BookOpen,
-  PenTool,
-  Check,
-  X
+  ShieldCheck,
 } from 'lucide-react';
 
 interface BlogPageProps {
   onNavigate: (route: PageRoute) => void;
+  articles?: DiwanArticle[];
 }
 
-export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
-  const [articles, setArticles] = useState<DiwanArticle[]>(DIWAN_ARTICLES);
+export const BlogPage: React.FC<BlogPageProps> = ({
+  onNavigate,
+  articles = DIWAN_ARTICLES,
+}) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [dedicatedReadingArticle, setDedicatedReadingArticle] = useState<DiwanArticle | null>(null);
-  const [isNewPostModalOpen, setIsNewPostModalOpen] = useState<boolean>(false);
-
-  const [draft, setDraft] = useState({
-    title: '',
-    author: '',
-    authorTitle: 'الأمانة العامة / باحث من عائلة الصعيدي',
-    category: 'heritage' as 'heritage' | 'research' | 'documents' | 'news',
-    excerpt: '',
-    body: ''
-  });
-  const [draftError, setDraftError] = useState<string>('');
-
-  const categoryLabels: Record<string, string> = {
-    heritage: 'تحقيق الأنساب والتاريخ',
-    research: 'الدراسات التاريخية والمصادر',
-    documents: 'المراجع والوثائق المعتمدة',
-    news: 'أخبار وبيانات الديوان والبراند'
-  };
+  const [dedicatedReadingArticle, setDedicatedReadingArticle] =
+    useState<DiwanArticle | null>(null);
 
   const filteredArticles = articles.filter((art) => {
-    const matchesCat = selectedCategory === 'all' || art.category === selectedCategory;
+    const matchesCat =
+      selectedCategory === 'all' || art.category === selectedCategory;
     const q = searchQuery.trim();
     const matchesSearch =
       !q ||
@@ -50,60 +35,9 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
     return matchesCat && matchesSearch;
   });
 
-  const handlePublishSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!draft.title.trim() || draft.title.trim().length < 6) {
-      setDraftError('يرجى إدخال عنوان واضح للمقال أو البيان.');
-      return;
-    }
-    if (!draft.author.trim()) {
-      setDraftError('يرجى إدخال اسم الكاتب أو الجهة المصدرة.');
-      return;
-    }
-    if (!draft.excerpt.trim() || !draft.body.trim()) {
-      setDraftError('يرجى كتابة ملخص المقال والنص التفصيلي.');
-      return;
-    }
-
-    const newPost: DiwanArticle = {
-      id: `diwan-custom-${Date.now()}`,
-      index: `٠${articles.length + 1}`,
-      title: draft.title.trim(),
-      category: draft.category,
-      categoryLabel: categoryLabels[draft.category],
-      publishDate: '٢١ أكتوبر ٢٠٢٦ م',
-      hijriDate: '١٠ ربيع الآخر ١٤٤٨ هـ',
-      readTime: '٥ دقائق للقراءة',
-      author: draft.author.trim(),
-      authorTitle: draft.authorTitle.trim(),
-      excerpt: draft.excerpt.trim(),
-      sections: [
-        {
-          heading: 'متن المقال والبيان التوثيقي',
-          body: draft.body.trim()
-        }
-      ]
-    };
-
-    setArticles([newPost, ...articles]);
-    setDraftError('');
-    setIsNewPostModalOpen(false);
-    setDedicatedReadingArticle(newPost);
-    setDraft({
-      title: '',
-      author: '',
-      authorTitle: 'الأمانة العامة / باحث من عائلة الصعيدي',
-      category: 'heritage',
-      excerpt: '',
-      body: ''
-    });
-  };
-
-  // Dedicated Full Reading View when an article is clicked
   if (dedicatedReadingArticle) {
     return (
       <div className="py-10 lg:py-16 space-y-8">
-        {/* Top Reading Navigation Bar */}
         <div className="pb-6 border-b border-[#E6E2D8] flex flex-wrap items-center justify-between gap-4 text-xs">
           <button
             type="button"
@@ -118,18 +52,22 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
             <span className="font-bold text-[#695022]">
               {dedicatedReadingArticle.categoryLabel}
             </span>
-            <span className="mx-2" aria-hidden="true">·</span>
+            <span className="mx-2" aria-hidden="true">
+              ·
+            </span>
             <span>{dedicatedReadingArticle.hijriDate}</span>
-            <span className="mx-2" aria-hidden="true">·</span>
+            <span className="mx-2" aria-hidden="true">
+              ·
+            </span>
             <span>{dedicatedReadingArticle.publishDate}</span>
           </div>
         </div>
 
-        {/* Dedicated Editorial Article Canvas */}
         <article className="max-w-4xl mx-auto bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-7 sm:p-12 lg:p-16 shadow-md">
           <div className="border-b border-[#E6E2D8] pb-8 mb-8">
             <div className="text-xs font-bold text-[#695022] mb-3">
-              إصدار رقم {dedicatedReadingArticle.index} · {dedicatedReadingArticle.categoryLabel} ·{' '}
+              إصدار رقم {dedicatedReadingArticle.index} ·{' '}
+              {dedicatedReadingArticle.categoryLabel} ·{' '}
               {dedicatedReadingArticle.readTime}
             </div>
 
@@ -152,29 +90,40 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Article Lead Summary in Amiri */}
+          {dedicatedReadingArticle.coverImage && (
+            <div className="mb-8 rounded-xl overflow-hidden border border-[#E6E2D8] bg-[#F7F6F2]">
+              <img
+                src={dedicatedReadingArticle.coverImage}
+                alt={dedicatedReadingArticle.title}
+                width="900"
+                height="480"
+                loading="lazy"
+                className="w-full max-h-[440px] object-cover"
+              />
+            </div>
+          )}
+
           <div className="p-6 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] mb-10 font-display text-xl lg:text-2xl text-[#141413] leading-[1.95] text-justify">
             {dedicatedReadingArticle.excerpt}
           </div>
 
-          {/* Article Sections */}
           <div className="space-y-8">
             {dedicatedReadingArticle.sections.map((sec, idx) => (
               <div key={idx} className="space-y-3">
                 <h2 className="text-xl sm:text-2xl font-extrabold text-[#0F291E]">
                   {sec.heading}
                 </h2>
-                <p className="font-display text-xl text-[#141413] leading-[2.05] text-justify">
+                <p className="font-display text-xl text-[#141413] leading-[2.05] text-justify whitespace-pre-line">
                   {sec.body}
                 </p>
               </div>
             ))}
           </div>
 
-          {/* Bottom Return Action */}
           <div className="mt-12 pt-6 border-t border-[#E6E2D8] flex flex-wrap items-center justify-between gap-4">
             <span className="text-xs text-zinc-500">
-              الموقع الرسمي لعائلات الصعيدي في الوطن العربي — الأرشيف الوثائقي والمنصة المعرفية
+              الموقع الرسمي لعائلات الصعيدي في الوطن العربي — الأرشيف الوثائقي والمنصة
+              المعرفية
             </span>
             <button
               type="button"
@@ -191,7 +140,6 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
 
   return (
     <div className="space-y-12 lg:space-y-16 py-8 lg:py-12">
-      {/* Institutional Diwan Header */}
       <section className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-10 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-6 border-b border-[#E6E2D8] text-xs text-zinc-600">
           <div className="flex items-center gap-2">
@@ -206,20 +154,15 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
             <span aria-hidden="true">/</span>
             <span className="font-bold text-[#0F291E]">الديوان والمقالات</span>
             <span aria-hidden="true">·</span>
-            <span className="font-mono text-[11px] text-zinc-500">ELSAIDY Knowledge & Heritage Cloud</span>
+            <span className="font-mono text-[11px] text-zinc-500">
+              ELSAIDY Knowledge &amp; Heritage Cloud
+            </span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              setDraftError('');
-              setIsNewPostModalOpen(true);
-            }}
-            className="px-5 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] shadow-sm transition-all flex items-center gap-2 cursor-pointer"
-          >
-            <PenTool className="w-3.5 h-3.5 text-[#C5A059]" />
-            <span>إضافة مقال / بيان جديد</span>
-          </button>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#0F291E] font-bold">
+            <ShieldCheck className="w-4 h-4 text-[#695022]" />
+            <span>إصدارات موثقة من الأمانة العامة ولجنة الأنساب</span>
+          </div>
         </div>
 
         <div className="max-w-4xl">
@@ -228,19 +171,23 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
           </div>
           <h1
             className="font-extrabold text-[#141413] tracking-tight leading-[1.25] mb-4"
-            style={{ fontSize: 'clamp(1.85rem, 3.5vw, 2.85rem)', textWrap: 'balance' }}
+            style={{
+              fontSize: 'clamp(1.85rem, 3.5vw, 2.85rem)',
+              textWrap: 'balance',
+            }}
           >
-            الديوان والمقالات — الأبحاث التاريخية، تحقيق الوثائق، وبيانات العائلة والبراند
+            الديوان والمقالات — الأبحاث التاريخية، تحقيق الوثائق، وبيانات العائلة
+            والبراند
           </h1>
           <p className="text-sm sm:text-base text-zinc-700 leading-[1.85] max-w-[75ch]">
-            منبر النشر الرسمي المخصص لتوثيق الدراسات التاريخية المتعلقة بعائلات الصعيدي في مصر
-            والسعودية والشام والخليج والمغرب العربي، إلى جانب أخبار المناسبات والبيانات الصادرة عن
-            الديوان ومجموعة الصعيدي.
+            منبر النشر الرسمي المخصص لتوثيق الدراسات التاريخية المتعلقة بعائلات
+            الصعيدي وإقليم الصعيد (صعيد مصر) والامتداد الحجازي (حجازي — حجاج —
+            مرسي الحجاج — الصعيدي) في مصر والسعودية والشام والخليج والمغرب العربي،
+            إلى جانب البيانات الصادرة عن الديوان ومجموعة الصعيدي.
           </p>
         </div>
       </section>
 
-      {/* Category Filter & Search Bar */}
       <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div
           className="flex flex-wrap items-center gap-1.5 bg-white border border-[#E6E2D8] rounded-xl p-1.5 shadow-sm"
@@ -252,7 +199,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
             { id: 'heritage', label: 'تحقيق الأنساب والتاريخ' },
             { id: 'research', label: 'الدراسات التاريخية والمصادر' },
             { id: 'documents', label: 'المراجع والوثائق المعتمدة' },
-            { id: 'news', label: 'أخبار وبيانات الديوان والبراند' }
+            { id: 'news', label: 'أخبار وبيانات الديوان والبراند' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -283,7 +230,6 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* Editorial Grid of Diwan Articles */}
       <section>
         {filteredArticles.length === 0 ? (
           <div className="p-12 text-center bg-white rounded-2xl border border-[#E6E2D8] space-y-3 shadow-sm">
@@ -322,6 +268,19 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
                     </span>
                   </div>
 
+                  {article.coverImage && (
+                    <div className="mb-4 rounded-lg overflow-hidden border border-[#E6E2D8] bg-[#F7F6F2] h-44">
+                      <img
+                        src={article.coverImage}
+                        alt={article.title}
+                        width="600"
+                        height="260"
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+                      />
+                    </div>
+                  )}
+
                   <h2 className="text-xl sm:text-2xl font-extrabold text-[#141413] leading-snug mb-3 group-hover:text-[#0F291E] transition-colors">
                     {article.title}
                   </h2>
@@ -334,7 +293,9 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
                 <div className="pt-4 border-t border-[#E6E2D8] flex flex-wrap items-center justify-between gap-3 text-xs">
                   <div className="text-zinc-600">
                     <span className="font-bold text-[#141413]">{article.author}</span>
-                    <span className="mx-1.5" aria-hidden="true">·</span>
+                    <span className="mx-1.5" aria-hidden="true">
+                      ·
+                    </span>
                     <span>{article.readTime}</span>
                   </div>
 
@@ -349,138 +310,6 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
           </div>
         )}
       </section>
-
-      {/* New Article / Statement Modal */}
-      {isNewPostModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 overflow-y-auto"
-          onClick={() => setIsNewPostModalOpen(false)}
-        >
-          <div
-            className="w-full max-w-2xl bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-8 my-8 text-[#141413] shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-4 pb-4 mb-5 border-b border-[#E6E2D8]">
-              <div>
-                <div className="text-xs text-[#695022] font-bold">
-                  النشر في ديوان عائلات الصعيدي
-                </div>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-[#141413] mt-1">
-                  إضافة مقال تاريخي أو بيان رسمي جديد
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsNewPostModalOpen(false)}
-                className="p-1.5 rounded-lg border border-[#E6E2D8] hover:border-[#695022] cursor-pointer"
-                aria-label="إغلاق"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handlePublishSubmit} className="space-y-4" noValidate>
-              <div>
-                <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                  عنوان المقال أو البيان:
-                </label>
-                <input
-                  type="text"
-                  value={draft.title}
-                  onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-                  placeholder="مثال: دراسة توثيقية في تاريخ فرع..."
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                    اسم الكاتب / الباحث:
-                  </label>
-                  <input
-                    type="text"
-                    value={draft.author}
-                    onChange={(e) => setDraft({ ...draft, author: e.target.value })}
-                    placeholder="الاسم الكامل"
-                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                    تصنيف الإصدار:
-                  </label>
-                  <select
-                    value={draft.category}
-                    onChange={(e) =>
-                      setDraft({
-                        ...draft,
-                        category: e.target.value as 'heritage' | 'research' | 'documents' | 'news'
-                      })
-                    }
-                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
-                  >
-                    <option value="heritage">تحقيق الأنساب والتاريخ</option>
-                    <option value="research">الدراسات التاريخية والمصادر</option>
-                    <option value="documents">المراجع والوثائق المعتمدة</option>
-                    <option value="news">أخبار وبيانات الديوان والبراند</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                  ملخص المقال (مقدمة موجزة):
-                </label>
-                <textarea
-                  rows={2}
-                  value={draft.excerpt}
-                  onChange={(e) => setDraft({ ...draft, excerpt: e.target.value })}
-                  placeholder="اكتب ملخصاً موجزاً يظهر في بطاقة المقال..."
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                  النص الكامل للمقال أو الوثيقة:
-                </label>
-                <textarea
-                  rows={5}
-                  value={draft.body}
-                  onChange={(e) => setDraft({ ...draft, body: e.target.value })}
-                  placeholder="اكتب النص التفصيلي للمقال أو البيان..."
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
-                />
-              </div>
-
-              {draftError && (
-                <div className="p-3 rounded-xl bg-[#F7F6F2] border border-[#695022] text-xs font-bold text-[#141413]">
-                  {draftError}
-                </div>
-              )}
-
-              <div className="pt-4 border-t border-[#E6E2D8] flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsNewPostModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl border border-[#E6E2D8] text-xs font-bold text-zinc-700 cursor-pointer"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  <Check className="w-3.5 h-3.5 text-[#C5A059]" />
-                  <span>نشر المقال وفتحه للمطالعة</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

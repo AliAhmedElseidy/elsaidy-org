@@ -293,6 +293,51 @@ export const AboutPage: React.FC<AboutPageProps> = ({
               </div>
             ))}
           </div>
+
+          {/* Dedicated Authoritative Subsection: إقليم الصعيد (صعيد مصر) والامتداد الحجازي (حجازي - حجاج - الصعيدي) */}
+          <div className="mt-10 pt-8 border-t border-[#E6E2D8] space-y-6">
+            <div>
+              <div className="text-xs font-bold text-[#695022] mb-1">
+                التوثيق النَسَبي والجغرافي المعتمد · الصعيد · حجازي · حجاج · مرسي الحجاج
+              </div>
+              <h3 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#141413]">
+                {UPPER_EGYPT_AND_HIJAZI_HAGAG_LINEAGE_TEXT.title}
+              </h3>
+              <p className="text-xs sm:text-sm text-zinc-600 mt-1">
+                {UPPER_EGYPT_AND_HIJAZI_HAGAG_LINEAGE_TEXT.subtitle}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {UPPER_EGYPT_AND_HIJAZI_HAGAG_LINEAGE_TEXT.paragraphs.map((para, idx) => (
+                <p
+                  key={idx}
+                  className="font-display text-xl lg:text-[21px] text-[#141413] leading-[2.05] text-justify bg-[#F7F6F2] p-6 rounded-xl border border-[#E6E2D8]"
+                >
+                  {para}
+                </p>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {UPPER_EGYPT_AND_HIJAZI_HAGAG_LINEAGE_TEXT.keyPillars.map((pillar, idx) => (
+                <div
+                  key={idx}
+                  className="p-5 rounded-xl bg-white border border-[#E6E2D8] border-r-4 border-r-[#0F291E] shadow-sm"
+                >
+                  <div className="text-sm font-extrabold text-[#0F291E] mb-1.5">
+                    {pillar.label}
+                  </div>
+                  <p className="text-xs text-zinc-700 leading-relaxed mb-3">
+                    {pillar.description}
+                  </p>
+                  <div className="text-[11px] font-bold text-[#695022]">
+                    {pillar.keywords}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 

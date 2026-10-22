@@ -17,9 +17,13 @@ import {
 
 interface FamilyTreePageProps {
   onNavigate: (route: PageRoute) => void;
+  customNames?: string[];
 }
 
-export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) => {
+export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
+  onNavigate,
+  customNames = [],
+}) => {
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
   const [lightboxZoom, setLightboxZoom] = useState<number>(1.35);
@@ -31,15 +35,30 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({ onNavigate }) =>
   const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 0.25, 0.75));
   const handleResetZoom = () => setZoomLevel(1);
 
-  const filteredNames = COMPOUND_NAMES_INDEX.filter((entry) => {
+  const mergedCompoundEntries = React.useMemo(() => {
+    const existingSet = new Set(COMPOUND_NAMES_INDEX.map((e) => e.arabicName));
+    const extraEntries = customNames
+      .filter((n) => !existingSet.has(n))
+      .map((n) => ({
+        arabicName: n,
+        englishElsaidy: n,
+        englishElseidy: 'Elsaidy / Elseidy / Hijazi / Hagag',
+        englishAlsaidi: 'Alsaidi / Al-Saidy',
+        category: 'سجل الأعلام والفروع الموثقة (CMS)',
+        regions: 'مصر (الصعيد، الغربية، طنطا، القاهرة) · الحجاز · الوطن العربي',
+      }));
+    return [...extraEntries, ...COMPOUND_NAMES_INDEX];
+  }, [customNames]);
+
+  const filteredNames = mergedCompoundEntries.filter((entry) => {
     const q = nameSearchQuery.trim().toLowerCase();
     if (!q) return true;
     return (
-      entry.arabicName.includes(q) ||
+      entry.arabicName.toLowerCase().includes(q) ||
       entry.englishElsaidy.toLowerCase().includes(q) ||
       entry.englishElseidy.toLowerCase().includes(q) ||
       entry.englishAlsaidi.toLowerCase().includes(q) ||
-      entry.regions.includes(q)
+      entry.regions.toLowerCase().includes(q)
     );
   });
 

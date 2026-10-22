@@ -3,12 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   GEOGRAPHICAL_PRESENCE,
+  DIWAN_ARTICLES,
+  DEFAULT_VERIFIED_CERTIFICATES,
   PageRoute,
   WhiteLabeledPortal,
-  DiwanArticle
+  DiwanArticle,
+  IssuedCertificateRecord,
 } from './data/familyData';
 import { HomePage } from './pages/HomePage';
 import { AboutPage } from './pages/AboutPage';
@@ -16,6 +19,7 @@ import { FamilyTreePage } from './pages/FamilyTreePage';
 import { VerifyPage } from './pages/VerifyPage';
 import { BlogPage } from './pages/BlogPage';
 import { ProjectsPage } from './pages/ProjectsPage';
+import { AdminCmsPage } from './pages/AdminCmsPage';
 import { SEOManager } from './components/SEOManager';
 import {
   ArrowUpLeft,
@@ -28,8 +32,26 @@ import {
   Users,
   Globe2,
   ShieldCheck,
-  Activity
+  Activity,
 } from 'lucide-react';
+
+const VISITOR_STORAGE_KEY = 'elsaidy_official_portal_visits_v3';
+const CMS_ARTICLES_STORAGE_KEY = 'elsaidy_cms_articles_v1';
+const CMS_CERTS_STORAGE_KEY = 'elsaidy_cms_certificates_v1';
+const CMS_NAMES_STORAGE_KEY = 'elsaidy_cms_custom_names_v1';
+
+const DEFAULT_CUSTOM_NAMES = [
+  'علي أحمد علي الصعيدي (Ali Ahmed Ali Elsaidy)',
+  'مرسي الحجاج / مرسي حجاج الصعيدي (Morsi Hagag / Elsaidy)',
+  'حجاج الصعيدي (Hagag Elsaidy)',
+  'حجازي الصعيدي (Hijazi Elsaidy)',
+  'أحمد حجازي الصعيدي (Ahmed Hijazi Elsaidy)',
+  'محمد حجاج الصعيدي (Mohamed Hagag Elsaidy)',
+  'إبراهيم الصعيدي الحجازي (Ibrahim Elsaidy Al-Hijazi)',
+  'عبد الله الصعيدي (Abdullah Elsaidy)',
+  'محمود الصعيدي (Mahmoud Elsaidy)',
+  'مصطفى الصعيدي (Mostafa Elsaidy)',
+];
 
 function getInitialRoute(): PageRoute {
   if (typeof window === 'undefined') return 'home';
@@ -39,6 +61,7 @@ function getInitialRoute(): PageRoute {
   if (path === '/verify') return 'verify';
   if (path === '/diwan' || path === '/blog') return 'diwan';
   if (path === '/portals' || path === '/projects') return 'portals';
+  if (path === '/admin-elsaidy') return 'admin-elsaidy';
   return 'home';
 }
 
@@ -52,9 +75,61 @@ export default function App() {
   const [shareToastMessage, setShareToastMessage] = useState<string | null>(null);
   const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
 
-  // Live Visitor Counter & Telemetry State
-  const [totalVisits, setTotalVisits] = useState<number>(148920);
-  const [activeVisitorsNow, setActiveVisitorsNow] = useState<number>(42);
+  // 2x Double-Increment Live Visitor Counter & Telemetry State
+  const [totalVisits, setTotalVisits] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(VISITOR_STORAGE_KEY);
+      const parsed = saved ? parseInt(saved, 10) : 148923;
+      return !isNaN(parsed) && parsed >= 148923 ? parsed : 148923;
+    } catch {
+      return 148923;
+    }
+  });
+  const [isCounterPulsing, setIsCounterPulsing] = useState<boolean>(false);
+  const [activeVisitorsNow, setActiveVisitorsNow] = useState<number>(48);
+
+  // Secret 5-click trigger counter for Footer copyright seal
+  const secretClickCountRef = useRef<number>(0);
+
+  // Shared CMS State (Articles, Certificates, Custom SEO Names)
+  const [cmsArticles, setCmsArticles] = useState<DiwanArticle[]>(() => {
+    try {
+      const saved = localStorage.getItem(CMS_ARTICLES_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return DIWAN_ARTICLES;
+  });
+
+  const [cmsCertificates, setCmsCertificates] = useState<IssuedCertificateRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem(CMS_CERTS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return DEFAULT_VERIFIED_CERTIFICATES;
+  });
+
+  const [cmsCustomNames, setCmsCustomNames] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(CMS_NAMES_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return DEFAULT_CUSTOM_NAMES;
+  });
 
   // Formal Portal Login / Redirect Modal State
   const [loginIdentifier, setLoginIdentifier] = useState<string>('');
@@ -68,9 +143,23 @@ export default function App() {
     requestType: 'official-email',
     preferredEmailPrefix: '',
     contactInfo: '',
-    details: ''
+    details: '',
   });
   const [inquiryStatus, setInquiryStatus] = useState<string>('');
+
+  const triggerCounterIncrementByTwo = () => {
+    setTotalVisits((prev) => {
+      const next = Math.max(148923, prev) + 2;
+      try {
+        localStorage.setItem(VISITOR_STORAGE_KEY, String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+    setIsCounterPulsing(true);
+    setTimeout(() => setIsCounterPulsing(false), 900);
+  };
 
   useEffect(() => {
     const handlePopState = () => {
@@ -89,39 +178,99 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Initialize and increment official visitor counter in localStorage
+  // 1) Initial +2 increment on page entry/reload + fetch /data/cms-db.json + 2) Live +2 ticker every 15 seconds
   useEffect(() => {
-    try {
-      const storageKey = 'elsaidy_official_portal_visits_v2';
-      const sessionKey = 'elsaidy_session_counted_v2';
-      const storedRaw = localStorage.getItem(storageKey);
-      let currentCount = storedRaw ? parseInt(storedRaw, 10) : 148920;
-      if (isNaN(currentCount) || currentCount < 148920) {
-        currentCount = 148920;
-      }
-      if (!sessionStorage.getItem(sessionKey)) {
-        currentCount += 1;
-        sessionStorage.setItem(sessionKey, '1');
-        localStorage.setItem(storageKey, String(currentCount));
-      }
-      setTotalVisits(currentCount);
-    } catch {
-      setTotalVisits(148921);
-    }
+    triggerCounterIncrementByTwo();
 
-    // Subtle live fluctuation for Active Visitors Now
-    const interval = setInterval(() => {
-      setActiveVisitorsNow((prev) => {
-        const delta = Math.floor(Math.random() * 3) - 1; // -1, 0, or +1
-        return Math.max(34, Math.min(68, prev + delta));
+    // Load remote /data/cms-db.json if available to sync any GitHub-committed data
+    fetch('/data/cms-db.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((db) => {
+        if (!db || typeof db !== 'object') return;
+        if (typeof db.visitorCount === 'number' && db.visitorCount > 148923) {
+          setTotalVisits((prev) => {
+            const highest = Math.max(prev, db.visitorCount + 2);
+            try {
+              localStorage.setItem(VISITOR_STORAGE_KEY, String(highest));
+            } catch {
+              // ignore
+            }
+            return highest;
+          });
+        }
+        if (Array.isArray(db.articles) && db.articles.length > 0 && !localStorage.getItem(CMS_ARTICLES_STORAGE_KEY)) {
+          setCmsArticles(db.articles);
+        }
+        if (Array.isArray(db.certificates) && db.certificates.length > 0 && !localStorage.getItem(CMS_CERTS_STORAGE_KEY)) {
+          setCmsCertificates(db.certificates);
+        }
+        if (Array.isArray(db.customNames) && db.customNames.length > 0 && !localStorage.getItem(CMS_NAMES_STORAGE_KEY)) {
+          setCmsCustomNames(db.customNames);
+        }
+      })
+      .catch(() => {
+        // ignore fetch errors
       });
-    }, 8000);
 
-    return () => clearInterval(interval);
+    // Live Real-Time Ticker Simulation: every 15 seconds increment total counter by +2
+    const liveVisitInterval = setInterval(() => {
+      triggerCounterIncrementByTwo();
+    }, 15000);
+
+    // Realistic fluctuation for Active Visitors Now between 42 and 68
+    const activeReadersInterval = setInterval(() => {
+      setActiveVisitorsNow((prev) => {
+        const delta = Math.floor(Math.random() * 5) - 2; // -2 to +2
+        return Math.max(42, Math.min(68, prev + delta));
+      });
+    }, 6500);
+
+    return () => {
+      clearInterval(liveVisitInterval);
+      clearInterval(activeReadersInterval);
+    };
   }, []);
+
+  const handleUpdateArticles = (nextArticles: DiwanArticle[]) => {
+    setCmsArticles(nextArticles);
+    try {
+      localStorage.setItem(CMS_ARTICLES_STORAGE_KEY, JSON.stringify(nextArticles));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleUpdateCertificates = (nextCerts: IssuedCertificateRecord[]) => {
+    setCmsCertificates(nextCerts);
+    try {
+      localStorage.setItem(CMS_CERTS_STORAGE_KEY, JSON.stringify(nextCerts));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleUpdateCustomNames = (nextNames: string[]) => {
+    setCmsCustomNames(nextNames);
+    try {
+      localStorage.setItem(CMS_NAMES_STORAGE_KEY, JSON.stringify(nextNames));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleUpdateVisitorCount = (nextCount: number) => {
+    setTotalVisits(nextCount);
+    try {
+      localStorage.setItem(VISITOR_STORAGE_KEY, String(nextCount));
+    } catch {
+      // ignore
+    }
+  };
 
   const navigateTo = (route: PageRoute) => {
     setCurrentRoute(route);
+    // 2x Visitor Multiplier Rule: Every navigation between pages increments total counter by +2
+    triggerCounterIncrementByTwo();
     const targetPath = route === 'home' ? '/' : `/${route}`;
     try {
       window.history.pushState({}, '', targetPath);
@@ -129,6 +278,14 @@ export default function App() {
       // Fallback in restricted iframe environments
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSecretCopyrightClick = () => {
+    secretClickCountRef.current += 1;
+    if (secretClickCountRef.current >= 5) {
+      secretClickCountRef.current = 0;
+      navigateTo('admin-elsaidy');
+    }
   };
 
   const handleCopy = (text: string, key: string) => {
@@ -185,7 +342,7 @@ export default function App() {
     { id: 'tree', label: 'شجرة وفروع العائلة', path: '/tree' },
     { id: 'verify', label: 'التوثيق وشهادات النسب', path: '/verify' },
     { id: 'diwan', label: 'الديوان والمقالات', path: '/diwan' },
-    { id: 'portals', label: 'الأنظمة الرقمية ومشاريع الصعيدي', path: '/portals' }
+    { id: 'portals', label: 'الأنظمة الرقمية ومشاريع الصعيدي', path: '/portals' },
   ];
 
   return (
@@ -194,7 +351,7 @@ export default function App() {
       className="min-h-screen flex flex-col justify-between bg-[#F7F6F2] text-[#141413] selection:bg-[#695022]/20 selection:text-[#141413] overflow-x-hidden"
     >
       {/* Dynamic SEO & JSON-LD Structured Data Engine */}
-      <SEOManager currentRoute={currentRoute} />
+      <SEOManager currentPage={currentRoute} customNames={cmsCustomNames} />
 
       <div>
         {/* Regal Sticky Header with Official Geometric Crest/Monogram */}
@@ -346,15 +503,24 @@ export default function App() {
           )}
 
           {currentRoute === 'tree' && (
-            <FamilyTreePage onNavigate={navigateTo} />
+            <FamilyTreePage
+              onNavigate={navigateTo}
+              customNames={cmsCustomNames}
+            />
           )}
 
           {currentRoute === 'verify' && (
-            <VerifyPage onNavigate={navigateTo} />
+            <VerifyPage
+              onNavigate={navigateTo}
+              issuedCertificates={cmsCertificates}
+            />
           )}
 
           {currentRoute === 'diwan' && (
-            <BlogPage onNavigate={navigateTo} />
+            <BlogPage
+              onNavigate={navigateTo}
+              articles={cmsArticles}
+            />
           )}
 
           {currentRoute === 'portals' && (
@@ -369,6 +535,20 @@ export default function App() {
               }}
             />
           )}
+
+          {currentRoute === 'admin-elsaidy' && (
+            <AdminCmsPage
+              onNavigate={navigateTo}
+              visitorCount={totalVisits}
+              onUpdateVisitorCount={handleUpdateVisitorCount}
+              articles={cmsArticles}
+              onUpdateArticles={handleUpdateArticles}
+              issuedCertificates={cmsCertificates}
+              onUpdateCertificates={handleUpdateCertificates}
+              customNames={cmsCustomNames}
+              onUpdateCustomNames={handleUpdateCustomNames}
+            />
+          )}
         </main>
       </div>
 
@@ -379,7 +559,10 @@ export default function App() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pb-12 border-b border-white/10">
             <div className="lg:col-span-7 space-y-4">
               <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] border-2 border-[#D4AF37] flex flex-col items-center justify-center text-white shrink-0">
+                <div
+                  onClick={handleSecretCopyrightClick}
+                  className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] border-2 border-[#D4AF37] flex flex-col items-center justify-center text-white shrink-0 select-none"
+                >
                   <span className="font-mono text-[9px] font-bold tracking-widest text-[#D4AF37] leading-none">
                     ELSAIDY
                   </span>
@@ -392,19 +575,20 @@ export default function App() {
                     الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي
                   </div>
                   <div className="text-xs font-mono text-[#D4AF37]">
-                    ELSAIDY OFFICIAL PORTAL & BRAND HUB — elsaidy.org
+                    ELSAIDY OFFICIAL PORTAL &amp; BRAND HUB — elsaidy.org
                   </div>
                 </div>
               </div>
 
               <p className="text-xs sm:text-sm text-zinc-300 leading-[1.9] max-w-3xl text-justify">
-                المظلة الرسمية لتجمع عائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy / Alsaidi):
-                ١. جمهورية مصر العربية (صعيد مصر، محافظة الغربية وطنطا، الدلتا، القاهرة الكبرى،
-                الإسكندرية، ومدن القناة) · ٢. المملكة العربية السعودية (ينبع النخل، تيماء، حائل - حي
-                الزبارة، الرياض، تبوك، الحجاز، والمنطقة الشرقية) · ٣. بلاد الشام والعراق (سوريا - جبل
-                العرب، الأردن، فلسطين، ولبنان) · ٤. دول الخليج العربي (الإمارات - عجمان وأبوظبي
-                ودبي، سلطنة عُمان - الباطنة والخابورة، الكويت، قطر، والبحرين) · ٥. المغرب العربي
-                والسودان.
+                المظلة الرسمية لتجمع عائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy / Alsaidi)
+                وتاريخ إقليم الصعيد (صعيد مصر) والامتداد الحجازي (حجازي · حجاج · مرسي الحجاج ·
+                حجاج الصعيدي · حجازي الصعيدي): ١. جمهورية مصر العربية (صعيد مصر، محافظة الغربية
+                وطنطا، الدلتا، القاهرة الكبرى، الإسكندرية، ومدن القناة) · ٢. المملكة العربية
+                السعودية (ينبع النخل، تيماء، حائل - حي الزبارة، الرياض، تبوك، الحجاز، والمنطقة
+                الشرقية) · ٣. بلاد الشام والعراق (سوريا - جبل العرب، الأردن، فلسطين، ولبنان) ·
+                ٤. دول الخليج العربي (الإمارات - عجمان وأبوظبي ودبي، سلطنة عُمان - الباطنة
+                والخابورة، الكويت، قطر، والبحرين) · ٥. المغرب العربي والسودان.
               </p>
             </div>
 
@@ -461,22 +645,38 @@ export default function App() {
             <div className="flex items-center justify-between gap-2 mb-4">
               <div className="text-xs font-bold text-[#D4AF37] flex items-center gap-2">
                 <Activity className="w-4 h-4 text-[#D4AF37]" />
-                <span>شريط إحصائيات البوابة والأرشيف الرسمي (Live Portal Telemetry & Visitor Counter)</span>
+                <span>
+                  شريط إحصائيات البوابة والأرشيف الرسمي (Live Portal Telemetry &amp; Visitor
+                  Counter)
+                </span>
               </div>
               <span className="font-mono text-[11px] text-zinc-300 hidden sm:inline">
-                ELSAIDY TELEMETRY · REAL-TIME VERIFIED
+                ELSAIDY TELEMETRY · REAL-TIME VERIFIED (2X MULTIPLIER ACTIVE)
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Badge 1: Total Portal Visits */}
-              <div className="p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border border-[#D4AF37]/35 flex items-center justify-between">
+              {/* Badge 1: Total Portal Visits (2x Double-Increment with Live Pulse) */}
+              <div
+                className={`p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border transition-all duration-500 flex items-center justify-between ${
+                  isCounterPulsing
+                    ? 'border-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.25)] scale-[1.01]'
+                    : 'border-[#D4AF37]/35'
+                }`}
+              >
                 <div>
                   <div className="text-[11px] text-zinc-300 font-semibold mb-1">
                     إجمالي زيارات البوابة الوثائقية
                   </div>
-                  <div className="font-mono text-2xl font-extrabold text-[#D4AF37] tabular-nums">
-                    {totalVisits.toLocaleString('en-US')}
+                  <div className="flex items-baseline gap-2">
+                    <div className="font-mono text-2xl font-extrabold text-[#D4AF37] tabular-nums">
+                      {totalVisits.toLocaleString('en-US')}
+                    </div>
+                    {isCounterPulsing && (
+                      <span className="text-[11px] font-mono font-bold text-emerald-400 animate-bounce">
+                        +2
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
@@ -535,15 +735,18 @@ export default function App() {
             </div>
           </div>
 
-          {/* Bottom Copyright Row */}
+          {/* Bottom Copyright Row (5 clicks on the copyright text or seal unlocks /admin-elsaidy) */}
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-300">
-            <div>
+            <div
+              onClick={handleSecretCopyrightClick}
+              className="select-none cursor-default"
+            >
               © {new Date().getFullYear()} الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة
               الصعيدي — <span className="font-mono text-[#D4AF37]">elsaidy.org</span>. جميع الحقوق
               محفوظة للأمانة العامة ومجموعة الصعيدي.
             </div>
             <div className="text-[11px] text-zinc-400">
-              ELSAIDY Enterprise & Brand Solutions · Core Management · @elsaidy.org Official Mail ·
+              ELSAIDY Enterprise &amp; Brand Solutions · Core Management · @elsaidy.org Official Mail ·
               Knowledge Cloud
             </div>
           </div>

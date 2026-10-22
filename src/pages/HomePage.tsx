@@ -6,6 +6,7 @@ import {
   DIWAN_ARTICLES,
   ENCYCLOPEDIC_FAQS,
   SEO_KEYWORD_CLUSTERS,
+  UPPER_EGYPT_AND_HIJAZI_HAGAG_LINEAGE_TEXT,
   PageRoute,
   WhiteLabeledPortal,
   DiwanArticle
