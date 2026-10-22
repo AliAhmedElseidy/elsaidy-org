@@ -44,6 +44,14 @@ const ROUTE_SEO_META: Record<
     canonicalPath: '/tree',
     breadcrumbName: 'شجرة وفروع العائلة'
   },
+  verify: {
+    title:
+      'ديوان التوثيق وإصدار شهادات النسب وبطاقات العضوية | التحقق الرسمي من وثائق عائلات الصعيدي — elsaidy.org/verify',
+    description:
+      'بوابة التحقق العام من صحة شهادات النسب ومنظومة الإصدار الرسمية لشهادات الانتساب التاريخية وبطاقات الهوية والعضوية لعائلات الصعيدي في الوطن العربي (ELSAIDY Lineage Verification & ID Suite).',
+    canonicalPath: '/verify',
+    breadcrumbName: 'التوثيق وشهادات النسب'
+  },
   diwan: {
     title:
       'ديوان عائلات الصعيدي والمقالات التاريخية | الأبحاث والوثائق وأخبار مجموعة الصعيدي — elsaidy.org/diwan',

@@ -13,6 +13,7 @@ import {
 import { HomePage } from './pages/HomePage';
 import { AboutPage } from './pages/AboutPage';
 import { FamilyTreePage } from './pages/FamilyTreePage';
+import { VerifyPage } from './pages/VerifyPage';
 import { BlogPage } from './pages/BlogPage';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { SEOManager } from './components/SEOManager';
@@ -35,6 +36,7 @@ function getInitialRoute(): PageRoute {
   const path = window.location.pathname.replace(/\/+$/, '');
   if (path === '/about') return 'about';
   if (path === '/tree') return 'tree';
+  if (path === '/verify') return 'verify';
   if (path === '/diwan' || path === '/blog') return 'diwan';
   if (path === '/portals' || path === '/projects') return 'portals';
   return 'home';
@@ -181,6 +183,7 @@ export default function App() {
     { id: 'home', label: 'الرئيسية', path: '/' },
     { id: 'about', label: 'من نحن والتاريخ', path: '/about' },
     { id: 'tree', label: 'شجرة وفروع العائلة', path: '/tree' },
+    { id: 'verify', label: 'التوثيق وشهادات النسب', path: '/verify' },
     { id: 'diwan', label: 'الديوان والمقالات', path: '/diwan' },
     { id: 'portals', label: 'الأنظمة الرقمية ومشاريع الصعيدي', path: '/portals' }
   ];
@@ -188,7 +191,7 @@ export default function App() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen flex flex-col justify-between bg-[#F7F6F2] text-[#141413] selection:bg-[#9A7B3E]/20 selection:text-[#141413] overflow-x-hidden"
+      className="min-h-screen flex flex-col justify-between bg-[#F7F6F2] text-[#141413] selection:bg-[#695022]/20 selection:text-[#141413] overflow-x-hidden"
     >
       {/* Dynamic SEO & JSON-LD Structured Data Engine */}
       <SEOManager currentRoute={currentRoute} />
@@ -197,7 +200,7 @@ export default function App() {
         {/* Regal Sticky Header with Official Geometric Crest/Monogram */}
         <header
           id="top"
-          className="sticky top-0 z-50 backdrop-blur-md bg-[#F7F6F2]/95 border-b border-[#E2DDD3] px-4 sm:px-6 lg:px-12 py-3.5 shadow-xs"
+          className="no-print sticky top-0 z-50 backdrop-blur-md bg-[#F7F6F2]/95 border-b border-[#E2DDD3] px-4 sm:px-6 lg:px-12 py-3.5 shadow-xs"
         >
           <div className="max-w-[1280px] mx-auto flex items-center justify-between gap-4">
             {/* Zone 1: Geometric Crest/Monogram + Official Wordmark */}
@@ -210,8 +213,8 @@ export default function App() {
               className="flex items-center gap-3.5 shrink-0 group"
             >
               {/* Official Geometric Crest / Monogram for ELSAIDY | الصعيدي */}
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] border-2 border-[#C5A059] flex flex-col items-center justify-center text-white shadow-sm shrink-0">
-                <span className="font-mono text-[9px] font-bold tracking-widest text-[#C5A059] leading-none">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] border-2 border-[#D4AF37] flex flex-col items-center justify-center text-white shadow-sm shrink-0">
+                <span className="font-mono text-[9px] font-bold tracking-widest text-[#D4AF37] leading-none">
                   ELSAIDY
                 </span>
                 <span className="font-display text-xs font-bold text-white leading-tight mt-0.5">
@@ -223,7 +226,7 @@ export default function App() {
                 <div className="text-base sm:text-lg lg:text-xl font-extrabold text-[#141413] tracking-tight leading-snug group-hover:text-[#0F291E] transition-colors">
                   الموقع الرسمي لعائلات الصعيدي ومجموعة الصعيدي
                 </div>
-                <div className="text-[11px] font-semibold text-[#9A7B3E] hidden sm:block">
+                <div className="text-[11px] font-bold text-[#695022] hidden sm:block">
                   ELSAIDY OFFICIAL PORTAL & BRAND HUB · elsaidy.org
                 </div>
               </div>
@@ -232,7 +235,7 @@ export default function App() {
             {/* Zone 2: Desktop Navigation Links */}
             <nav
               aria-label="التنقل الرئيسي"
-              className="hidden xl:flex items-center gap-6 text-sm font-bold text-zinc-700"
+              className="hidden xl:flex items-center gap-5 text-sm font-bold text-zinc-800"
             >
               {navItems.map((item) => (
                 <a
@@ -244,8 +247,8 @@ export default function App() {
                   }}
                   className={`py-1.5 transition-all whitespace-nowrap shrink-0 ${
                     currentRoute === item.id
-                      ? 'text-[#0F291E] border-b-2 border-[#9A7B3E] font-extrabold'
-                      : 'hover:text-[#9A7B3E]'
+                      ? 'text-[#0F291E] border-b-2 border-[#695022] font-extrabold'
+                      : 'hover:text-[#695022]'
                   }`}
                 >
                   {item.label}
@@ -259,9 +262,9 @@ export default function App() {
                 type="button"
                 onClick={handleSharePortalLink}
                 title="مشاركة البوابة / نسخ الرابط الرسمي (elsaidy.org)"
-                className="px-3 py-2 rounded-xl bg-white border border-[#E6E2D8] text-xs font-bold text-[#141413] hover:border-[#9A7B3E] transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-3 py-2 rounded-xl bg-white border border-[#E6E2D8] text-xs font-bold text-[#141413] hover:border-[#695022] transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
-                <Share2 className="w-3.5 h-3.5 text-[#9A7B3E]" />
+                <Share2 className="w-3.5 h-3.5 text-[#695022]" />
                 <span className="hidden md:inline">مشاركة البوابة</span>
               </button>
 
@@ -273,7 +276,7 @@ export default function App() {
                 }}
                 className="px-4 py-2 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-all flex items-center gap-1.5 cursor-pointer shadow-sm whitespace-nowrap shrink-0"
               >
-                <Mail className="w-3.5 h-3.5 text-[#C5A059]" />
+                <Mail className="w-3.5 h-3.5 text-[#D4AF37]" />
                 <span>بريد وأعمال الصعيدي</span>
               </button>
             </div>
@@ -281,16 +284,16 @@ export default function App() {
         </header>
 
         {/* Institutional Operational & Pan-Arab Ribbon */}
-        <div className="bg-white border-b border-[#E6E2D8] px-4 sm:px-6 lg:px-12 py-2">
-          <div className="max-w-[1280px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-600">
+        <div className="no-print bg-white border-b border-[#E6E2D8] px-4 sm:px-6 lg:px-12 py-2">
+          <div className="max-w-[1280px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-700">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-bold text-[#0F291E]">
                 المظلة الرسمية لتجمع عائلات الصعيدي في الوطن العربي
               </span>
-              <span aria-hidden="true" className="text-[#9A7B3E]">·</span>
+              <span aria-hidden="true" className="text-[#695022]">·</span>
               <span>مصر · السعودية · الشام والعراق · الخليج العربي · المغرب العربي والسودان</span>
             </div>
-            <div className="flex items-center gap-2 font-mono text-[11px] text-[#9A7B3E] font-bold">
+            <div className="flex items-center gap-2 font-mono text-[11px] text-[#695022] font-bold">
               <span>elsaidy.org</span>
               <span aria-hidden="true">·</span>
               <span>ELSAIDY BRAND HUB</span>
@@ -299,7 +302,7 @@ export default function App() {
         </div>
 
         {/* Responsive Mobile / Tablet Navigation Bar */}
-        <div className="xl:hidden bg-[#F7F6F2] border-b border-[#E2DDD3] px-4 sm:px-6 py-2.5">
+        <div className="no-print xl:hidden bg-[#F7F6F2] border-b border-[#E2DDD3] px-4 sm:px-6 py-2.5">
           <div className="flex items-center gap-2 overflow-x-auto text-xs pb-0.5">
             {navItems.map((item) => (
               <button
@@ -346,6 +349,10 @@ export default function App() {
             <FamilyTreePage onNavigate={navigateTo} />
           )}
 
+          {currentRoute === 'verify' && (
+            <VerifyPage onNavigate={navigateTo} />
+          )}
+
           {currentRoute === 'diwan' && (
             <BlogPage onNavigate={navigateTo} />
           )}
@@ -365,15 +372,15 @@ export default function App() {
         </main>
       </div>
 
-      {/* Luxury Dark Institutional Footer (#0D131A with #C5A059 Gold Accents & Live Telemetry Counter) */}
-      <footer className="bg-[#0D131A] text-zinc-300 border-t-4 border-[#9A7B3E] mt-16">
+      {/* Luxury Dark Institutional Footer (#0D131A with #D4AF37 Gold Accents & Live Telemetry Counter) */}
+      <footer className="no-print bg-[#0D131A] text-zinc-200 border-t-4 border-[#695022] mt-16">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12 py-12 lg:py-16">
           {/* Top Footer Row: Identity, Pan-Arab Scope & Quick Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pb-12 border-b border-white/10">
             <div className="lg:col-span-7 space-y-4">
               <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] border-2 border-[#C5A059] flex flex-col items-center justify-center text-white shrink-0">
-                  <span className="font-mono text-[9px] font-bold tracking-widest text-[#C5A059] leading-none">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] border-2 border-[#D4AF37] flex flex-col items-center justify-center text-white shrink-0">
+                  <span className="font-mono text-[9px] font-bold tracking-widest text-[#D4AF37] leading-none">
                     ELSAIDY
                   </span>
                   <span className="font-display text-xs font-bold text-white leading-tight mt-0.5">
@@ -384,7 +391,7 @@ export default function App() {
                   <div className="text-lg sm:text-xl font-extrabold text-white">
                     الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي
                   </div>
-                  <div className="text-xs font-mono text-[#C5A059]">
+                  <div className="text-xs font-mono text-[#D4AF37]">
                     ELSAIDY OFFICIAL PORTAL & BRAND HUB — elsaidy.org
                   </div>
                 </div>
@@ -403,10 +410,10 @@ export default function App() {
 
             <div className="lg:col-span-5 flex flex-col justify-between gap-6">
               <div>
-                <div className="text-xs font-bold text-[#C5A059] mb-3">
+                <div className="text-xs font-bold text-[#D4AF37] mb-3">
                   أقسام البوابة الرسمية ومجموعة الصعيدي:
                 </div>
-                <div className="flex flex-wrap items-center gap-3 text-xs font-bold">
+                <div className="flex flex-wrap items-center gap-2.5 text-xs font-bold">
                   {navItems.map((item) => (
                     <button
                       key={item.id}
@@ -414,8 +421,8 @@ export default function App() {
                       onClick={() => navigateTo(item.id)}
                       className={`px-3.5 py-2 rounded-lg border transition-all cursor-pointer ${
                         currentRoute === item.id
-                          ? 'bg-[#C5A059] text-[#0D131A] border-[#C5A059]'
-                          : 'bg-white/5 text-white border-white/10 hover:border-[#C5A059]'
+                          ? 'bg-[#D4AF37] text-[#0D131A] border-[#D4AF37] font-extrabold'
+                          : 'bg-white/5 text-white border-white/15 hover:border-[#D4AF37]'
                       }`}
                     >
                       {item.label}
@@ -428,9 +435,9 @@ export default function App() {
                 <button
                   type="button"
                   onClick={handleSharePortalLink}
-                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-[#C5A059]/40 text-xs font-bold text-white flex items-center gap-2 cursor-pointer transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-[#D4AF37]/40 text-xs font-bold text-white flex items-center gap-2 cursor-pointer transition-colors"
                 >
-                  <Share2 className="w-3.5 h-3.5 text-[#C5A059]" />
+                  <Share2 className="w-3.5 h-3.5 text-[#D4AF37]" />
                   <span>مشاركة البوابة / نسخ الرابط الرسمي (elsaidy.org)</span>
                 </button>
 
@@ -440,7 +447,7 @@ export default function App() {
                     setInquiryStatus('');
                     setIsCorporateModalOpen(true);
                   }}
-                  className="px-4 py-2.5 rounded-xl bg-[#C5A059] text-[#0D131A] text-xs font-extrabold hover:bg-[#d4b26e] flex items-center gap-2 cursor-pointer transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-[#D4AF37] text-[#0D131A] text-xs font-extrabold hover:bg-[#e0bd42] flex items-center gap-2 cursor-pointer transition-colors"
                 >
                   <Mail className="w-3.5 h-3.5" />
                   <span>طلب بريد (@elsaidy.org)</span>
@@ -452,35 +459,35 @@ export default function App() {
           {/* 4. OFFICIAL LIVE VISITOR COUNTER & TELEMETRY RIBBON IN FOOTER */}
           <div className="py-8 border-b border-white/10">
             <div className="flex items-center justify-between gap-2 mb-4">
-              <div className="text-xs font-bold text-[#C5A059] flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[#C5A059]" />
+              <div className="text-xs font-bold text-[#D4AF37] flex items-center gap-2">
+                <Activity className="w-4 h-4 text-[#D4AF37]" />
                 <span>شريط إحصائيات البوابة والأرشيف الرسمي (Live Portal Telemetry & Visitor Counter)</span>
               </div>
-              <span className="font-mono text-[11px] text-zinc-400 hidden sm:inline">
+              <span className="font-mono text-[11px] text-zinc-300 hidden sm:inline">
                 ELSAIDY TELEMETRY · REAL-TIME VERIFIED
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Badge 1: Total Portal Visits */}
-              <div className="p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border border-[#C5A059]/35 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border border-[#D4AF37]/35 flex items-center justify-between">
                 <div>
-                  <div className="text-[11px] text-zinc-400 font-semibold mb-1">
+                  <div className="text-[11px] text-zinc-300 font-semibold mb-1">
                     إجمالي زيارات البوابة الوثائقية
                   </div>
-                  <div className="font-mono text-2xl font-extrabold text-[#C5A059] tabular-nums">
+                  <div className="font-mono text-2xl font-extrabold text-[#D4AF37] tabular-nums">
                     {totalVisits.toLocaleString('en-US')}
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-lg bg-[#C5A059]/10 border border-[#C5A059]/30 flex items-center justify-center text-[#C5A059]">
+                <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
                   <Users className="w-5 h-5" />
                 </div>
               </div>
 
               {/* Badge 2: Active Visitors Now */}
-              <div className="p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border border-[#C5A059]/35 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border border-[#D4AF37]/35 flex items-center justify-between">
                 <div>
-                  <div className="text-[11px] text-zinc-400 font-semibold mb-1">
+                  <div className="text-[11px] text-zinc-300 font-semibold mb-1">
                     المتصفحون النشطون الآن
                   </div>
                   <div className="flex items-center gap-2">
@@ -497,24 +504,24 @@ export default function App() {
               </div>
 
               {/* Badge 3: Registered Arab Countries */}
-              <div className="p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border border-[#C5A059]/35 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border border-[#D4AF37]/35 flex items-center justify-between">
                 <div>
-                  <div className="text-[11px] text-zinc-400 font-semibold mb-1">
+                  <div className="text-[11px] text-zinc-300 font-semibold mb-1">
                     الأقطار والدول المسجلة
                   </div>
-                  <div className="text-xl font-extrabold text-[#C5A059]">
+                  <div className="text-xl font-extrabold text-[#D4AF37]">
                     14+ دولة عربية
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-lg bg-[#C5A059]/10 border border-[#C5A059]/30 flex items-center justify-center text-[#C5A059]">
+                <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
                   <Globe2 className="w-5 h-5" />
                 </div>
               </div>
 
               {/* Badge 4: System & Brand Status */}
-              <div className="p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border border-[#C5A059]/35 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border border-[#D4AF37]/35 flex items-center justify-between">
                 <div>
-                  <div className="text-[11px] text-zinc-400 font-semibold mb-1">
+                  <div className="text-[11px] text-zinc-300 font-semibold mb-1">
                     حالة المنظومة والبراند
                   </div>
                   <div className="text-sm sm:text-base font-extrabold text-emerald-400">
@@ -529,13 +536,13 @@ export default function App() {
           </div>
 
           {/* Bottom Copyright Row */}
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-400">
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-300">
             <div>
               © {new Date().getFullYear()} الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة
-              الصعيدي — <span className="font-mono text-[#C5A059]">elsaidy.org</span>. جميع الحقوق
+              الصعيدي — <span className="font-mono text-[#D4AF37]">elsaidy.org</span>. جميع الحقوق
               محفوظة للأمانة العامة ومجموعة الصعيدي.
             </div>
-            <div className="text-[11px] text-zinc-500">
+            <div className="text-[11px] text-zinc-400">
               ELSAIDY Enterprise & Brand Solutions · Core Management · @elsaidy.org Official Mail ·
               Knowledge Cloud
             </div>
@@ -549,16 +556,16 @@ export default function App() {
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           aria-label="العودة للأعلى"
-          className="fixed left-6 bottom-6 z-40 px-4 py-3 rounded-xl bg-[#0F291E] text-white border-2 border-[#C5A059] shadow-xl hover:bg-[#141E28] hover:-translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer text-xs font-extrabold"
+          className="no-print fixed left-6 bottom-6 z-40 px-4 py-3 rounded-xl bg-[#0F291E] text-white border-2 border-[#D4AF37] shadow-xl hover:bg-[#141E28] hover:-translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer text-xs font-extrabold"
         >
-          <ArrowUp className="w-4 h-4 text-[#C5A059]" />
+          <ArrowUp className="w-4 h-4 text-[#D4AF37]" />
           <span>العودة للأعلى</span>
         </button>
       )}
 
       {/* Sleek Toast Notification when Official Portal Link is Copied */}
       {shareToastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-xl bg-[#0D131A] text-white border-2 border-[#C5A059] shadow-2xl flex items-center gap-2.5 text-xs font-bold">
+        <div className="no-print fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-xl bg-[#0D131A] text-white border-2 border-[#D4AF37] shadow-2xl flex items-center gap-2.5 text-xs font-bold">
           <Check className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{shareToastMessage}</span>
         </div>
@@ -567,16 +574,16 @@ export default function App() {
       {/* Corporate Inquiry & Official @elsaidy.org Email Request Modal */}
       {isCorporateModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 overflow-y-auto"
+          className="no-print fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 overflow-y-auto"
           onClick={() => setIsCorporateModalOpen(false)}
         >
           <div
-            className="w-full max-w-xl bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-8 text-[#141413] shadow-2xl my-8"
+            className="w-full max-w-xl bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-8 text-[#141413] shadow-2xl my-8"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 pb-4 mb-5 border-b border-[#E6E2D8]">
               <div>
-                <div className="text-xs text-[#9A7B3E] font-bold">
+                <div className="text-xs text-[#695022] font-bold">
                   ELSAIDY BRAND & OFFICIAL MAIL HUB · elsaidy.org
                 </div>
                 <h3 className="text-xl sm:text-2xl font-extrabold text-[#141413] mt-1">
@@ -586,7 +593,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setIsCorporateModalOpen(false)}
-                className="p-1.5 rounded-lg border border-[#E6E2D8] hover:border-[#9A7B3E] transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg border border-[#E6E2D8] hover:border-[#695022] transition-colors cursor-pointer"
                 aria-label="إغلاق"
               >
                 <X className="w-4 h-4" />
@@ -604,7 +611,7 @@ export default function App() {
                     value={inquiryForm.fullName}
                     onChange={(e) => setInquiryForm({ ...inquiryForm, fullName: e.target.value })}
                     placeholder="مثال: علي أحمد الصعيدي"
-                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#9A7B3E]"
+                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
                   />
                 </div>
 
@@ -617,7 +624,7 @@ export default function App() {
                     onChange={(e) =>
                       setInquiryForm({ ...inquiryForm, countryRegion: e.target.value })
                     }
-                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#9A7B3E]"
+                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
                   >
                     <option value="جمهورية مصر العربية">١. جمهورية مصر العربية</option>
                     <option value="المملكة العربية السعودية">٢. المملكة العربية السعودية</option>
@@ -638,7 +645,7 @@ export default function App() {
                     onChange={(e) =>
                       setInquiryForm({ ...inquiryForm, requestType: e.target.value })
                     }
-                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#9A7B3E]"
+                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
                   >
                     <option value="official-email">إصدار بريد رسمي (@elsaidy.org)</option>
                     <option value="enterprise-project">تعاون تجاري / مشاريع مجموعة الصعيدي</option>
@@ -658,7 +665,7 @@ export default function App() {
                       setInquiryForm({ ...inquiryForm, preferredEmailPrefix: e.target.value })
                     }
                     placeholder="name@elsaidy.org"
-                    className="w-full px-3.5 py-2.5 text-sm font-mono text-right rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#9A7B3E]"
+                    className="w-full px-3.5 py-2.5 text-sm font-mono text-right rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
                   />
                 </div>
               </div>
@@ -672,7 +679,7 @@ export default function App() {
                   value={inquiryForm.contactInfo}
                   onChange={(e) => setInquiryForm({ ...inquiryForm, contactInfo: e.target.value })}
                   placeholder="أدخل وسيلة التواصل المباشرة..."
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#9A7B3E]"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
                 />
               </div>
 
@@ -685,12 +692,12 @@ export default function App() {
                   value={inquiryForm.details}
                   onChange={(e) => setInquiryForm({ ...inquiryForm, details: e.target.value })}
                   placeholder="اكتب نبذة مختصرة عن طلبك أو مقترح المشروع..."
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#9A7B3E]"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
                 />
               </div>
 
               {inquiryStatus && (
-                <div className="p-3.5 rounded-xl bg-[#F7F6F2] border border-[#9A7B3E] text-xs font-bold text-[#0F291E] leading-relaxed">
+                <div className="p-3.5 rounded-xl bg-[#F7F6F2] border border-[#695022] text-xs font-bold text-[#0F291E] leading-relaxed">
                   {inquiryStatus}
                 </div>
               )}
@@ -707,7 +714,7 @@ export default function App() {
                   type="submit"
                   className="px-6 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors flex items-center gap-2 cursor-pointer"
                 >
-                  <Check className="w-3.5 h-3.5 text-[#C5A059]" />
+                  <Check className="w-3.5 h-3.5 text-[#D4AF37]" />
                   <span>إرسال الطلب الرسمي</span>
                 </button>
               </div>
@@ -719,16 +726,16 @@ export default function App() {
       {/* Formal Login / Redirect Modal for Official Digital Portals */}
       {inspectedPortal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
+          className="no-print fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
           onClick={() => setInspectedPortal(null)}
         >
           <div
-            className="w-full max-w-xl bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-8 text-[#141413] shadow-2xl"
+            className="w-full max-w-xl bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-8 text-[#141413] shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 pb-4 mb-5 border-b border-[#E6E2D8]">
               <div>
-                <div className="text-xs text-[#9A7B3E] font-bold">
+                <div className="text-xs text-[#695022] font-bold">
                   بوابة الدخول والتوجيه الرسمي · {inspectedPortal.domain}
                 </div>
                 <h3 className="text-xl sm:text-2xl font-extrabold text-[#141413] mt-1">
@@ -741,7 +748,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setInspectedPortal(null)}
-                className="p-1.5 rounded-lg border border-[#E6E2D8] hover:border-[#9A7B3E] transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg border border-[#E6E2D8] hover:border-[#695022] transition-colors cursor-pointer"
                 aria-label="إغلاق"
               >
                 <X className="w-4 h-4" />
@@ -764,7 +771,7 @@ export default function App() {
                     value={loginIdentifier}
                     onChange={(e) => setLoginIdentifier(e.target.value)}
                     placeholder="user@elsaidy.org"
-                    className="w-full px-3.5 py-2.5 text-sm text-right font-mono rounded-lg bg-white border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#9A7B3E]"
+                    className="w-full px-3.5 py-2.5 text-sm text-right font-mono rounded-lg bg-white border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
                   />
                 </div>
 
@@ -778,13 +785,13 @@ export default function App() {
                     value={loginPasscode}
                     onChange={(e) => setLoginPasscode(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full px-3.5 py-2.5 text-sm text-right font-mono rounded-lg bg-white border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#9A7B3E]"
+                    className="w-full px-3.5 py-2.5 text-sm text-right font-mono rounded-lg bg-white border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
                   />
                 </div>
               </div>
 
               {loginStatus && (
-                <div className="p-3.5 rounded-xl bg-[#F7F6F2] border border-[#9A7B3E] text-xs font-bold text-[#141413] leading-relaxed">
+                <div className="p-3.5 rounded-xl bg-[#F7F6F2] border border-[#695022] text-xs font-bold text-[#141413] leading-relaxed">
                   {loginStatus}
                 </div>
               )}
@@ -794,7 +801,7 @@ export default function App() {
                   type="submit"
                   className="px-5 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors flex items-center gap-2 cursor-pointer"
                 >
-                  <Lock className="w-3.5 h-3.5 text-[#C5A059]" />
+                  <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
                   <span>التحقق وتسجيل الدخول</span>
                 </button>
 
@@ -802,7 +809,7 @@ export default function App() {
                   href={inspectedPortal.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2.5 rounded-xl bg-[#9A7B3E] text-white text-xs font-bold hover:bg-[#826631] transition-colors flex items-center gap-1.5"
+                  className="px-4 py-2.5 rounded-xl bg-[#695022] text-white text-xs font-bold hover:bg-[#533f1b] transition-colors flex items-center gap-1.5"
                 >
                   <span>التوجيه المباشر ({inspectedPortal.domain})</span>
                   <ArrowUpLeft className="w-3.5 h-3.5" />
@@ -816,16 +823,16 @@ export default function App() {
       {/* Article Reader Modal (Triggered from HomePage previews) */}
       {activeArticleModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 overflow-y-auto"
+          className="no-print fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 overflow-y-auto"
           onClick={() => setActiveArticleModal(null)}
         >
           <div
-            className="w-full max-w-3xl bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-10 my-8 text-[#141413] shadow-2xl"
+            className="w-full max-w-3xl bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-10 my-8 text-[#141413] shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 pb-5 mb-6 border-b border-[#E6E2D8]">
               <div>
-                <div className="text-xs text-[#9A7B3E] font-bold mb-1.5">
+                <div className="text-xs text-[#695022] font-bold mb-1.5">
                   {activeArticleModal.categoryLabel} · {activeArticleModal.hijriDate} (
                   {activeArticleModal.publishDate})
                 </div>
@@ -836,7 +843,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setActiveArticleModal(null)}
-                className="p-1.5 rounded-lg border border-[#E6E2D8] hover:border-[#9A7B3E] transition-colors cursor-pointer shrink-0"
+                className="p-1.5 rounded-lg border border-[#E6E2D8] hover:border-[#695022] transition-colors cursor-pointer shrink-0"
                 aria-label="إغلاق"
               >
                 <X className="w-4 h-4" />

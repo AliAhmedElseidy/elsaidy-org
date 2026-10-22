@@ -28,13 +28,13 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
   return (
     <div className="space-y-14 lg:space-y-20 py-8 lg:py-12">
       {/* Institutional & Brand Hub Header */}
-      <section className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-10 shadow-sm">
+      <section className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-10 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-6 border-b border-[#E6E2D8] text-xs text-zinc-600">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => onNavigate('home')}
-              className="hover:text-[#9A7B3E] font-bold transition-colors flex items-center gap-1 cursor-pointer"
+              className="hover:text-[#695022] font-bold transition-colors flex items-center gap-1 cursor-pointer"
             >
               <ArrowRight className="w-3.5 h-3.5" />
               <span>الرئيسية</span>
@@ -47,13 +47,13 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
 
           <div className="text-xs text-zinc-600">
             <span>النطاق الرسمي الموحد: </span>
-            <span className="font-mono text-[#9A7B3E] font-bold">elsaidy.org</span>
+            <span className="font-mono text-[#695022] font-bold">elsaidy.org</span>
           </div>
         </div>
 
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="max-w-4xl">
-            <div className="inline-flex items-center gap-2 text-xs font-bold text-[#9A7B3E] mb-2">
+            <div className="inline-flex items-center gap-2 text-xs font-bold text-[#695022] mb-2">
               <Building2 className="w-4 h-4 text-[#0F291E]" />
               <span>مجموعة وبراند الصعيدي · ELSAIDY GROUP & DIGITAL INFRASTRUCTURE</span>
             </div>
@@ -74,7 +74,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
           <button
             type="button"
             onClick={onOpenCorporateInquiry}
-            className="px-6 py-3.5 rounded-xl bg-[#9A7B3E] text-white text-xs font-extrabold hover:bg-[#826631] shadow-md transition-all flex items-center gap-2 cursor-pointer self-start lg:self-end shrink-0"
+            className="px-6 py-3.5 rounded-xl bg-[#695022] text-white text-xs font-extrabold hover:bg-[#826631] shadow-md transition-all flex items-center gap-2 cursor-pointer self-start lg:self-end shrink-0"
           >
             <Mail className="w-4 h-4" />
             <span>طلب بريد رسمي باسم العائلة (@elsaidy.org) أو تواصل للأعمال والمشاريع</span>
@@ -86,7 +86,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
       <section>
         <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <div className="text-xs font-bold text-[#9A7B3E] mb-1">
+            <div className="text-xs font-bold text-[#695022] mb-1">
               الركائز المؤسسية الخمس المعتمدة · انقر على أي منظومة للدخول أو التوجيه المباشر
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#141413]">
@@ -103,13 +103,13 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
             <div
               key={portal.id}
               onClick={() => onInspectPortal(portal)}
-              className={`rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] bg-white p-7 sm:p-9 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between cursor-pointer group ${
+              className={`rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] bg-white p-7 sm:p-9 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between cursor-pointer group ${
                 idx === 0 ? 'lg:col-span-2 bg-gradient-to-br from-white to-[#F7F6F2]' : ''
               }`}
             >
               <div>
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs pb-4 mb-5 border-b border-[#E6E2D8]">
-                  <span className="font-extrabold text-[#9A7B3E]">
+                  <span className="font-extrabold text-[#695022]">
                     الركيزة {portal.index} · {portal.accessClassification}
                   </span>
                   <span className="font-mono text-xs px-3 py-1 rounded-md bg-[#F7F6F2] border border-[#E6E2D8] text-[#0F291E] font-bold">
@@ -136,7 +136,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
                   <ul className="space-y-2 text-xs sm:text-sm text-zinc-700">
                     {portal.departments.map((dep, dIdx) => (
                       <li key={dIdx} className="flex items-start gap-2">
-                        <span className="text-[#9A7B3E] font-extrabold">·</span>
+                        <span className="text-[#695022] font-extrabold">·</span>
                         <span>{dep}</span>
                       </li>
                     ))}
@@ -175,13 +175,13 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
                   type="button"
                   onClick={() => onCopy(portal.domain, `portal-copy-${portal.id}`)}
                   title="نسخ النطاق"
-                  className="px-3.5 py-2 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-xs font-mono font-bold text-zinc-700 hover:border-[#9A7B3E] transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-xs font-mono font-bold text-zinc-700 hover:border-[#695022] transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <span>{portal.domain}</span>
                   {copiedKey === `portal-copy-${portal.id}` ? (
                     <Check className="w-3.5 h-3.5 text-[#0F291E]" />
                   ) : (
-                    <Copy className="w-3.5 h-3.5 text-[#9A7B3E]" />
+                    <Copy className="w-3.5 h-3.5 text-[#695022]" />
                   )}
                 </button>
               </div>
@@ -192,7 +192,7 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
 
       {/* Corporate & Official Email Request Banner */}
       <section>
-        <div className="rounded-2xl bg-gradient-to-br from-[#0F291E] via-[#112323] to-[#141E28] text-white border border-[#9A7B3E]/40 p-7 sm:p-10 lg:p-12 shadow-lg grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div className="rounded-2xl bg-gradient-to-br from-[#0F291E] via-[#112323] to-[#141E28] text-white border border-[#695022]/40 p-7 sm:p-10 lg:p-12 shadow-lg grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           <div className="lg:col-span-8">
             <div className="text-xs font-bold text-[#C5A059] mb-2">
               خدمات الهوية الرقمية والأعمال · ELSAIDY BRAND & CORPORATE HUB

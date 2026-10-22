@@ -18,13 +18,13 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
     GEOGRAPHICAL_PRESENCE[0];
 
   return (
-    <div className="w-full h-full bg-white rounded-xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] shadow-md flex flex-col justify-between overflow-hidden">
+    <div className="w-full h-full bg-white rounded-xl border border-[#E6E2D8] border-t-4 border-t-[#695022] shadow-md flex flex-col justify-between overflow-hidden">
       {/* Top Luxury Plate Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 border-b border-[#E6E2D8] bg-[#F7F6F2]">
         <div className="flex items-center gap-2 text-xs text-[#141413]">
-          <Compass className="w-4 h-4 text-[#9A7B3E] shrink-0" />
+          <Compass className="w-4 h-4 text-[#695022] shrink-0" />
           <span className="font-bold text-[#0F291E]">اللوحة الجغرافية والنسبية التفاعلية</span>
-          <span aria-hidden="true" className="text-[#9A7B3E]">·</span>
+          <span aria-hidden="true" className="text-[#695022]">·</span>
           <span className="text-zinc-600">مصر · السعودية · الشام · الخليج · المغرب العربي</span>
         </div>
 
@@ -103,14 +103,14 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
                 <path
                   d="M235,300 L135,255 L125,182 L118,155 L75,230"
                   fill="none"
-                  stroke="#9A7B3E"
+                  stroke="#695022"
                   strokeWidth="1.75"
                   strokeDasharray="4 3"
                 />
                 <path
                   d="M235,300 L255,205 L205,132 L225,110"
                   fill="none"
-                  stroke="#9A7B3E"
+                  stroke="#695022"
                   strokeWidth="1.5"
                   strokeDasharray="4 3"
                 />
@@ -135,9 +135,9 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
                           cx={loc.coordinates.x}
                           cy={loc.coordinates.y}
                           r="13"
-                          fill="#9A7B3E"
+                          fill="#695022"
                           fillOpacity="0.18"
-                          stroke="#9A7B3E"
+                          stroke="#695022"
                           strokeWidth="1.5"
                         />
                       )}
@@ -145,7 +145,7 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
                         cx={loc.coordinates.x}
                         cy={loc.coordinates.y}
                         r={isSelected ? '6' : '4.5'}
-                        fill={isSelected ? '#0F291E' : '#9A7B3E'}
+                        fill={isSelected ? '#0F291E' : '#695022'}
                         stroke="#FFFFFF"
                         strokeWidth="1.5"
                       />
@@ -183,7 +183,7 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
                     className={`px-2.5 py-2 rounded-lg text-[11px] font-bold border transition-all cursor-pointer truncate ${
                       isActive
                         ? 'bg-[#0F291E] text-white border-[#0F291E]'
-                        : 'bg-[#F7F6F2] text-[#141413] border-[#E6E2D8] hover:border-[#9A7B3E]'
+                        : 'bg-[#F7F6F2] text-[#141413] border-[#E6E2D8] hover:border-[#695022]'
                     }`}
                   >
                     {item.label}
@@ -204,18 +204,18 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
               </div>
             </div>
 
-            <div className="w-px h-3 bg-[#9A7B3E] mx-auto" />
+            <div className="w-px h-3 bg-[#695022] mx-auto" />
 
             <div>
-              <div className="inline-block rounded-xl border-2 border-[#9A7B3E] bg-[#F7F6F2] px-6 py-2">
-                <div className="text-[11px] text-[#9A7B3E] font-bold">عمود التفرع الجامع</div>
+              <div className="inline-block rounded-xl border-2 border-[#695022] bg-[#F7F6F2] px-6 py-2">
+                <div className="text-[11px] text-[#695022] font-bold">عمود التفرع الجامع</div>
                 <div className="font-display text-lg font-bold text-[#141413]">
                   عوض البراهيم
                 </div>
               </div>
             </div>
 
-            <div className="w-px h-3 bg-[#9A7B3E] mx-auto" />
+            <div className="w-px h-3 bg-[#695022] mx-auto" />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-right pt-2 border-t border-[#E6E2D8]">
               <button
@@ -223,11 +223,11 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
                 onClick={() => onSelectBranch('taima')}
                 className={`p-3.5 rounded-xl border text-right transition-all cursor-pointer ${
                   activeBranchId === 'taima'
-                    ? 'bg-[#F7F6F2] border-[#9A7B3E] shadow-sm'
-                    : 'bg-white border-[#E6E2D8] hover:border-[#9A7B3E]'
+                    ? 'bg-[#F7F6F2] border-[#695022] shadow-sm'
+                    : 'bg-white border-[#E6E2D8] hover:border-[#695022]'
                 }`}
               >
-                <div className="text-[11px] text-[#9A7B3E] font-bold mb-0.5">
+                <div className="text-[11px] text-[#695022] font-bold mb-0.5">
                   ١. فرع تيماء وتبوك
                 </div>
                 <div className="font-display text-base font-bold text-[#141413] mb-1">
@@ -243,11 +243,11 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
                 onClick={() => onSelectBranch('levant-jabal-alarab')}
                 className={`p-3.5 rounded-xl border text-right transition-all cursor-pointer ${
                   activeBranchId === 'levant-jabal-alarab'
-                    ? 'bg-[#F7F6F2] border-[#9A7B3E] shadow-sm'
-                    : 'bg-white border-[#E6E2D8] hover:border-[#9A7B3E]'
+                    ? 'bg-[#F7F6F2] border-[#695022] shadow-sm'
+                    : 'bg-white border-[#E6E2D8] hover:border-[#695022]'
                 }`}
               >
-                <div className="text-[11px] text-[#9A7B3E] font-bold mb-0.5">
+                <div className="text-[11px] text-[#695022] font-bold mb-0.5">
                   ٢. فرع بلاد الشام
                 </div>
                 <div className="font-display text-base font-bold text-[#141413] mb-1">
@@ -265,11 +265,11 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
                   ['hail-zubarah', 'riyadh', 'uae-ajman', 'oman-khaburah-gulf'].includes(
                     activeBranchId
                   )
-                    ? 'bg-[#F7F6F2] border-[#9A7B3E] shadow-sm'
-                    : 'bg-white border-[#E6E2D8] hover:border-[#9A7B3E]'
+                    ? 'bg-[#F7F6F2] border-[#695022] shadow-sm'
+                    : 'bg-white border-[#E6E2D8] hover:border-[#695022]'
                 }`}
               >
-                <div className="text-[11px] text-[#9A7B3E] font-bold mb-0.5">
+                <div className="text-[11px] text-[#695022] font-bold mb-0.5">
                   ٣. فرع حائل والرياض والخليج
                 </div>
                 <div className="font-display text-base font-bold text-[#141413] mb-1">
@@ -288,7 +288,7 @@ export const HeritageAndInfraVisual: React.FC<HeritageAndInfraVisualProps> = ({
       {/* Bottom Selected Node Inspector */}
       <div className="px-6 py-4 border-t border-[#E6E2D8] bg-[#F7F6F2] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-[#9A7B3E]">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#695022]">
             <MapPin className="w-3.5 h-3.5 text-[#0F291E]" />
             <span>
               الحاضرة المحددة ({selectedRegion.index}): {selectedRegion.regionName}

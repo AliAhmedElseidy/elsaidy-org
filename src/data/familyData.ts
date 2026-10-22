@@ -1,4 +1,4 @@
-export type PageRoute = 'home' | 'about' | 'tree' | 'diwan' | 'portals';
+export type PageRoute = 'home' | 'about' | 'tree' | 'verify' | 'diwan' | 'portals';
 
 export const OFFICIAL_FAMILY_TREE_IMAGE_URL =
   'https://www.alsaidi.net/contents/myuppic/04d80878942951.jpg';
@@ -1000,3 +1000,63 @@ export const ENCYCLOPEDIC_FAQS: EncyclopedicFAQ[] = [
     keywords: ['مجموعة الصعيدي', 'براند الصعيدي', 'ELSAIDY Brand', 'elsaidy.org']
   }
 ];
+
+export interface IssuedCertificateRecord {
+  serialNumber: string;
+  arabicName: string;
+  englishName: string;
+  country: string;
+  countryCode: string;
+  regionBranch: string;
+  lineageNarrative: string;
+  documentType: 'a4-certificate' | 'vip-id';
+  issueDateGregorian: string;
+  issueDateHijri: string;
+  status: string;
+}
+
+export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
+  {
+    serialNumber: 'ELS-2026-EG-001',
+    arabicName: 'علي أحمد علي الصعيدي',
+    englishName: 'Ali Ahmed Ali Elsaidy',
+    country: 'جمهورية مصر العربية',
+    countryCode: 'EG',
+    regionBranch: 'محافظة الغربية - مدينة طنطا / القاهرة الكبرى',
+    lineageNarrative:
+      'ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).',
+    documentType: 'a4-certificate',
+    issueDateGregorian: '2026-10-22',
+    issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
+    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام'
+  },
+  {
+    serialNumber: 'ELS-2026-SA-001',
+    arabicName: 'إبراهيم بن عبد الله بن صالح الصعيدي',
+    englishName: 'Ibrahim bin Abdullah bin Saleh Elsaidy',
+    country: 'المملكة العربية السعودية',
+    countryCode: 'SA',
+    regionBranch: 'منطقة حائل - حي الزبارة / ينبع النخل',
+    lineageNarrative:
+      'من أعقاب الجد السابع إبراهيم الصعيدي من قبيلة جهينة من ينبع النخل بالساحل الغربي لشبه الجزيرة العربية، من ذرية عوض البراهيم عبر ابنه صالح بن عوض.',
+    documentType: 'a4-certificate',
+    issueDateGregorian: '2026-10-22',
+    issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
+    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام'
+  },
+  {
+    serialNumber: 'ELS-2026-SA-002',
+    arabicName: 'حمود بن ناصر بن عبد الله الصعيدي',
+    englishName: 'Hammoud bin Nasser bin Abdullah Elsaidy',
+    country: 'المملكة العربية السعودية',
+    countryCode: 'SA',
+    regionBranch: 'مدينة الرياض / منطقة حائل',
+    lineageNarrative:
+      'من ذرية ناصر بن عبد الله بن صالح بن عوض بن إبراهيم الصعيدي الجهني، الذي انتقل أبناؤه وأحفاده إلى مدينة الرياض بعد تولي شئون البادية في مطلع عهد الملك عبد العزيز يرحمه الله.',
+    documentType: 'a4-certificate',
+    issueDateGregorian: '2026-10-22',
+    issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
+    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام'
+  }
+];
+

@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "name": "الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي | ELSAIDY OFFICIAL PORTAL & BRAND HUB",
+  "domain": "https://elsaidy.org",
+  "description": "المرجع التاريخي والوثائقي والرقمي المعتمد لعائلات الصعيدي (Elsaidy / Elseidy / Alsaidi) في جمهورية مصر العربية، المملكة العربية السعودية، بلاد الشام، والخليج العربي، وواجهة مجموعة وبراند الصعيدي.",
+  "llms_txt": "https://elsaidy.org/llms.txt",
+  "sitemap": "https://elsaidy.org/sitemap.xml",
+  "resources": [
+    {
+      "id": "home",
+      "title": "الصفحة الرئيسية والبوابة الشاملة",
+      "url": "https://elsaidy.org/",
+      "type": "portal"
+    },
+    {
+      "id": "about",
+      "title": "من نحن والوثيقة التاريخية المعتمدة",
+      "url": "https://elsaidy.org/about",
+      "type": "historical_document"
+    },
+    {
+      "id": "tree",
+      "title": "شجرة العائلة وفهرس الأعلام والأسماء",
+      "url": "https://elsaidy.org/tree",
+      "type": "genealogy_directory"
+    },
+    {
+      "id": "verify",
+      "title": "ديوان التوثيق وإصدار شهادات النسب",
+      "url": "https://elsaidy.org/verify",
+      "type": "verification_service"
+    },
+    {
+      "id": "diwan",
+      "title": "الديوان والمقالات والأبحاث",
+      "url": "https://elsaidy.org/diwan",
+      "type": "research_archive"
+    },
+    {
+      "id": "portals",
+      "title": "البوابات الرقمية ومجموعة الصعيدي",
+      "url": "https://elsaidy.org/portals",
+      "type": "enterprise_hub"
+    }
+  ]
+}

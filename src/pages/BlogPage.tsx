@@ -115,7 +115,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
           </button>
 
           <div className="text-zinc-600">
-            <span className="font-bold text-[#9A7B3E]">
+            <span className="font-bold text-[#695022]">
               {dedicatedReadingArticle.categoryLabel}
             </span>
             <span className="mx-2" aria-hidden="true">·</span>
@@ -126,9 +126,9 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
         </div>
 
         {/* Dedicated Editorial Article Canvas */}
-        <article className="max-w-4xl mx-auto bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-7 sm:p-12 lg:p-16 shadow-md">
+        <article className="max-w-4xl mx-auto bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-7 sm:p-12 lg:p-16 shadow-md">
           <div className="border-b border-[#E6E2D8] pb-8 mb-8">
-            <div className="text-xs font-bold text-[#9A7B3E] mb-3">
+            <div className="text-xs font-bold text-[#695022] mb-3">
               إصدار رقم {dedicatedReadingArticle.index} · {dedicatedReadingArticle.categoryLabel} ·{' '}
               {dedicatedReadingArticle.readTime}
             </div>
@@ -192,13 +192,13 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
   return (
     <div className="space-y-12 lg:space-y-16 py-8 lg:py-12">
       {/* Institutional Diwan Header */}
-      <section className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-10 shadow-sm">
+      <section className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-10 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-6 border-b border-[#E6E2D8] text-xs text-zinc-600">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => onNavigate('home')}
-              className="hover:text-[#9A7B3E] font-bold transition-colors flex items-center gap-1 cursor-pointer"
+              className="hover:text-[#695022] font-bold transition-colors flex items-center gap-1 cursor-pointer"
             >
               <ArrowRight className="w-3.5 h-3.5" />
               <span>الرئيسية</span>
@@ -223,7 +223,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
         </div>
 
         <div className="max-w-4xl">
-          <div className="text-xs font-bold text-[#9A7B3E] mb-2">
+          <div className="text-xs font-bold text-[#695022] mb-2">
             الأرشيف الوثائقي والمنصة المعرفية · ديوان عائلات الصعيدي في الوطن العربي
           </div>
           <h1
@@ -278,7 +278,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="ابحث في مقالات ووثائق الديوان..."
-            className="w-full pr-10 pl-4 py-3 rounded-xl bg-white border border-[#E6E2D8] text-xs text-[#141413] shadow-sm outline-none focus:border-[#9A7B3E]"
+            className="w-full pr-10 pl-4 py-3 rounded-xl bg-white border border-[#E6E2D8] text-xs text-[#141413] shadow-sm outline-none focus:border-[#695022]"
           />
         </div>
       </section>
@@ -310,11 +310,11 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
               <article
                 key={article.id}
                 onClick={() => setDedicatedReadingArticle(article)}
-                className="p-7 sm:p-9 rounded-xl bg-white border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between cursor-pointer group"
+                className="p-7 sm:p-9 rounded-xl bg-white border border-[#E6E2D8] border-t-4 border-t-[#695022] shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between cursor-pointer group"
               >
                 <div>
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs pb-3 mb-4 border-b border-[#E6E2D8]">
-                    <span className="font-bold text-[#9A7B3E]">
+                    <span className="font-bold text-[#695022]">
                       إصدار {article.index} · {article.categoryLabel}
                     </span>
                     <span className="text-zinc-500">
@@ -338,7 +338,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
                     <span>{article.readTime}</span>
                   </div>
 
-                  <span className="font-extrabold text-[#0F291E] flex items-center gap-1.5 group-hover:text-[#9A7B3E] transition-colors">
+                  <span className="font-extrabold text-[#0F291E] flex items-center gap-1.5 group-hover:text-[#695022] transition-colors">
                     <BookOpen className="w-3.5 h-3.5" />
                     <span>قراءة المقال كاملاً</span>
                     <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
@@ -357,12 +357,12 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
           onClick={() => setIsNewPostModalOpen(false)}
         >
           <div
-            className="w-full max-w-2xl bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-8 my-8 text-[#141413] shadow-2xl"
+            className="w-full max-w-2xl bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-8 my-8 text-[#141413] shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 pb-4 mb-5 border-b border-[#E6E2D8]">
               <div>
-                <div className="text-xs text-[#9A7B3E] font-bold">
+                <div className="text-xs text-[#695022] font-bold">
                   النشر في ديوان عائلات الصعيدي
                 </div>
                 <h3 className="text-xl sm:text-2xl font-extrabold text-[#141413] mt-1">
@@ -372,7 +372,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
               <button
                 type="button"
                 onClick={() => setIsNewPostModalOpen(false)}
-                className="p-1.5 rounded-lg border border-[#E6E2D8] hover:border-[#9A7B3E] cursor-pointer"
+                className="p-1.5 rounded-lg border border-[#E6E2D8] hover:border-[#695022] cursor-pointer"
                 aria-label="إغلاق"
               >
                 <X className="w-4 h-4" />
@@ -389,7 +389,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
                   value={draft.title}
                   onChange={(e) => setDraft({ ...draft, title: e.target.value })}
                   placeholder="مثال: دراسة توثيقية في تاريخ فرع..."
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#9A7B3E]"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
                 />
               </div>
 
@@ -403,7 +403,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
                     value={draft.author}
                     onChange={(e) => setDraft({ ...draft, author: e.target.value })}
                     placeholder="الاسم الكامل"
-                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#9A7B3E]"
+                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
                   />
                 </div>
 
@@ -419,7 +419,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
                         category: e.target.value as 'heritage' | 'research' | 'documents' | 'news'
                       })
                     }
-                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#9A7B3E]"
+                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
                   >
                     <option value="heritage">تحقيق الأنساب والتاريخ</option>
                     <option value="research">الدراسات التاريخية والمصادر</option>
@@ -438,7 +438,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
                   value={draft.excerpt}
                   onChange={(e) => setDraft({ ...draft, excerpt: e.target.value })}
                   placeholder="اكتب ملخصاً موجزاً يظهر في بطاقة المقال..."
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#9A7B3E]"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
                 />
               </div>
 
@@ -451,12 +451,12 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onNavigate }) => {
                   value={draft.body}
                   onChange={(e) => setDraft({ ...draft, body: e.target.value })}
                   placeholder="اكتب النص التفصيلي للمقال أو البيان..."
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#9A7B3E]"
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
                 />
               </div>
 
               {draftError && (
-                <div className="p-3 rounded-xl bg-[#F7F6F2] border border-[#9A7B3E] text-xs font-bold text-[#141413]">
+                <div className="p-3 rounded-xl bg-[#F7F6F2] border border-[#695022] text-xs font-bold text-[#141413]">
                   {draftError}
                 </div>
               )}

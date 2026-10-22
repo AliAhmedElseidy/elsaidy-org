@@ -1,0 +1,11 @@
+{
+  "name": "الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي | ELSAIDY OFFICIAL PORTAL",
+  "short_name": "ELSAIDY | الصعيدي",
+  "description": "المرجع التاريخي والوثائقي والرقمي المعتمد لعائلات الصعيدي ومجموعة الصعيدي (elsaidy.org).",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F6F2",
+  "theme_color": "#0F291E",
+  "lang": "ar",
+  "dir": "rtl"
+}

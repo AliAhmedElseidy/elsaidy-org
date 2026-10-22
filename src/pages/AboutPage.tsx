@@ -28,13 +28,13 @@ export const AboutPage: React.FC<AboutPageProps> = ({
   return (
     <div className="space-y-14 lg:space-y-20 py-8 lg:py-12">
       {/* Institutional Breadcrumb & Chapter Header */}
-      <section className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-10 shadow-sm">
+      <section className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-10 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-6 border-b border-[#E6E2D8] text-xs text-zinc-600">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => onNavigate('home')}
-              className="hover:text-[#9A7B3E] font-bold transition-colors flex items-center gap-1 cursor-pointer"
+              className="hover:text-[#695022] font-bold transition-colors flex items-center gap-1 cursor-pointer"
             >
               <ArrowRight className="w-3.5 h-3.5" />
               <span>الرئيسية</span>
@@ -46,16 +46,16 @@ export const AboutPage: React.FC<AboutPageProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-zinc-700">
-            <a href="#doc-who-we-are" className="hover:text-[#9A7B3E] transition-colors">
+            <a href="#doc-who-we-are" className="hover:text-[#695022] transition-colors">
               ١. من نحن؟
             </a>
-            <a href="#doc-title-origin" className="hover:text-[#9A7B3E] transition-colors">
+            <a href="#doc-title-origin" className="hover:text-[#695022] transition-colors">
               ٢. سبب التسمية بـ الصعيدي . !
             </a>
-            <a href="#doc-pan-arab" className="hover:text-[#9A7B3E] transition-colors">
+            <a href="#doc-pan-arab" className="hover:text-[#695022] transition-colors">
               ٣. التجمع العربي في ٥ أقاليم
             </a>
-            <a href="#doc-references" className="hover:text-[#9A7B3E] transition-colors">
+            <a href="#doc-references" className="hover:text-[#695022] transition-colors">
               ٤. المراجع التاريخية الموثقة
             </a>
           </div>
@@ -63,7 +63,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
 
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="max-w-4xl">
-            <div className="text-xs font-bold text-[#9A7B3E] mb-2">
+            <div className="text-xs font-bold text-[#695022] mb-2">
               الأرشيف التاريخي المعتمد · الموقع الرسمي لعائلات الصعيدي في الوطن العربي (elsaidy.org)
             </div>
             <h1
@@ -95,7 +95,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
       <section id="doc-who-we-are" className="scroll-mt-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Primary Classical Document Card (8 Columns) */}
-          <div className="lg:col-span-8 bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-7 sm:p-10 lg:p-12 shadow-sm">
+          <div className="lg:col-span-8 bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-7 sm:p-10 lg:p-12 shadow-sm">
             {/* Ornamental Heritage Header in Amiri */}
             <div className="text-center pb-8 mb-8 border-b border-[#E6E2D8]">
               <div className="font-display text-2xl sm:text-3xl font-bold text-[#0F291E] mb-3">
@@ -110,7 +110,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
             <div className="space-y-8 font-display text-xl lg:text-[22px] text-[#141413] leading-[2.1] text-justify">
               <p>{VERBATIM_ABOUT_PARAGRAPH_1}</p>
 
-              <div className="w-24 h-0.5 bg-[#9A7B3E] mx-auto my-4" />
+              <div className="w-24 h-0.5 bg-[#695022] mx-auto my-4" />
 
               <p>{VERBATIM_ABOUT_PARAGRAPH_2}</p>
             </div>
@@ -129,7 +129,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
                     'copy-verbatim-about'
                   )
                 }
-                className="px-4 py-2 rounded-lg bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] font-bold hover:border-[#9A7B3E] transition-colors flex items-center gap-2 cursor-pointer"
+                className="px-4 py-2 rounded-lg bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] font-bold hover:border-[#695022] transition-colors flex items-center gap-2 cursor-pointer"
               >
                 {copiedKey === 'copy-verbatim-about' ? (
                   <>
@@ -138,7 +138,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3.5 h-3.5 text-[#9A7B3E]" />
+                    <Copy className="w-3.5 h-3.5 text-[#695022]" />
                     <span>نسخ نص الوثيقة</span>
                   </>
                 )}
@@ -148,7 +148,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
 
           {/* Marginalia / Side-Notes Column (4 Columns) */}
           <aside className="lg:col-span-4 space-y-4">
-            <div className="p-6 rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] text-white border border-[#9A7B3E]/40 shadow-sm">
+            <div className="p-6 rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] text-white border border-[#695022]/40 shadow-sm">
               <div className="text-xs font-bold text-[#C5A059] mb-1">
                 الحواشي والفهرس الهامشي للوثيقة
               </div>
@@ -160,10 +160,10 @@ export const AboutPage: React.FC<AboutPageProps> = ({
             {MARGINALIA_NOTES.map((note) => (
               <div
                 key={note.id}
-                className="p-5 rounded-xl bg-white border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] shadow-sm space-y-1.5"
+                className="p-5 rounded-xl bg-white border border-[#E6E2D8] border-t-4 border-t-[#695022] shadow-sm space-y-1.5"
               >
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-[#9A7B3E]">{note.index}</span>
+                  <span className="font-bold text-[#695022]">{note.index}</span>
                   <span className="text-[#0F291E] font-bold">{note.category}</span>
                 </div>
                 <h3 className="text-base font-extrabold text-[#141413]">
@@ -181,9 +181,9 @@ export const AboutPage: React.FC<AboutPageProps> = ({
       {/* Section 2: Dedicated Section for "سبب التسمية بـ الصعيدي . !" */}
       <section id="doc-title-origin" className="scroll-mt-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          <div className="lg:col-span-4 flex flex-col justify-between p-7 rounded-2xl bg-white border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] shadow-sm">
+          <div className="lg:col-span-4 flex flex-col justify-between p-7 rounded-2xl bg-white border border-[#E6E2D8] border-t-4 border-t-[#695022] shadow-sm">
             <div>
-              <div className="text-xs font-bold text-[#9A7B3E] mb-2">
+              <div className="text-xs font-bold text-[#695022] mb-2">
                 تحقيق اللقب التاريخي · قبيلة جهينة ومصر والحجاز
               </div>
               <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#141413] mb-4">
@@ -203,9 +203,9 @@ export const AboutPage: React.FC<AboutPageProps> = ({
             </div>
           </div>
 
-          <div className="lg:col-span-8 p-7 sm:p-10 lg:p-12 rounded-2xl bg-white border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] shadow-sm flex flex-col justify-between">
+          <div className="lg:col-span-8 p-7 sm:p-10 lg:p-12 rounded-2xl bg-white border border-[#E6E2D8] border-t-4 border-t-[#695022] shadow-sm flex flex-col justify-between">
             <div>
-              <div className="text-xs font-bold text-[#9A7B3E] mb-4">
+              <div className="text-xs font-bold text-[#695022] mb-4">
                 {VERBATIM_TITLE_REASON_HEADING}
               </div>
               <p className="font-display text-xl lg:text-[23px] text-[#141413] leading-[2.1] text-justify">
@@ -225,7 +225,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
                     'copy-title-reason'
                   )
                 }
-                className="px-4 py-2 rounded-lg bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] font-bold hover:border-[#9A7B3E] transition-colors flex items-center gap-2 cursor-pointer"
+                className="px-4 py-2 rounded-lg bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] font-bold hover:border-[#695022] transition-colors flex items-center gap-2 cursor-pointer"
               >
                 {copiedKey === 'copy-title-reason' ? (
                   <>
@@ -234,7 +234,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3.5 h-3.5 text-[#9A7B3E]" />
+                    <Copy className="w-3.5 h-3.5 text-[#695022]" />
                     <span>نسخ نص سبب التسمية</span>
                   </>
                 )}
@@ -246,9 +246,9 @@ export const AboutPage: React.FC<AboutPageProps> = ({
 
       {/* Section 3: Pan-Arab Umbrella Regions (Ordered: Egypt First, Saudi Arabia, Levant/Iraq, Gulf, Maghreb/Sudan) */}
       <section id="doc-pan-arab" className="scroll-mt-24">
-        <div className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-7 sm:p-10 lg:p-12 shadow-sm">
+        <div className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-7 sm:p-10 lg:p-12 shadow-sm">
           <div className="max-w-4xl mb-8">
-            <div className="inline-flex items-center gap-2 text-xs font-bold text-[#9A7B3E] mb-2">
+            <div className="inline-flex items-center gap-2 text-xs font-bold text-[#695022] mb-2">
               <Globe2 className="w-4 h-4 text-[#0F291E]" />
               <span>التوثيق الجغرافي والتاريخي الشامل · تجمع عائلات الصعيدي في الوطن العربي</span>
             </div>
@@ -264,12 +264,12 @@ export const AboutPage: React.FC<AboutPageProps> = ({
             {PAN_ARAB_REGIONS.map((region, idx) => (
               <div
                 key={region.id}
-                className={`p-6 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] flex flex-col justify-between ${
+                className={`p-6 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] border-t-4 border-t-[#695022] flex flex-col justify-between ${
                   idx === 0 ? 'md:col-span-2 lg:col-span-2 bg-white shadow-sm' : ''
                 }`}
               >
                 <div>
-                  <div className="text-xs font-extrabold text-[#9A7B3E] mb-1.5">
+                  <div className="text-xs font-extrabold text-[#695022] mb-1.5">
                     الإقليم {region.orderIndex} · {region.historicalRole}
                   </div>
                   <h3 className="text-xl font-extrabold text-[#141413] mb-2">
@@ -300,7 +300,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
       <section id="doc-references" className="scroll-mt-24">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
-            <div className="text-xs font-bold text-[#9A7B3E] mb-2">
+            <div className="text-xs font-bold text-[#695022] mb-2">
               الفهرس المرجعي المعتمد · المصادر والمطبوعات التاريخية
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#141413]">
@@ -333,14 +333,14 @@ export const AboutPage: React.FC<AboutPageProps> = ({
           {DOCUMENTED_REFERENCES.map((ref) => (
             <div
               key={ref.id}
-              className="bg-white rounded-xl border border-[#E6E2D8] border-t-4 border-t-[#9A7B3E] p-6 sm:p-8 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between"
+              className="bg-white rounded-xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-8 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between gap-2 text-xs pb-3 mb-4 border-b border-[#E6E2D8]">
                   <span className="font-bold text-[#0F291E]">
                     المرجع التاريخي ({ref.number})
                   </span>
-                  <span className="font-mono text-[11px] text-[#9A7B3E] font-bold tabular-nums">
+                  <span className="font-mono text-[11px] text-[#695022] font-bold tabular-nums">
                     {ref.catalogNumber}
                   </span>
                 </div>
