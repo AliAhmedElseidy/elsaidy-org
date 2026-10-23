@@ -1202,25 +1202,7 @@ export const sanitizeSafeUrl = (rawUrl: string | undefined, fallback = ''): stri
 
 export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
   {
-    serialNumber: 'ELS-2026-EG-001',
-    arabicName: 'علي أحمد علي الصعيدي',
-    englishName: 'Ali Ahmed Ali Elsaidy',
-    familyTitle: 'الصعيدي',
-    country: 'جمهورية مصر العربية',
-    countryCode: 'EG',
-    regionBranch: 'محافظة الغربية - مدينة طنطا / القاهرة الكبرى',
-    lineageNarrative:
-      'ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).',
-    documentType: 'a4-certificate',
-    issueDateGregorian: '2026-10-22',
-    issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
-    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
-    memberReferenceId: 'REG-EG-GH-0001',
-    ancestralRoot: 'الجد السابع إبراهيم الصعيدي الجهني — فرع الغربية وطنطا والقاهرة',
-    currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة'
-  },
-  {
-    serialNumber: 'ELS-2026-EG-014',
+    serialNumber: 'ELS-2026-EG-013',
     arabicName: 'علي أحمد علي الصعيدي',
     englishName: 'Ali Ahmed Ali Elsaidy',
     familyTitle: 'الصعيدي',
@@ -1229,49 +1211,31 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
     regionBranch: 'محافظة الغربية - مدينة طنطا / صعيد مصر / القاهرة',
     lineageNarrative:
       'ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).',
-    documentType: 'a4-certificate',
+    documentType: 'vip-id',
     issueDateGregorian: '2026-10-23',
     issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
     status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
-    memberReferenceId: 'REG-EG-GH-0014',
-    ancestralRoot: 'الجد السابع إبراهيم الصعيدي الجهني — فرع الغربية وطنطا وصعيد مصر',
-    currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة'
-  },
-  {
-    serialNumber: 'ELS-2026-EG-02',
-    arabicName: 'علي أحمد علي الصعيدي',
-    englishName: 'Ali Ahmed Ali Elsaidy',
-    familyTitle: 'الصعيدي',
-    country: 'جمهورية مصر العربية',
-    countryCode: 'EG',
-    regionBranch: 'محافظة الغربية - مدينة طنطا / صعيد مصر / القاهرة',
-    lineageNarrative:
-      'ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).',
-    documentType: 'a4-certificate',
-    issueDateGregorian: '2026-10-23',
-    issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
-    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
-    memberReferenceId: 'REG-EG-GH-0014',
+    memberReferenceId: 'REG-EG-GH-0013',
     ancestralRoot: 'الجد السابع إبراهيم الصعيدي الجهني — فرع الغربية وطنطا وصعيد مصر',
     currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة'
   },
   {
     serialNumber: 'ELS-2026-EG-002',
-    arabicName: 'مرسي الحجاج (مرسي حجاج الصعيدي)',
-    englishName: 'Morsi Hagag Elsaidy',
+    arabicName: 'علي أحمد علي الصعيدي',
+    englishName: 'Ali Ahmed Ali Elsaidy',
     familyTitle: 'الصعيدي',
     country: 'جمهورية مصر العربية',
     countryCode: 'EG',
-    regionBranch: 'صعيد مصر / محافظة الغربية - طنطا',
+    regionBranch: 'محافظة الغربية - مدينة طنطا / صعيد مصر / القاهرة',
     lineageNarrative:
-      'من الأعلام الموثقين في السجل التاريخي لعائلات الصعيدي (آل الصعيدي) والامتداد الحجازي الموثق في صعيد مصر ومحافظة الغربية وطنطا.',
+      'ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).',
     documentType: 'a4-certificate',
-    issueDateGregorian: '2026-10-22',
+    issueDateGregorian: '2026-10-23',
     issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
     status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
-    memberReferenceId: 'REG-EG-SD-0002',
-    ancestralRoot: 'الامتداد الحجازي الصعيدي — أعقاب مرسي الحجاج وآل الصعيدي',
-    currentResidence: 'جمهورية مصر العربية — صعيد مصر / محافظة الغربية'
+    memberReferenceId: 'REG-EG-GH-0002',
+    ancestralRoot: 'الجد السابع إبراهيم الصعيدي الجهني — فرع الغربية وطنطا وصعيد مصر',
+    currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة'
   },
   {
     serialNumber: 'ELS-2026-SA-001',
