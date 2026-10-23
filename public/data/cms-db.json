@@ -1,6 +1,6 @@
 {
-  "visitorCount": 150981,
-  "lastUpdated": "2026-10-22T20:19:00.000Z",
+  "visitorCount": 151049,
+  "lastUpdated": "2026-10-23T04:05:09.440Z",
   "siteConfig": {
     "branding": {
       "siteTitle": "الموقع الرسمي لعائلات الصعيدي ومجموعة الصعيدي",
@@ -54,6 +54,163 @@
       "documentCode": "ARCH-TREE-01",
       "documentTitle": "الوثيقة التاريخية المعتمدة لشجرة عائلة الصعيدي"
     },
+    "digitalPortals": [
+      {
+        "id": "elsaidy-enterprise-brand",
+        "index": "٠١",
+        "officialName": "علامة ومجموعة الصعيدي للأعمال والحلول المتكاملة (ELSAIDY Enterprise & Brand Solutions)",
+        "portalSubTitle": "واجهة المشروعات، التطوير، وإدارة الأعمال الحديثة باسم العائلة",
+        "englishSubtitle": "ELSAIDY Enterprise & Brand Solutions",
+        "domain": "brand.elsaidy.org",
+        "url": "https://elsaidy.org",
+        "accessClassification": "الواجهة المؤسسية والبراند الرسمي",
+        "securityProtocol": "هوية تجارية ومؤسسية موحدة (ELSAIDY Brand Standard)",
+        "summary": "المظلة المؤسسية والتجارية الرسمية لمجموعة وبراند الصعيدي (ELSAIDY Group)، المعنية بتطوير المشروعات الاستثمارية، الحلول المتكاملة، الشراكات الاستراتيجية، وبناء المبادرات الاقتصادية والمهنية الحديثة باسم عائلة الصعيدي في الوطن العربي.",
+        "departments": [
+          "تطوير المشروعات الريادية، الاستثمارات، والشراكات التجارية تحت علامة ELSAIDY",
+          "إدارة الهوية المؤسسية والبراند الرسمي لعائلات ومشاريع الصعيدي",
+          "حاضنة الأعمال والمبادرات المهنية والاستشارية لأبناء وأعلام العائلة"
+        ],
+        "operationalGuidelines": [
+          {
+            "label": "النطاق المؤسسي للبراند",
+            "value": "brand.elsaidy.org"
+          },
+          {
+            "label": "نطاق الأعمال",
+            "value": "الوطن العربي والأسواق الدولية"
+          },
+          {
+            "label": "الهوية المعتمدة",
+            "value": "ELSAIDY Official Brand Hub"
+          }
+        ]
+      },
+      {
+        "id": "central-management",
+        "index": "٠٢",
+        "officialName": "منظومة الإدارة والموارد المركزية (ELSAIDY Core Management Portal)",
+        "portalSubTitle": "بوابة إدارة العمليات والمشروعات والتخطيط المؤسسي",
+        "englishSubtitle": "ELSAIDY Core Management Portal",
+        "domain": "portal.elsaidy.org",
+        "url": "https://elsaidy.org",
+        "accessClassification": "تصريح إداري ومؤسسي",
+        "securityProtocol": "تشفير مؤسسي موحد (TLS 1.3 / MFA)",
+        "summary": "المنظومة المركزية المخصصة لإدارة العمليات، التخطيط المؤسسي، الموارد المالية، السجلات الإدارية، وشؤون المشروعات والمبادرات التابعة لمجموعة وأمانة عائلات الصعيدي.",
+        "departments": [
+          "إدارة العمليات التشغيلية والمشروعات والموازنات والتخطيط المؤسسي الشامل",
+          "متابعة المبادرات الاجتماعية والوقفية والاستثمارية في الأقاليم العربية",
+          "نظام الصلاحيات والتقارير التنفيذية لأمناء الفروع وإدارات المجموعة"
+        ],
+        "operationalGuidelines": [
+          {
+            "label": "نطاق الخدمة المعتمد",
+            "value": "portal.elsaidy.org"
+          },
+          {
+            "label": "الفئة المخولة بالدخول",
+            "value": "الإدارة التنفيذية ولجان الأمانة"
+          },
+          {
+            "label": "آلية التحقق الأمني",
+            "value": "معرّف رسمي + مصادقة ثنائية"
+          }
+        ]
+      },
+      {
+        "id": "official-mail",
+        "index": "٠٣",
+        "officialName": "نظام البريد والمراسلات الرسمية الموحد (@elsaidy.org Official Mail)",
+        "portalSubTitle": "خدمة البريد الرسمي الموثق حاملاً اسم الدومين الرسمي للعائلة والبراند",
+        "englishSubtitle": "@elsaidy.org Official Mail & Correspondence",
+        "domain": "mail.elsaidy.org",
+        "url": "https://elsaidy.org",
+        "accessClassification": "متاح لأعضاء العائلة وفرق الأعمال",
+        "securityProtocol": "توقيع رقمي موثق (DKIM / DMARC / S/MIME)",
+        "summary": "منظومة البريد الإلكتروني الرسمي والمراسلات المؤسسية المشفرة تحت النطاق الموحد (@elsaidy.org)، المخصصة لأبناء وأعلام عائلة الصعيدي وإدارات مجموعة الصعيدي للأعمال.",
+        "departments": [
+          "إصدار العناوين البريدية الرسمية الموثقة للأعضاء ورواد الأعمال (@elsaidy.org)",
+          "تشفير المراسلات الرسمية وحماية الوثائق المتبادلة بأعلى معايير الأمان",
+          "مزامنة التقويم المؤسسي، الاجتماعات، ودليل جهات الاتصال الرسمي المعتمد"
+        ],
+        "operationalGuidelines": [
+          {
+            "label": "نطاق البريد الرسمي",
+            "value": "mail.elsaidy.org"
+          },
+          {
+            "label": "صيغة الحساب المعتمد",
+            "value": "name@elsaidy.org"
+          },
+          {
+            "label": "بروتوكول الاتصال الآمن",
+            "value": "IMAPS (993) / SMTPS (465)"
+          }
+        ]
+      },
+      {
+        "id": "documentary-archive",
+        "index": "٠٤",
+        "officialName": "الأرشيف الوثائقي والمنصة المعرفية (ELSAIDY Knowledge & Heritage Cloud)",
+        "portalSubTitle": "قاعدة البيانات الرقمية والتوثيق والمخطوطات التاريخية",
+        "englishSubtitle": "ELSAIDY Knowledge & Heritage Cloud",
+        "domain": "archive.elsaidy.org",
+        "url": "https://elsaidy.org",
+        "accessClassification": "متاح للباحثين وأبناء العائلة",
+        "securityProtocol": "فهرسة معيارية وحفظ رقمي طويل الأمد",
+        "summary": "القاعدة المعرفية والرقمية المخصصة لحفظ وفهرسة الوثائق التاريخية، صور المشجرات المعتمدة، المراجع التراثية، والأبحاث المنشورة حول تاريخ وفروع عائلات الصعيدي في الوطن العربي.",
+        "departments": [
+          "أرشفة المشجرات النسبية والوثائق التاريخية بدقة مسح ضوئي عالية",
+          "فهرسة المراجع التاريخية والوثائق المصرية والحجازية والشامية والخليجية",
+          "نشر الأبحاث التاريخية والدراسات التوثيقية الصادرة عن لجنة التوثيق"
+        ],
+        "operationalGuidelines": [
+          {
+            "label": "نطاق الأرشيف المعرفي",
+            "value": "archive.elsaidy.org"
+          },
+          {
+            "label": "إشراف المحتوى",
+            "value": "لجنة التوثيق التاريخي والأنساب"
+          },
+          {
+            "label": "معيار الفهرسة",
+            "value": "نظام القيد الوثائقي الموحد"
+          }
+        ]
+      },
+      {
+        "id": "cloud-technical-services",
+        "index": "٠٥",
+        "officialName": "بوابة الخدمات التقنية والسحابية والهندسية (ELSAIDY Tech & Infrastructure Hub)",
+        "portalSubTitle": "حلول الشبكات، الخوادم، الأنظمة الذكية، وإدارة الهوية الرقمية",
+        "englishSubtitle": "ELSAIDY Tech & Infrastructure Hub",
+        "domain": "cloud.elsaidy.org",
+        "url": "https://elsaidy.org",
+        "accessClassification": "تصريح موحد (SSO)",
+        "securityProtocol": "خوادم سيادية مشفرة (AES-256 / Zero-Trust)",
+        "summary": "المركز التقني والهندسي المخصص لإدارة البنية السحابية الخاصة، حلول الشبكات والخوادم، الأنظمة الذكية، المستودع السحابي الآمن، ونظام الهوية الرقمية الموحدة لمجموعة وبوابات الصعيدي.",
+        "departments": [
+          "هندسة الشبكات، الخوادم السحابية، والأنظمة الذكية لمشروعات مجموعة الصعيدي",
+          "إدارة الهوية الرقمية الموحدة (Single Sign-On) عبر كافة نطاقات elsaidy.org",
+          "الأمن السيبراني، النسخ الاحتياطي المشفر، ومراقبة الجاهزية التشغيلية (100%)"
+        ],
+        "operationalGuidelines": [
+          {
+            "label": "نطاق المركز التقني",
+            "value": "cloud.elsaidy.org"
+          },
+          {
+            "label": "بوابة الهوية الموحدة",
+            "value": "id.elsaidy.org"
+          },
+          {
+            "label": "معيار التشفير السحابي",
+            "value": "AES-256-GCM / Zero-Trust"
+          }
+        ]
+      }
+    ],
     "contactAndFooter": {
       "officialEmail": "info@elsaidy.org",
       "whatsappOrPhone": "",
