@@ -173,6 +173,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     serialNumber: string;
     arabicName: string;
     englishName: string;
+    familyTitle: string;
     country: string;
     countryCode: string;
     regionBranch: string;
@@ -185,11 +186,12 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     serialNumber: `ELS-2026-EG-${String(issuedCertificates.length + 10).padStart(3, '0')}`,
     arabicName: 'علي أحمد علي الصعيدي',
     englishName: 'Ali Ahmed Ali Elsaidy',
+    familyTitle: 'الصعيدي',
     country: 'جمهورية مصر العربية',
     countryCode: 'EG',
     regionBranch: 'محافظة الغربية - مدينة طنطا / صعيد مصر / القاهرة',
     lineageNarrative:
-      'ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل والامتداد الحجازي والصعيدي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).',
+      'ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).',
     documentType: 'a4-certificate',
     issueDateGregorian: new Date().toISOString().slice(0, 10),
     issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
@@ -540,6 +542,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       serialNumber: certForm.serialNumber.trim().toUpperCase(),
       arabicName: certForm.arabicName.trim(),
       englishName: certForm.englishName.trim(),
+      familyTitle: certForm.familyTitle.trim() || 'الصعيدي',
       country: certForm.country,
       countryCode: certForm.countryCode,
       regionBranch: certForm.regionBranch.trim(),
@@ -556,7 +559,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     onUpdateCertificates([record, ...filtered]);
     setStatusBanner({
       type: 'success',
-      message: `تم حفظ واعتماد الوثيقة رقم (${record.serialNumber}) في السجل العام للتحقق الفوري.`,
+      message: `تم حفظ واعتماد الوثيقة رقم (${record.serialNumber}) في السجل العام للتحقق الفوري عبر الرابط (https://elsaidy.org/verify/${record.serialNumber}).`,
     });
   };
 
@@ -2213,16 +2216,42 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                  المحافظة / الحاضرة / الفرع العائلي:
-                </label>
-                <input
-                  type="text"
-                  value={certForm.regionBranch}
-                  onChange={(e) => setCertForm({ ...certForm, regionBranch: e.target.value })}
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-[#141413] mb-1.5">
+                    اللقب / العائلة المعتمدة في الشهادة (الافتراضي: الصعيدي):
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={certForm.familyTitle}
+                      onChange={(e) => setCertForm({ ...certForm, familyTitle: e.target.value })}
+                      placeholder="الصعيدي"
+                      className="flex-1 px-3.5 py-2.5 text-sm font-bold text-[#0F291E] rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                    />
+                    {certForm.familyTitle !== 'الصعيدي' && (
+                      <button
+                        type="button"
+                        onClick={() => setCertForm({ ...certForm, familyTitle: 'الصعيدي' })}
+                        className="px-2.5 py-2 rounded-xl bg-[#0F291E] text-[#D4AF37] text-xs font-bold cursor-pointer shrink-0"
+                      >
+                        الصعيدي (الافتراضي)
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#141413] mb-1.5">
+                    المحافظة / الحاضرة / الفرع العائلي:
+                  </label>
+                  <input
+                    type="text"
+                    value={certForm.regionBranch}
+                    onChange={(e) => setCertForm({ ...certForm, regionBranch: e.target.value })}
+                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                  />
+                </div>
               </div>
 
               <div>
@@ -2279,7 +2308,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                   السجل العام للوثائق الصادرة ({issuedCertificates.length})
                 </div>
                 <h3 className="text-lg font-extrabold text-[#141413]">
-                  الشهادات المعتمدة للتحقق الفوري (/verify)
+                  الشهادات المعتمدة للتحقق الفوري (/verify/:serial)
                 </h3>
               </div>
 
@@ -2289,14 +2318,19 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                     key={c.serialNumber}
                     className="p-3.5 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] flex items-center justify-between gap-3"
                   >
-                    <div>
-                      <div className="font-mono text-xs font-extrabold text-[#0F291E]">
-                        {c.serialNumber}
+                    <div className="min-w-0">
+                      <div className="font-mono text-xs font-extrabold text-[#0F291E] flex items-center gap-2">
+                        <span>{c.serialNumber}</span>
+                        <span className="px-2 py-0.5 rounded bg-[#0F291E]/10 text-[10px] font-sans font-bold text-[#0F291E]">
+                          آل {c.familyTitle || 'الصعيدي'}
+                        </span>
                       </div>
-                      <div className="text-sm font-bold text-[#141413]">{c.arabicName}</div>
-                      <div className="text-[11px] text-zinc-600">{c.regionBranch}</div>
+                      <div className="text-sm font-bold text-[#141413] truncate">{c.arabicName}</div>
+                      <div className="text-[10px] font-mono text-[#695022] truncate" dir="ltr">
+                        elsaidy.org/verify/{c.serialNumber}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <button
                         type="button"
                         onClick={() =>
@@ -2304,6 +2338,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                             serialNumber: c.serialNumber,
                             arabicName: c.arabicName,
                             englishName: c.englishName,
+                            familyTitle: c.familyTitle || 'الصعيدي',
                             country: c.country,
                             countryCode: c.countryCode,
                             regionBranch: c.regionBranch,
@@ -2334,9 +2369,13 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
 
           {/* Live Printable Preview */}
           <div className="bg-white rounded-2xl border border-[#E6E2D8] p-4 sm:p-8 shadow-sm">
-            <div className="no-print mb-4 flex items-center justify-between">
+            <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-extrabold text-[#695022]">
-                معاينة حية للوثيقة الجاهزة للطباعة (تقرأ الشعار والختم والشجرة من إعدادات الموقع):
+                معاينة حية للوثيقة الجاهزة للطباعة (الرابط داخل رمز QR:{' '}
+                <span className="font-mono text-[#0F291E]" dir="ltr">
+                  https://elsaidy.org/verify/{certForm.serialNumber}
+                </span>
+                ):
               </span>
             </div>
             <CertificateDocumentView
@@ -2344,6 +2383,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                 serialNumber: certForm.serialNumber,
                 arabicName: certForm.arabicName,
                 englishName: certForm.englishName,
+                familyTitle: certForm.familyTitle || 'الصعيدي',
                 country: certForm.country,
                 countryCode: certForm.countryCode,
                 regionBranch: certForm.regionBranch,
@@ -2353,6 +2393,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                 issueDateHijri: certForm.issueDateHijri,
                 status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
               }}
+              familyTitle={certForm.familyTitle || 'الصعيدي'}
               includeFamilyTreeStamp={certForm.includeFamilyTreeStamp}
               customLogoUrl={siteConfig.branding.logoUrl}
               customSealImageUrl={siteConfig.branding.sealImageUrl}

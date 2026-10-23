@@ -158,15 +158,30 @@ export const RoyalOfficialSealSvg: React.FC<{ size?: number }> = ({ size = 128 }
 );
 
 export interface CertificateRenderProps {
-  serialNumber: string;
-  arabicName: string;
-  englishName: string;
-  country: string;
-  regionBranch: string;
-  lineageNarrative: string;
-  documentType: 'a4-certificate' | 'vip-id';
-  issueDateGregorian: string;
-  issueDateHijri: string;
+  record?: {
+    serialNumber: string;
+    arabicName: string;
+    englishName: string;
+    familyTitle?: string;
+    country: string;
+    countryCode?: string;
+    regionBranch: string;
+    lineageNarrative: string;
+    documentType: 'a4-certificate' | 'vip-id';
+    issueDateGregorian: string;
+    issueDateHijri: string;
+    status?: string;
+  };
+  serialNumber?: string;
+  arabicName?: string;
+  englishName?: string;
+  familyTitle?: string;
+  country?: string;
+  regionBranch?: string;
+  lineageNarrative?: string;
+  documentType?: 'a4-certificate' | 'vip-id';
+  issueDateGregorian?: string;
+  issueDateHijri?: string;
   includeFamilyTreeStamp?: boolean;
   customLogoUrl?: string;
   customSealImageUrl?: string;
@@ -175,22 +190,41 @@ export interface CertificateRenderProps {
 }
 
 export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
-  serialNumber,
-  arabicName,
-  englishName,
-  country,
-  regionBranch,
-  lineageNarrative,
-  documentType,
-  issueDateGregorian,
-  issueDateHijri,
+  record,
+  serialNumber: propSerial,
+  arabicName: propArabicName,
+  englishName: propEnglishName,
+  familyTitle: propFamilyTitle,
+  country: propCountry,
+  regionBranch: propRegionBranch,
+  lineageNarrative: propNarrative,
+  documentType: propDocType,
+  issueDateGregorian: propGregorian,
+  issueDateHijri: propHijri,
   includeFamilyTreeStamp = true,
   customLogoUrl,
   customSealImageUrl,
   customTreeImageUrl,
   siteTitle,
 }) => {
+  const serialNumber = record?.serialNumber ?? propSerial ?? 'ELS-2026-EG-001';
+  const arabicName = record?.arabicName ?? propArabicName ?? 'علي أحمد علي الصعيدي';
+  const englishName = record?.englishName ?? propEnglishName ?? 'Ali Ahmed Ali Elsaidy';
+  const effectiveFamilyTitle =
+    (record?.familyTitle ?? propFamilyTitle ?? 'الصعيدي').trim() || 'الصعيدي';
+  const country = record?.country ?? propCountry ?? 'جمهورية مصر العربية';
+  const regionBranch =
+    record?.regionBranch ?? propRegionBranch ?? 'محافظة الغربية - مدينة طنطا / القاهرة الكبرى';
+  const lineageNarrative =
+    record?.lineageNarrative ??
+    propNarrative ??
+    `ينتسب إلى الذرية الموثقة لعائلات ${effectiveFamilyTitle} (آل ${effectiveFamilyTitle}) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية وامتدادها التاريخي العريق في الديار المصرية والأقطار العربية.`;
+  const documentType = record?.documentType ?? propDocType ?? 'a4-certificate';
+  const issueDateGregorian = record?.issueDateGregorian ?? propGregorian ?? '2026-10-22';
+  const issueDateHijri = record?.issueDateHijri ?? propHijri ?? '١١ ربيع الآخر ١٤٤٨ هـ';
   const effectiveTreeUrl = customTreeImageUrl || OFFICIAL_FAMILY_TREE_IMAGE_URL;
+  const directVerifyUrl = `https://elsaidy.org/verify/${serialNumber}`;
+  const displayVerifyLink = `elsaidy.org/verify/${serialNumber}`;
 
   if (documentType === 'a4-certificate') {
     return (
@@ -200,7 +234,7 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
 
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.04] select-none">
           <span className="font-serif text-[72px] sm:text-[130px] font-bold text-[#0F291E] -rotate-12">
-            آل الصعيدي
+            آل {effectiveFamilyTitle}
           </span>
         </div>
 
@@ -211,11 +245,13 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
                 <img
                   src={customLogoUrl}
                   alt="شعار البوابة"
+                  loading="lazy"
+                  decoding="async"
                   className="w-10 h-10 object-contain rounded-lg border border-[#695022]/40 bg-white p-0.5"
                 />
               ) : null}
               <div>
-                <div>{siteTitle || 'الأمانة العامة لتجمع عائلات الصعيدي'}</div>
+                <div>{siteTitle || `الأمانة العامة لتجمع عائلات ${effectiveFamilyTitle}`}</div>
                 <div className="text-[#695022]" dir="ltr">
                   ELSAIDY OFFICIAL ARCHIVE &amp; REGISTRY
                 </div>
@@ -245,8 +281,8 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
 
         <div className="relative z-10 text-center space-y-5 my-6 px-2 sm:px-6">
           <p className="font-serif text-lg sm:text-xl text-[#2A2A28] leading-relaxed">
-            تشهد لجنة التوثيق التاريخي والأنساب بالأمانة العامة للموقع الرسمي لعائلات
-            الصعيدي في الوطن العربي ومجموعة الصعيدي (
+            تشهد لجنة التوثيق التاريخي والأنساب بالأمانة العامة للموقع الرسمي لعائلات{' '}
+            {effectiveFamilyTitle} في الوطن العربي ومجموعة الصعيدي (
             <span className="font-bold text-[#0F291E]" dir="ltr">
               elsaidy.org
             </span>
@@ -267,7 +303,15 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto text-right bg-white/90 border border-[#E6E2D8] rounded-xl p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto text-right bg-white/90 border border-[#E6E2D8] rounded-xl p-4">
+            <div>
+              <span className="text-xs font-bold text-[#695022] block">
+                اللقب / العائلة المعتمدة:
+              </span>
+              <span className="text-sm sm:text-base font-extrabold text-[#0F291E]">
+                عائلات {effectiveFamilyTitle} (آل {effectiveFamilyTitle})
+              </span>
+            </div>
             <div>
               <span className="text-xs font-bold text-[#695022] block">
                 الدولة والإقليم المعتمد:
@@ -292,7 +336,7 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
 
           <p className="text-xs sm:text-sm font-semibold text-[#4A4946]">
             وقد حُررت هذه الشهادة الرسمية بعد مطابقة المشجرات التاريخية والمراجع الموثقة
-            وسجلات الأمانة العامة لعائلات الصعيدي (الصعيد — حجازي — حجاج — الصعيدي)،
+            وسجلات الأمانة العامة لعائلات {effectiveFamilyTitle} (آل {effectiveFamilyTitle})،
             وتُعد وثيقة معتمدة قابلة للتحقق الرقمي المباشر عبر البوابة الرسمية.
           </p>
         </div>
@@ -300,10 +344,7 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
         <div className="relative z-10 mt-8 pt-6 border-t-2 border-[#695022]/30 grid grid-cols-1 sm:grid-cols-3 items-center gap-6">
           <div className="flex flex-col items-center sm:items-start gap-2">
             <div className="flex items-center gap-3">
-              <DeterministicQrSvg
-                value={`https://elsaidy.org/verify?ref=${serialNumber}`}
-                size={84}
-              />
+              <DeterministicQrSvg value={directVerifyUrl} size={84} />
               <div className="text-right">
                 <div className="text-[11px] font-bold text-[#0F291E]">
                   رمز التحقق الرقمي (QR)
@@ -314,8 +355,8 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
                 <div className="text-[11px] text-[#4A4946] mt-0.5">
                   التاريخ الهجري: {issueDateHijri}
                 </div>
-                <div className="text-[11px] text-[#4A4946]">
-                  verify: elsaidy.org/verify
+                <div className="text-[10px] font-mono font-bold text-[#0F291E] mt-0.5" dir="ltr">
+                  {displayVerifyLink}
                 </div>
               </div>
             </div>
@@ -326,6 +367,8 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
               <img
                 src={customSealImageUrl}
                 alt="الختم الرسمي المعتمد"
+                loading="lazy"
+                decoding="async"
                 className="w-28 h-28 object-contain"
               />
             ) : (
@@ -335,15 +378,29 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
 
           <div className="flex flex-col items-center sm:items-end text-center sm:text-left">
             {includeFamilyTreeStamp && (
-              <div className="mb-2 flex items-center gap-2 bg-[#F4F1E8] border border-[#695022]/30 rounded-lg px-2.5 py-1.5">
+              <div className="mb-2 flex items-center gap-2 bg-[#F4F1E8] border border-[#695022]/40 rounded-lg px-2.5 py-1.5 shadow-2xs">
                 <img
                   src={effectiveTreeUrl}
                   alt="ختم المشجرة"
                   width="36"
                   height="26"
                   loading="lazy"
-                  className="w-9 h-6 object-cover rounded border border-[#695022]/40"
+                  decoding="async"
+                  className="w-9 h-6 object-cover rounded border border-[#695022]/40 shrink-0"
                 />
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#0F291E] text-[#D4AF37] shrink-0">
+                  <svg
+                    viewBox="0 0 20 20"
+                    className="w-3 h-3 fill-current"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </span>
                 <span className="text-[10px] font-bold text-[#0F291E]">
                   مطابق للمشجرة المرجعية الموثقة
                 </span>
@@ -353,7 +410,7 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
               اعتماد الأمانة العامة ولجنة الأنساب
             </div>
             <div className="font-serif text-lg font-bold text-[#0F291E] mt-1">
-              الأمانة العامة لعائلات الصعيدي
+              الأمانة العامة لعائلات {effectiveFamilyTitle}
             </div>
             <div className="text-[11px] font-semibold text-[#4A4946]">
               الموقع الرسمي ومجموعة الصعيدي — elsaidy.org
@@ -374,6 +431,8 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
               <img
                 src={customLogoUrl}
                 alt="شعار البوابة"
+                loading="lazy"
+                decoding="async"
                 className="w-10 h-10 object-contain rounded-lg border border-[#D4AF37]/50 bg-white/10 p-0.5"
               />
             ) : null}
@@ -382,7 +441,7 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
                 ELSAIDY FAMILY OFFICIAL VIP ID
               </div>
               <h3 className="font-serif text-lg sm:text-2xl font-bold text-white mt-0.5">
-                بطاقة العضوية والنسب الرسمية — عائلة الصعيدي
+                بطاقة العضوية والنسب الرسمية — عائلات {effectiveFamilyTitle} (آل {effectiveFamilyTitle})
               </h3>
             </div>
           </div>
@@ -418,22 +477,29 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
               </div>
             </div>
 
-            <div className="text-[11px] text-[#E6DFD3] leading-relaxed bg-black/20 rounded-lg p-3 border border-white/10">
-              عضو موثق بسجلات الأمانة العامة لعائلات الصعيدي في الوطن العربي ومجموعة
-              الصعيدي (elsaidy.org).
+            <div className="text-[11px] text-[#E6DFD3] leading-relaxed bg-black/20 rounded-lg p-3 border border-white/10 flex items-center gap-2">
+              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#D4AF37] text-[#0F291E] shrink-0">
+                <svg viewBox="0 0 20 20" className="w-3 h-3 fill-current" aria-hidden="true">
+                  <path
+                    fillRule="evenodd"
+                    d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+              <span>
+                عضو موثق بسجلات الأمانة العامة لعائلات {effectiveFamilyTitle} (آل {effectiveFamilyTitle}) — elsaidy.org
+              </span>
             </div>
           </div>
 
           <div className="sm:col-span-4 flex flex-col items-center justify-center bg-white rounded-xl p-3 text-[#141413]">
-            <DeterministicQrSvg
-              value={`https://elsaidy.org/verify?ref=${serialNumber}`}
-              size={92}
-            />
-            <span className="text-[10px] font-bold text-[#0F291E] mt-2">
+            <DeterministicQrSvg value={directVerifyUrl} size={92} />
+            <span className="text-[10px] font-bold text-[#0F291E] mt-1.5">
               امسح للتحقق الرقمي الفوري
             </span>
-            <span className="text-[10px] font-mono font-bold text-[#695022]" dir="ltr">
-              {issueDateGregorian}
+            <span className="text-[9px] font-mono font-bold text-[#695022] break-all text-center" dir="ltr">
+              {displayVerifyLink}
             </span>
           </div>
         </div>

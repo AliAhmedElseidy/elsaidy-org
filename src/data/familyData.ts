@@ -1160,6 +1160,7 @@ export interface IssuedCertificateRecord {
   serialNumber: string;
   arabicName: string;
   englishName: string;
+  familyTitle?: string;
   country: string;
   countryCode: string;
   regionBranch: string;
@@ -1175,6 +1176,7 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
     serialNumber: 'ELS-2026-EG-001',
     arabicName: 'علي أحمد علي الصعيدي',
     englishName: 'Ali Ahmed Ali Elsaidy',
+    familyTitle: 'الصعيدي',
     country: 'جمهورية مصر العربية',
     countryCode: 'EG',
     regionBranch: 'محافظة الغربية - مدينة طنطا / القاهرة الكبرى',
@@ -1186,14 +1188,30 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
     status: 'وثيقة نسب معتمدة ومطابقة للسجل العام'
   },
   {
+    serialNumber: 'ELS-2026-EG-014',
+    arabicName: 'أحمد علي الصعيدي',
+    englishName: 'Ahmed Ali Elsaidy',
+    familyTitle: 'الصعيدي',
+    country: 'جمهورية مصر العربية',
+    countryCode: 'EG',
+    regionBranch: 'محافظة الغربية - مدينة طنطا / الدلتا',
+    lineageNarrative:
+      'ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).',
+    documentType: 'a4-certificate',
+    issueDateGregorian: '2026-10-22',
+    issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
+    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام'
+  },
+  {
     serialNumber: 'ELS-2026-EG-002',
     arabicName: 'مرسي الحجاج (مرسي حجاج الصعيدي)',
     englishName: 'Morsi Hagag Elsaidy',
+    familyTitle: 'الصعيدي',
     country: 'جمهورية مصر العربية',
     countryCode: 'EG',
-    regionBranch: 'صعيد مصر / محافظة الغربية - طنطا / الامتداد الحجازي',
+    regionBranch: 'صعيد مصر / محافظة الغربية - طنطا',
     lineageNarrative:
-      'من الأعلام الموثقين في السجل التاريخي الجامع بين الامتداد الحجازي العريق (حجازي / حجاج / مرسي الحجاج) وبين عمود نسب عائلة الصعيدي في صعيد مصر ومحافظة الغربية وطنطا.',
+      'من الأعلام الموثقين في السجل التاريخي لعائلات الصعيدي (آل الصعيدي) في صعيد مصر ومحافظة الغربية وطنطا.',
     documentType: 'a4-certificate',
     issueDateGregorian: '2026-10-22',
     issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
@@ -1203,6 +1221,7 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
     serialNumber: 'ELS-2026-SA-001',
     arabicName: 'إبراهيم بن عبد الله بن صالح الصعيدي',
     englishName: 'Ibrahim bin Abdullah bin Saleh Elsaidy',
+    familyTitle: 'الصعيدي',
     country: 'المملكة العربية السعودية',
     countryCode: 'SA',
     regionBranch: 'منطقة حائل - حي الزبارة / ينبع النخل',
@@ -1217,6 +1236,7 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
     serialNumber: 'ELS-2026-SA-002',
     arabicName: 'حمود بن ناصر بن عبد الله الصعيدي',
     englishName: 'Hammoud bin Nasser bin Abdullah Elsaidy',
+    familyTitle: 'الصعيدي',
     country: 'المملكة العربية السعودية',
     countryCode: 'SA',
     regionBranch: 'مدينة الرياض / منطقة حائل',

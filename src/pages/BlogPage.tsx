@@ -98,6 +98,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({
                 width="900"
                 height="480"
                 loading="lazy"
+                decoding="async"
                 className="w-full max-h-[440px] object-cover"
               />
             </div>
@@ -276,6 +277,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({
                         width="600"
                         height="260"
                         loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
                       />
                     </div>

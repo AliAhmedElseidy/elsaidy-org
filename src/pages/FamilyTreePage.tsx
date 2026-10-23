@@ -124,10 +124,10 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
           <div className="px-6 py-5 bg-[#F7F6F2] border-b border-[#E6E2D8] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <div className="text-xs font-bold text-[#695022] mb-1">
-                الوثيقة المصوّرة المعتمدة · رقم القيد: ARCH-TREE-01
+                الوثيقة المصوّرة المعتمدة · رقم القيد: {activeDocumentCode}
               </div>
               <h2 className="text-xl sm:text-2xl font-extrabold text-[#141413]">
-                وثيقة شجرة عائلة الصعيدي الرسمية
+                {activeDocumentTitle}
               </h2>
             </div>
 
@@ -171,7 +171,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
               </button>
 
               <a
-                href={OFFICIAL_FAMILY_TREE_IMAGE_URL}
+                href={activeTreeImageUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 rounded-lg bg-[#695022] text-white text-xs font-bold hover:bg-[#826631] transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0"
@@ -192,8 +192,10 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
               }}
             >
               <img
-                src={OFFICIAL_FAMILY_TREE_IMAGE_URL}
+                src={activeTreeImageUrl}
                 alt="وثيقة شجرة عائلة الصعيدي الرسمية — Elsaidy Family Tree"
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
                 onClick={() => setIsLightboxOpen(true)}
                 onError={() => setImageError(true)}
@@ -211,7 +213,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
                     التفصيلية الكاملة في القسم التالي.
                   </p>
                   <a
-                    href={OFFICIAL_FAMILY_TREE_IMAGE_URL}
+                    href={activeTreeImageUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0F291E] text-white text-xs font-bold hover:bg-[#695022] transition-colors"
@@ -230,7 +232,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
               <span>انقر على صورة الوثيقة أو زر «عرض بملء الشاشة» لتفحص الأسماء والتفرعات بدقة عالية.</span>
             </div>
             <a
-              href={OFFICIAL_FAMILY_TREE_IMAGE_URL}
+              href={activeTreeImageUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="font-bold text-[#695022] hover:text-[#0F291E] underline underline-offset-4 flex items-center gap-1"
@@ -623,6 +625,8 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
             <img
               src={activeTreeImageUrl}
               alt="وثيقة شجرة عائلة الصعيدي بالحجم الكامل"
+              loading="lazy"
+              decoding="async"
               referrerPolicy="no-referrer"
               style={{
                 transform: `scale(${lightboxZoom})`,

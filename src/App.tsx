@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import {
   GEOGRAPHICAL_PRESENCE,
   DIWAN_ARTICLES,
@@ -16,13 +16,26 @@ import {
   SiteConfig,
 } from './data/familyData';
 import { HomePage } from './pages/HomePage';
-import { AboutPage } from './pages/AboutPage';
-import { FamilyTreePage } from './pages/FamilyTreePage';
-import { VerifyPage } from './pages/VerifyPage';
-import { BlogPage } from './pages/BlogPage';
-import { ProjectsPage } from './pages/ProjectsPage';
-import { AdminCmsPage } from './pages/AdminCmsPage';
 import { SEOManager } from './components/SEOManager';
+
+const AboutPage = lazy(() =>
+  import('./pages/AboutPage').then((m) => ({ default: m.AboutPage }))
+);
+const FamilyTreePage = lazy(() =>
+  import('./pages/FamilyTreePage').then((m) => ({ default: m.FamilyTreePage }))
+);
+const VerifyPage = lazy(() =>
+  import('./pages/VerifyPage').then((m) => ({ default: m.VerifyPage }))
+);
+const BlogPage = lazy(() =>
+  import('./pages/BlogPage').then((m) => ({ default: m.BlogPage }))
+);
+const ProjectsPage = lazy(() =>
+  import('./pages/ProjectsPage').then((m) => ({ default: m.ProjectsPage }))
+);
+const AdminCmsPage = lazy(() =>
+  import('./pages/AdminCmsPage').then((m) => ({ default: m.AdminCmsPage }))
+);
 import {
   ArrowUpLeft,
   ArrowUp,
@@ -69,12 +82,32 @@ function getInitialRoute(): PageRoute {
   const path = window.location.pathname.replace(/\/+$/, '');
   if (path === '/about') return 'about';
   if (path === '/tree') return 'tree';
-  if (path === '/verify') return 'verify';
+  if (path === '/verify' || path.startsWith('/verify/')) return 'verify';
   if (path === '/diwan' || path === '/blog') return 'diwan';
   if (path === '/portals' || path === '/projects') return 'portals';
   if (path === '/admin-elsaidy') return 'admin-elsaidy';
   return 'home';
 }
+
+const RoyalPageSkeleton: React.FC = () => (
+  <div
+    role="status"
+    aria-live="polite"
+    className="py-12 lg:py-20 space-y-6 animate-pulse"
+  >
+    <div className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-10 shadow-sm space-y-4">
+      <div className="h-4 w-48 bg-[#E6E2D8] rounded" />
+      <div className="h-8 w-3/4 bg-[#0F291E]/15 rounded-lg" />
+      <div className="h-4 w-full bg-[#F7F6F2] rounded" />
+      <div className="h-4 w-2/3 bg-[#F7F6F2] rounded" />
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="h-48 bg-white rounded-2xl border border-[#E6E2D8]" />
+      <div className="h-48 bg-white rounded-2xl border border-[#E6E2D8]" />
+      <div className="h-48 bg-white rounded-2xl border border-[#E6E2D8]" />
+    </div>
+  </div>
+);
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<PageRoute>(getInitialRoute);
@@ -690,66 +723,68 @@ export default function App() {
             />
           )}
 
-          {currentRoute === 'about' && (
-            <AboutPage
-              onNavigate={navigateTo}
-              copiedKey={copiedKey}
-              onCopy={handleCopy}
-            />
-          )}
+          <Suspense fallback={<RoyalPageSkeleton />}>
+            {currentRoute === 'about' && (
+              <AboutPage
+                onNavigate={navigateTo}
+                copiedKey={copiedKey}
+                onCopy={handleCopy}
+              />
+            )}
 
-          {currentRoute === 'tree' && (
-            <FamilyTreePage
-              onNavigate={navigateTo}
-              customNames={cmsCustomNames}
-              siteConfig={siteConfig}
-            />
-          )}
+            {currentRoute === 'tree' && (
+              <FamilyTreePage
+                onNavigate={navigateTo}
+                customNames={cmsCustomNames}
+                siteConfig={siteConfig}
+              />
+            )}
 
-          {currentRoute === 'verify' && (
-            <VerifyPage
-              onNavigate={navigateTo}
-              issuedCertificates={cmsCertificates}
-              siteConfig={siteConfig}
-            />
-          )}
+            {currentRoute === 'verify' && (
+              <VerifyPage
+                onNavigate={navigateTo}
+                issuedCertificates={cmsCertificates}
+                siteConfig={siteConfig}
+              />
+            )}
 
-          {currentRoute === 'diwan' && (
-            <BlogPage
-              onNavigate={navigateTo}
-              articles={cmsArticles}
-            />
-          )}
+            {currentRoute === 'diwan' && (
+              <BlogPage
+                onNavigate={navigateTo}
+                articles={cmsArticles}
+              />
+            )}
 
-          {currentRoute === 'portals' && (
-            <ProjectsPage
-              onNavigate={navigateTo}
-              onInspectPortal={handleOpenPortalModal}
-              copiedKey={copiedKey}
-              onCopy={handleCopy}
-              onOpenCorporateInquiry={() => {
-                setInquiryStatus('');
-                setIsCorporateModalOpen(true);
-              }}
-              portals={siteConfig.digitalPortals}
-            />
-          )}
+            {currentRoute === 'portals' && (
+              <ProjectsPage
+                onNavigate={navigateTo}
+                onInspectPortal={handleOpenPortalModal}
+                copiedKey={copiedKey}
+                onCopy={handleCopy}
+                onOpenCorporateInquiry={() => {
+                  setInquiryStatus('');
+                  setIsCorporateModalOpen(true);
+                }}
+                portals={siteConfig.digitalPortals}
+              />
+            )}
 
-          {currentRoute === 'admin-elsaidy' && (
-            <AdminCmsPage
-              onNavigate={navigateTo}
-              visitorCount={totalVisits}
-              onUpdateVisitorCount={handleUpdateVisitorCount}
-              articles={cmsArticles}
-              onUpdateArticles={handleUpdateArticles}
-              issuedCertificates={cmsCertificates}
-              onUpdateCertificates={handleUpdateCertificates}
-              customNames={cmsCustomNames}
-              onUpdateCustomNames={handleUpdateCustomNames}
-              siteConfig={siteConfig}
-              onUpdateSiteConfig={handleUpdateSiteConfig}
-            />
-          )}
+            {currentRoute === 'admin-elsaidy' && (
+              <AdminCmsPage
+                onNavigate={navigateTo}
+                visitorCount={totalVisits}
+                onUpdateVisitorCount={handleUpdateVisitorCount}
+                articles={cmsArticles}
+                onUpdateArticles={handleUpdateArticles}
+                issuedCertificates={cmsCertificates}
+                onUpdateCertificates={handleUpdateCertificates}
+                customNames={cmsCustomNames}
+                onUpdateCustomNames={handleUpdateCustomNames}
+                siteConfig={siteConfig}
+                onUpdateSiteConfig={handleUpdateSiteConfig}
+              />
+            )}
+          </Suspense>
         </main>
       </div>
 
