@@ -510,8 +510,12 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
 
           {/* Search Input */}
           <div className="relative w-full lg:w-80">
-            <Search className="w-4 h-4 text-zinc-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <label htmlFor="compound-name-search" className="sr-only">
+              ابحث بالاسم في فهرس أعلام عائلات الصعيدي
+            </label>
+            <Search className="w-4 h-4 text-zinc-600 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
+              id="compound-name-search"
               type="text"
               value={nameSearchQuery}
               onChange={(e) => setNameSearchQuery(e.target.value)}
@@ -561,8 +565,15 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
       {/* Fullscreen Zoom/Pan Lightbox Modal for Family Tree Image */}
       {isLightboxOpen && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="فحص وثيقة شجرة عائلة الصعيدي بالحجم المكبّر"
           className="fixed inset-0 z-50 bg-black/85 flex flex-col justify-between p-4 sm:p-6"
           onClick={() => setIsLightboxOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setIsLightboxOpen(false);
+          }}
+          tabIndex={-1}
         >
           {/* Lightbox Top Bar */}
           <div
@@ -654,3 +665,5 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
     </div>
   );
 };
+
+export default FamilyTreePage;

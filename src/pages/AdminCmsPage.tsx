@@ -34,6 +34,8 @@ import {
   SiteConfig,
   WhiteLabeledPortal,
   DEFAULT_SITE_CONFIG,
+  AdminChangeLogEntry,
+  sanitizeSafeUrl,
 } from '../data/familyData';
 import { CertificateDocumentView } from '../components/CertificateDocumentView';
 
@@ -51,11 +53,10 @@ interface AdminCmsPageProps {
   onUpdateSiteConfig: (newConfig: SiteConfig) => void;
 }
 
-const ADMIN_SESSION_KEY = 'elsaidy_cms_admin_unlocked_v1';
-const GITHUB_CONFIG_STORAGE_KEY = 'elsaidy_cms_github_config_v1';
+const GITHUB_REPO_COORDS_STORAGE_KEY = 'elsaidy_cms_github_repo_coords_v2';
 
 interface GitHubConfig {
-  token: string;
+  token: string; // Strictly in-memory React state only; NEVER persisted to localStorage or sessionStorage (SEC-002)
   owner: string;
   repo: string;
   branch: string;
@@ -83,14 +84,10 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
   siteConfig,
   onUpdateSiteConfig,
 }) => {
-  const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
-    try {
-      return sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
-    } catch {
-      return false;
-    }
-  });
-  const [passwordInput, setPasswordInput] = useState<string>('');
+  // Zero hardcoded passcodes in client bundle (SEC-001).
+  // Server-side sync is gated by Cloudflare Access / ADMIN_SYNC_SECRET in /functions/api/cms-sync.ts.
+  const [isUnlocked, setIsUnlocked] = useState<boolean>(true);
+  const [serverSyncSecret, setServerSyncSecret] = useState<string>('');
   const [authError, setAuthError] = useState<string>('');
 
   const [activeTab, setActiveTab] = useState<
@@ -102,11 +99,42 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     message: string;
   } | null>(null);
 
-  // GitHub Config State (Used across asset uploaders and Module 6)
+  const [changeLog, setChangeLog] = useState<AdminChangeLogEntry[]>([
+    {
+      id: 'init-log',
+      timestamp: new Date().toLocaleTimeString('ar-EG'),
+      action: 'بدء جلسة الإدارة',
+      details: 'تم فتح استوديو التخصيص والتحكم الآمن مع تفعيل حماية السجلات وعدم تخزين أي مفاتيح سرية في المتصفح.',
+    },
+  ]);
+
+  const appendLog = (action: string, details: string) => {
+    setChangeLog((prev) => [
+      {
+        id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        timestamp: new Date().toLocaleTimeString('ar-EG'),
+        action,
+        details,
+      },
+      ...prev.slice(0, 29),
+    ]);
+  };
+
+  // GitHub Config State: Only non-sensitive owner/repo/branch coordinates may be read from localStorage; token is strictly in-memory (SEC-002)
   const [githubConfig, setGithubConfig] = useState<GitHubConfig>(() => {
     try {
-      const saved = localStorage.getItem(GITHUB_CONFIG_STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
+      // Proactively purge any legacy token key from localStorage
+      localStorage.removeItem('elsaidy_cms_github_config_v1');
+      const savedCoords = localStorage.getItem(GITHUB_REPO_COORDS_STORAGE_KEY);
+      if (savedCoords) {
+        const parsed = JSON.parse(savedCoords);
+        return {
+          token: '',
+          owner: parsed.owner || 'AliAhmedElseidy',
+          repo: parsed.repo || 'elsaidy-org',
+          branch: parsed.branch || 'main',
+        };
+      }
     } catch {
       // ignore
     }
@@ -140,7 +168,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     departmentsText: '',
   });
 
-  // --- MODULE 4: POSTS CMS STATE ---
+  // --- MODULE 4: POSTS CMS STATE (Preserves Multi-Section Articles — BUG-006) ---
   const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
   const [postForm, setPostForm] = useState<{
     title: string;
@@ -152,8 +180,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     readTime: string;
     excerpt: string;
     coverImage: string;
-    sectionHeading: string;
-    sectionBody: string;
+    sections: { heading: string; body: string }[];
   }>({
     title: '',
     category: 'heritage',
@@ -164,11 +191,10 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     readTime: '٦ دقائق للقراءة',
     excerpt: '',
     coverImage: '',
-    sectionHeading: 'المتن التوثيقي والتاريخي',
-    sectionBody: '',
+    sections: [{ heading: 'المتن التوثيقي والتاريخي', body: '' }],
   });
 
-  // --- MODULE 5: CERTIFICATE STUDIO STATE ---
+  // --- MODULE 5: CERTIFICATE STUDIO STATE (With Anti-Collision Identity Fields) ---
   const [certForm, setCertForm] = useState<{
     serialNumber: string;
     arabicName: string;
@@ -181,9 +207,13 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     documentType: 'a4-certificate' | 'vip-id';
     issueDateGregorian: string;
     issueDateHijri: string;
+    personalPhotoUrl: string;
+    memberReferenceId: string;
+    ancestralRoot: string;
+    currentResidence: string;
     includeFamilyTreeStamp: boolean;
   }>({
-    serialNumber: `ELS-2026-EG-${String(issuedCertificates.length + 10).padStart(3, '0')}`,
+    serialNumber: `ELS-2026-EG-${String(issuedCertificates.length + 15).padStart(3, '0')}`,
     arabicName: 'علي أحمد علي الصعيدي',
     englishName: 'Ali Ahmed Ali Elsaidy',
     familyTitle: 'الصعيدي',
@@ -195,6 +225,10 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     documentType: 'a4-certificate',
     issueDateGregorian: new Date().toISOString().slice(0, 10),
     issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
+    personalPhotoUrl: '',
+    memberReferenceId: `REG-EG-GH-00${issuedCertificates.length + 15}`,
+    ancestralRoot: 'الجد السابع إبراهيم الصعيدي الجهني — عمود النسب الموثق',
+    currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة',
     includeFamilyTreeStamp: true,
   });
 
@@ -211,30 +245,15 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
 
   const handleUnlockSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const cleaned = passwordInput.trim();
-    if (cleaned === 'ELSAIDY2026' || cleaned === 'elsaidy2026') {
-      setIsUnlocked(true);
-      setAuthError('');
-      try {
-        sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
-      } catch {
-        // ignore
-      }
-    } else {
-      setAuthError(
-        'رمز المرور غير صحيح. هذه البوابة مخصصة حصرياً للأمانة العامة وإدارة الموقع.'
-      );
-    }
+    setIsUnlocked(true);
+    setAuthError('');
   };
 
   const handleLockSession = () => {
     setIsUnlocked(false);
-    setPasswordInput('');
-    try {
-      sessionStorage.removeItem(ADMIN_SESSION_KEY);
-    } catch {
-      // ignore
-    }
+    setServerSyncSecret('');
+    // Immediately wipe any in-memory GitHub PAT on lock (SEC-002)
+    setGithubConfig((prev) => ({ ...prev, token: '' }));
   };
 
   // Generic helper to upload an image file (Logo, Seal, Tree, or Post image) to GitHub or Base64
@@ -413,16 +432,25 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     onUpdateSiteConfig({ ...siteConfig, digitalPortals: reindexed });
   };
 
-  // --- MODULE 4 HANDLERS: POSTS ---
+  // --- MODULE 4 HANDLERS: POSTS (Preserves All Multi-Section Headings & Bodies — BUG-006) ---
   const handleSaveArticle = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!postForm.title.trim() || !postForm.excerpt.trim() || !postForm.sectionBody.trim()) {
+    const validSections = postForm.sections
+      .map((s) => ({
+        heading: s.heading.trim() || 'المتن التوثيقي والتاريخي',
+        body: s.body.trim(),
+      }))
+      .filter((s) => s.body.length > 0);
+
+    if (!postForm.title.trim() || !postForm.excerpt.trim() || validSections.length === 0) {
       setStatusBanner({
         type: 'error',
-        message: 'يرجى تعبئة عنوان المقال والملخص والنص التفصيلي قبل الحفظ.',
+        message: 'يرجى تعبئة عنوان المقال والملخص وقسم نصي واحد على الأقل قبل الحفظ.',
       });
       return;
     }
+
+    const safeCover = sanitizeSafeUrl(postForm.coverImage) || undefined;
 
     if (editingArticleId) {
       const updated = articles.map((art) =>
@@ -438,25 +466,24 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
               hijriDate: postForm.hijriDate.trim(),
               readTime: postForm.readTime.trim(),
               excerpt: postForm.excerpt.trim(),
-              coverImage: postForm.coverImage.trim() || undefined,
-              sections: [
-                {
-                  heading: postForm.sectionHeading.trim() || 'المتن التوثيقي والتاريخي',
-                  body: postForm.sectionBody.trim(),
-                },
-              ],
+              coverImage: safeCover,
+              sections: validSections,
             }
           : art
       );
       onUpdateArticles(updated);
+      appendLog('تحديث مقال في الديوان', `تم تحديث المقال: ${postForm.title.trim()} (${validSections.length} أقسام)`);
       setEditingArticleId(null);
       setStatusBanner({
         type: 'success',
-        message: 'تم تحديث المقال بنجاح في قاعدة بيانات الديوان.',
+        message: `تم تحديث المقال بنجاح مع الحفاظ على كافة أقسامه الفرعية (${validSections.length} أقسام).`,
       });
     } else {
+      const newId = `diwan-cms-${Date.now()}`;
       const newArticle: DiwanArticle = {
-        id: `diwan-cms-${Date.now()}`,
+        id: newId,
+        slug: newId,
+        isoDate: new Date().toISOString().slice(0, 10),
         index: String(articles.length + 1).padStart(2, '0'),
         title: postForm.title.trim(),
         category: postForm.category,
@@ -467,15 +494,11 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
         author: postForm.author.trim(),
         authorTitle: postForm.authorTitle.trim(),
         excerpt: postForm.excerpt.trim(),
-        coverImage: postForm.coverImage.trim() || undefined,
-        sections: [
-          {
-            heading: postForm.sectionHeading.trim() || 'المتن التوثيقي والتاريخي',
-            body: postForm.sectionBody.trim(),
-          },
-        ],
+        coverImage: safeCover,
+        sections: validSections,
       };
       onUpdateArticles([newArticle, ...articles]);
+      appendLog('نشر مقال جديد', `تم نشر المقال: ${newArticle.title}`);
       setStatusBanner({
         type: 'success',
         message: 'تم نشر المقال الجديد وإضافته إلى ديوان عائلة الصعيدي بنجاح.',
@@ -492,8 +515,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       readTime: '٦ دقائق للقراءة',
       excerpt: '',
       coverImage: '',
-      sectionHeading: 'المتن التوثيقي والتاريخي',
-      sectionBody: '',
+      sections: [{ heading: 'المتن التوثيقي والتاريخي', body: '' }],
     });
   };
 
@@ -509,26 +531,35 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       readTime: art.readTime,
       excerpt: art.excerpt,
       coverImage: art.coverImage || '',
-      sectionHeading: art.sections[0]?.heading || 'المتن التوثيقي والتاريخي',
-      sectionBody: art.sections.map((s) => s.body).join('\n\n'),
+      sections:
+        art.sections && art.sections.length > 0
+          ? art.sections.map((s) => ({ heading: s.heading, body: s.body }))
+          : [{ heading: 'المتن التوثيقي والتاريخي', body: '' }],
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDeleteArticle = (id: string) => {
+    const target = articles.find((a) => a.id === id);
     const filtered = articles.filter((a) => a.id !== id);
     onUpdateArticles(filtered);
+    appendLog('حذف مقال', `تم حذف المقال: ${target?.title || id}`);
     setStatusBanner({
       type: 'info',
       message: 'تم حذف المقال من الديوان.',
     });
   };
 
-  // --- MODULE 5 HANDLERS: CERTIFICATES ---
+  // --- MODULE 5 HANDLERS: CERTIFICATES (Anti-Collision & Archive/Restore) ---
   const handleGenerateNewSerial = (countryCode = certForm.countryCode) => {
     const rand = Math.floor(100 + Math.random() * 899);
     const nextSerial = `ELS-2026-${countryCode}-${rand}`;
-    setCertForm((prev) => ({ ...prev, serialNumber: nextSerial }));
+    const nextRefId = `REG-${countryCode}-${rand}`;
+    setCertForm((prev) => ({
+      ...prev,
+      serialNumber: nextSerial,
+      memberReferenceId: nextRefId,
+    }));
   };
 
   const handleSaveCertificate = () => {
@@ -540,8 +571,9 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       return;
     }
 
+    const serialUpper = certForm.serialNumber.trim().toUpperCase();
     const record: IssuedCertificateRecord = {
-      serialNumber: certForm.serialNumber.trim().toUpperCase(),
+      serialNumber: serialUpper,
       arabicName: certForm.arabicName.trim(),
       englishName: certForm.englishName.trim(),
       familyTitle: certForm.familyTitle.trim() || 'الصعيدي',
@@ -553,15 +585,49 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       issueDateGregorian: certForm.issueDateGregorian,
       issueDateHijri: certForm.issueDateHijri,
       status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
+      personalPhotoUrl: sanitizeSafeUrl(certForm.personalPhotoUrl) || undefined,
+      memberReferenceId:
+        certForm.memberReferenceId.trim() ||
+        `REG-${serialUpper.replace(/^ELS-\d+-/, '')}`,
+      ancestralRoot:
+        certForm.ancestralRoot.trim() ||
+        'الجد السابع إبراهيم الصعيدي الجهني — عمود النسب الموثق',
+      currentResidence:
+        certForm.currentResidence.trim() ||
+        `${certForm.country} — ${certForm.regionBranch.trim()}`,
+      archived: false,
     };
 
     const filtered = issuedCertificates.filter(
       (c) => c.serialNumber.toUpperCase() !== record.serialNumber
     );
     onUpdateCertificates([record, ...filtered]);
+    appendLog(
+      'اعتماد وحفظ شهادة نسب',
+      `الوثيقة ${record.serialNumber} باسم: ${record.arabicName} (رقم القيد: ${record.memberReferenceId})`
+    );
     setStatusBanner({
       type: 'success',
       message: `تم حفظ واعتماد الوثيقة رقم (${record.serialNumber}) في السجل العام للتحقق الفوري عبر الرابط (https://elsaidy.org/verify/${record.serialNumber}).`,
+    });
+  };
+
+  const handleToggleArchiveCertificate = (serial: string) => {
+    const updated = issuedCertificates.map((c) => {
+      if (c.serialNumber.toUpperCase() === serial.toUpperCase()) {
+        const nextArchived = !c.archived;
+        appendLog(
+          nextArchived ? 'أرشفة شهادة' : 'استعادة شهادة من الأرشيف',
+          `الوثيقة ${c.serialNumber} (${c.arabicName})`
+        );
+        return { ...c, archived: nextArchived };
+      }
+      return c;
+    });
+    onUpdateCertificates(updated);
+    setStatusBanner({
+      type: 'info',
+      message: `تم تحديث حالة أرشفة الوثيقة (${serial}) مع الحفاظ على سجلها الكامل دون فقدان البيانات.`,
     });
   };
 
@@ -570,6 +636,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       (c) => c.serialNumber.toUpperCase() !== serial.toUpperCase()
     );
     onUpdateCertificates(filtered);
+    appendLog('حذف شهادة من السجل المحلي', `تم حذف الوثيقة رقم ${serial}`);
     setStatusBanner({
       type: 'info',
       message: `تم حذف الوثيقة (${serial}) من السجل المخصص.`,
@@ -583,6 +650,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     if (!cleaned) return;
     if (!customNames.includes(cleaned)) {
       onUpdateCustomNames([cleaned, ...customNames]);
+      appendLog('إضافة اسم مركب للموسوعة', cleaned);
       setStatusBanner({
         type: 'success',
         message: `تمت إضافة "${cleaned}" إلى موسوعة الأسماء ومحركات البحث (SEO).`,
@@ -593,14 +661,24 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
 
   const handleRemoveCompoundName = (nameToRemove: string) => {
     onUpdateCustomNames(customNames.filter((n) => n !== nameToRemove));
+    appendLog('إزالة اسم مركب', nameToRemove);
   };
 
   const handleSaveGitHubConfig = () => {
     try {
-      localStorage.setItem(GITHUB_CONFIG_STORAGE_KEY, JSON.stringify(githubConfig));
+      // Strictly store ONLY owner, repo, and branch; NEVER store token in localStorage (SEC-002)
+      localStorage.setItem(
+        GITHUB_REPO_COORDS_STORAGE_KEY,
+        JSON.stringify({
+          owner: githubConfig.owner.trim(),
+          repo: githubConfig.repo.trim(),
+          branch: githubConfig.branch.trim() || 'main',
+        })
+      );
       setStatusBanner({
         type: 'success',
-        message: 'تم حفظ إعدادات الربط السحابي مع GitHub محلياً بنجاح.',
+        message:
+          'تم حفظ إحداثيات المستودع (Owner / Repo / Branch) فقط. لا يتم تخزين رمز الوصول الشخصي (Token) في المتصفح مطلقاً لحماية الأمان.',
       });
     } catch {
       // ignore
@@ -608,23 +686,22 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
   };
 
   const handleSyncToGitHub = async () => {
-    if (!githubConfig.token.trim() || !githubConfig.owner.trim() || !githubConfig.repo.trim()) {
-      setStatusBanner({
-        type: 'error',
-        message:
-          'يرجى إدخال رمز الوصول الشخصي (GitHub Personal Access Token) واسم المالك (Owner) واسم المستودع (Repository) أولاً.',
-      });
-      return;
-    }
-
     setIsSyncingGitHub(true);
     setStatusBanner({
       type: 'info',
-      message: 'جاري الاتصال بواجهة GitHub API ومزامنة قاعدة البيانات الشاملة (public/data/cms-db.json)...',
+      message:
+        'جاري مزامنة قاعدة البيانات الشاملة (public/data/cms-db.json)...',
     });
 
     try {
-      localStorage.setItem(GITHUB_CONFIG_STORAGE_KEY, JSON.stringify(githubConfig));
+      localStorage.setItem(
+        GITHUB_REPO_COORDS_STORAGE_KEY,
+        JSON.stringify({
+          owner: githubConfig.owner.trim(),
+          repo: githubConfig.repo.trim(),
+          branch: githubConfig.branch.trim() || 'main',
+        })
+      );
 
       const dbPayload = {
         visitorCount,
@@ -637,6 +714,52 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
 
       const filePath = 'public/data/cms-db.json';
       const branch = githubConfig.branch.trim() || 'main';
+      const jsonString = JSON.stringify(dbPayload, null, 2);
+      const base64Content = encodeUtf8ToBase64(jsonString);
+      const commitMessage = `Sync ELSAIDY Site Config & CMS DB (${new Date().toISOString().slice(0, 10)})`;
+
+      // Path 1: Try Server-Side Cloudflare Pages Function (/api/cms-sync) first if no in-memory token is entered
+      if (!githubConfig.token.trim()) {
+        const fnRes = await fetch('/api/cms-sync', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(serverSyncSecret.trim()
+              ? { 'X-Elsaidy-Admin-Secret': serverSyncSecret.trim() }
+              : {}),
+          },
+          body: JSON.stringify({
+            filePath,
+            contentBase64: base64Content,
+            commitMessage,
+            owner: githubConfig.owner.trim(),
+            repo: githubConfig.repo.trim(),
+            branch,
+          }),
+        });
+
+        if (fnRes.ok) {
+          appendLog('مزامنة سحابية عبر الخادم', 'تم تحديث public/data/cms-db.json عبر /api/cms-sync');
+          setStatusBanner({
+            type: 'success',
+            message:
+              'تمت المزامنة السحابية الآمنة عبر خادم Cloudflare Pages (/api/cms-sync) بنجاح!',
+          });
+          return;
+        }
+
+        const fnErr = await fnRes.json().catch(() => ({}));
+        throw new Error(
+          fnErr.error ||
+            'يرجى ضبط متغير البيئة GITHUB_PAT في Cloudflare Pages أو إدخال رمز الجلسة المؤقت (In-Memory Token) أدناه للمزامنة المباشرة.'
+        );
+      }
+
+      // Path 2: In-Memory Session Token Direct GitHub API Sync (Never persisted to localStorage)
+      if (!githubConfig.owner.trim() || !githubConfig.repo.trim()) {
+        throw new Error('يرجى إدخال اسم المالك (Owner) واسم المستودع (Repository).');
+      }
+
       const apiUrl = `https://api.github.com/repos/${githubConfig.owner.trim()}/${githubConfig.repo.trim()}/contents/${filePath}`;
 
       let existingSha: string | undefined;
@@ -652,9 +775,6 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
         existingSha = fileData.sha;
       }
 
-      const jsonString = JSON.stringify(dbPayload, null, 2);
-      const base64Content = encodeUtf8ToBase64(jsonString);
-
       const putRes = await fetch(apiUrl, {
         method: 'PUT',
         headers: {
@@ -663,7 +783,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: `Sync ELSAIDY Site Config & CMS DB (${new Date().toISOString().slice(0, 10)})`,
+          message: commitMessage,
           content: base64Content,
           branch,
           ...(existingSha ? { sha: existingSha } : {}),
@@ -675,6 +795,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
         throw new Error(errBody.message || `HTTP ${putRes.status}`);
       }
 
+      appendLog('مزامنة سحابية مباشرة', 'تم تحديث public/data/cms-db.json في GitHub');
       setStatusBanner({
         type: 'success',
         message:
@@ -684,7 +805,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       const msg = err instanceof Error ? err.message : 'خطأ غير معروف';
       setStatusBanner({
         type: 'error',
-        message: `تعذرت المزامنة مع GitHub API: ${msg}. تأكد من صلاحية الـ Token (repo scope) واسم المستودع.`,
+        message: `تعذرت المزامنة مع GitHub: ${msg}`,
       });
     } finally {
       setIsSyncingGitHub(false);
@@ -709,9 +830,48 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     a.download = 'cms-db.json';
     a.click();
     URL.revokeObjectURL(url);
+    appendLog('تصدير نسخة احتياطية', 'تم تنزيل ملف cms-db.json الكامل');
   };
 
-  // --- LOCKED GATEWAY VIEW ---
+  const handleImportJsonBackup = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result as string);
+        if (typeof parsed.visitorCount === 'number') {
+          onUpdateVisitorCount(parsed.visitorCount);
+        }
+        if (parsed.siteConfig && typeof parsed.siteConfig === 'object') {
+          onUpdateSiteConfig({
+            ...DEFAULT_SITE_CONFIG,
+            ...parsed.siteConfig,
+          });
+        }
+        if (Array.isArray(parsed.customNames)) {
+          onUpdateCustomNames(parsed.customNames);
+        }
+        if (Array.isArray(parsed.certificates)) {
+          onUpdateCertificates(parsed.certificates);
+        }
+        if (Array.isArray(parsed.articles)) {
+          onUpdateArticles(parsed.articles);
+        }
+        appendLog('استيراد قاعدة بيانات JSON', `تم استيراد ملف ${file.name} بنجاح`);
+        setStatusBanner({
+          type: 'success',
+          message: `تم استيراد وتفعيل قاعدة البيانات (${file.name}) بنجاح بكافة الشهادات والمقالات والإعدادات!`,
+        });
+      } catch {
+        setStatusBanner({
+          type: 'error',
+          message: 'ملف JSON غير صالح. يرجى التأكد من اختيار ملف cms-db.json الصحيح.',
+        });
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // --- LOCKED GATEWAY VIEW (Zero Hardcoded Passcodes — SEC-001) ---
   if (!isUnlocked) {
     return (
       <div className="py-12 lg:py-20 max-w-xl mx-auto">
@@ -733,27 +893,26 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
           </div>
 
           <p className="text-sm text-zinc-700 leading-relaxed mb-6">
-            هذه اللوحة مخصصة حصرياً للأمانة العامة للموقع الرسمي لعائلات الصعيدي (
-            <span className="font-mono font-bold text-[#0F291E]">elsaidy.org</span>) للتحكم الكامل
-            في الشعار (Logo)، الهوية اللونية، البانر الرئيسي، شريط الأخبار، الأنظمة الرقمية،
-            المقالات، الشهادات، وشجرة العائلة مع المزامنة المباشرة عبر GitHub API.
+            تعمل هذه اللوحة بنظام الجلسات المعزولة في الذاكرة (Zero Client-Side Secret Storage)
+            لتحرير وتخصيص الموقع وتصدير/استيراد قاعدة البيانات أو المزامنة السحابية عبر خادم
+            Cloudflare Pages (<span className="font-mono font-bold text-[#0F291E]">/api/cms-sync</span>).
           </p>
 
           <form onSubmit={handleUnlockSubmit} className="space-y-4">
             <div>
               <label
-                htmlFor="cms-master-pass"
+                htmlFor="cms-server-secret"
                 className="block text-xs font-bold text-[#141413] mb-2"
               >
-                رمز المرور المعتمد للأمانة العامة:
+                مفتاح مزامنة الخادم الاختياري (Server Sync Secret — يُحفظ في الذاكرة فقط):
               </label>
               <input
-                id="cms-master-pass"
+                id="cms-server-secret"
                 type="password"
                 dir="ltr"
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                placeholder="••••••••••••"
+                value={serverSyncSecret}
+                onChange={(e) => setServerSyncSecret(e.target.value)}
+                placeholder="اتركه فارغاً للتحرير المحلي أو أدخل مفتاح الخادم"
                 className="w-full px-4 py-3 text-sm font-mono text-center rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#0F291E]"
               />
             </div>
@@ -1878,7 +2037,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       )}
 
       {/* ====================================================================
-          MODULE 4: BLOGGER-STYLE POSTS & ARTICLES CMS
+          MODULE 4: BLOGGER-STYLE POSTS & ARTICLES CMS (MULTI-SECTION SUPPORT)
       ==================================================================== */}
       {activeTab === 'posts' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -1887,7 +2046,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
             <div className="flex items-center justify-between gap-2 pb-4 mb-6 border-b border-[#E6E2D8]">
               <div>
                 <div className="text-xs font-bold text-[#695022]">
-                  {editingArticleId ? 'تعديل مقال قائم في الديوان' : 'إضافة مقال أو دراسة جديدة'}
+                  {editingArticleId ? 'تعديل مقال قائم في الديوان (مع حفظ كافة الأقسام)' : 'إضافة مقال أو دراسة جديدة'}
                 </div>
                 <h2 className="text-xl font-extrabold text-[#141413]">
                   محرر مقالات ودراسات ديوان عائلة الصعيدي
@@ -1908,8 +2067,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                       readTime: '٦ دقائق للقراءة',
                       excerpt: '',
                       coverImage: '',
-                      sectionHeading: 'المتن التوثيقي والتاريخي',
-                      sectionBody: '',
+                      sections: [{ heading: 'المتن التوثيقي والتاريخي', body: '' }],
                     });
                   }}
                   className="px-3 py-1.5 rounded-lg border border-[#E6E2D8] text-xs font-bold text-zinc-600 cursor-pointer"
@@ -2019,17 +2177,78 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                  النص الكامل للمقال أو الدراسة الوثائقية:
-                </label>
-                <textarea
-                  rows={7}
-                  value={postForm.sectionBody}
-                  onChange={(e) => setPostForm({ ...postForm, sectionBody: e.target.value })}
-                  placeholder="اكتب النص التاريخي أو الوثائقي الكامل هنا..."
-                  className="w-full px-4 py-3 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#0F291E] leading-relaxed"
-                />
+              {/* Multi-Section Editor (Fixes BUG-006 Data Loss) */}
+              <div className="space-y-4 pt-2 border-t border-[#E6E2D8]">
+                <div className="flex items-center justify-between gap-2">
+                  <label className="block text-xs font-extrabold text-[#0F291E]">
+                    أقسام وفصول الدراسة الوثائقية ({postForm.sections.length}):
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPostForm((prev) => ({
+                        ...prev,
+                        sections: [
+                          ...prev.sections,
+                          { heading: `القسم ${prev.sections.length + 1}`, body: '' },
+                        ],
+                      }))
+                    }
+                    className="px-3 py-1.5 rounded-lg bg-[#F7F6F2] border border-[#E6E2D8] hover:border-[#695022] text-xs font-bold text-[#0F291E] flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5 text-[#695022]" />
+                    <span>إضافة قسم جديد للمقال</span>
+                  </button>
+                </div>
+
+                {postForm.sections.map((section, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] space-y-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-extrabold text-[#695022]">
+                        القسم #{idx + 1}
+                      </span>
+                      {postForm.sections.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPostForm((prev) => ({
+                              ...prev,
+                              sections: prev.sections.filter((_, i) => i !== idx),
+                            }))
+                          }
+                          className="text-xs font-bold text-red-700 hover:underline cursor-pointer"
+                        >
+                          حذف هذا القسم
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      value={section.heading}
+                      onChange={(e) => {
+                        const updated = [...postForm.sections];
+                        updated[idx] = { ...updated[idx], heading: e.target.value };
+                        setPostForm({ ...postForm, sections: updated });
+                      }}
+                      placeholder="عنوان القسم الفرعي..."
+                      className="w-full px-3.5 py-2 text-xs font-bold rounded-lg bg-white border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#0F291E]"
+                    />
+                    <textarea
+                      rows={4}
+                      value={section.body}
+                      onChange={(e) => {
+                        const updated = [...postForm.sections];
+                        updated[idx] = { ...updated[idx], body: e.target.value };
+                        setPostForm({ ...postForm, sections: updated });
+                      }}
+                      placeholder="النص التاريخي أو الوثائقي لهذا القسم..."
+                      className="w-full px-3.5 py-2.5 text-sm rounded-lg bg-white border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#0F291E] leading-relaxed"
+                    />
+                  </div>
+                ))}
               </div>
 
               <div className="pt-2 flex items-center justify-end gap-3">
@@ -2068,6 +2287,9 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                   <h4 className="text-sm font-extrabold text-[#141413] leading-snug">
                     {art.title}
                   </h4>
+                  <div className="text-[11px] font-mono text-zinc-500" dir="ltr">
+                    /diwan/{art.slug || art.id} ({art.sections?.length || 1} أقسام)
+                  </div>
                   <p className="text-xs text-zinc-600 line-clamp-2">{art.excerpt}</p>
                   <div className="pt-2 flex items-center justify-end gap-2 border-t border-[#E6E2D8]">
                     <button
@@ -2095,7 +2317,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       )}
 
       {/* ====================================================================
-          MODULE 5: CERTIFICATE & VIP ID STUDIO
+          MODULE 5: CERTIFICATE & VIP ID STUDIO (WITH ANTI-COLLISION IDENTITY)
       ==================================================================== */}
       {activeTab === 'certificates' && (
         <div className="space-y-10">
@@ -2256,6 +2478,102 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                 </div>
               </div>
 
+              {/* Anti-Collision Identity Verification Fields (Name Similarity Disambiguation) */}
+              <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#C5A059]/40 space-y-3">
+                <div className="text-xs font-extrabold text-[#0F291E]">
+                  بيانات منع تشابه الأسماء وتوثيق الهوية الفردية (Anti-Collision Identity Fields):
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#141413] mb-1">
+                      كود العضوية العائلي (Member Ref ID):
+                    </label>
+                    <input
+                      type="text"
+                      dir="ltr"
+                      value={certForm.memberReferenceId}
+                      onChange={(e) =>
+                        setCertForm({ ...certForm, memberReferenceId: e.target.value })
+                      }
+                      placeholder="ELS-ID-EG-1990-001"
+                      className="w-full px-3 py-2 text-xs font-mono rounded-lg bg-white border border-[#E6E2D8]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#141413] mb-1">
+                      الجد الجامع / البيت الفرعي:
+                    </label>
+                    <input
+                      type="text"
+                      value={certForm.ancestralRoot}
+                      onChange={(e) => setCertForm({ ...certForm, ancestralRoot: e.target.value })}
+                      placeholder="فرع الحاج علي الصعيدي"
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E2D8]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#141413] mb-1">
+                      محل الإقامة الحالي / المركز:
+                    </label>
+                    <input
+                      type="text"
+                      value={certForm.currentResidence}
+                      onChange={(e) =>
+                        setCertForm({ ...certForm, currentResidence: e.target.value })
+                      }
+                      placeholder="طنطا - محافظة الغربية"
+                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E2D8]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#141413] mb-1">
+                    الصورة الشخصية الرسمية لصاحب الوثيقة (اختياري — لمنع تطابق الأسماء):
+                  </label>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="text"
+                      dir="ltr"
+                      value={certForm.personalPhotoUrl}
+                      onChange={(e) =>
+                        setCertForm({ ...certForm, personalPhotoUrl: e.target.value })
+                      }
+                      placeholder="https://... أو ارفع صورة شخصية"
+                      className="flex-1 min-w-[180px] px-3 py-1.5 text-xs font-mono rounded-lg bg-white border border-[#E6E2D8]"
+                    />
+                    <label className="px-3 py-1.5 rounded-lg bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] flex items-center gap-1.5 cursor-pointer">
+                      <ImageIcon className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      <span>
+                        {uploadingAssetKey === 'cert-photo' ? 'جاري الرفع...' : 'رفع صورة شخصية'}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            uploadAssetFile(file, 'cert-photo', (url) =>
+                              setCertForm((prev) => ({ ...prev, personalPhotoUrl: url }))
+                            );
+                          }
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                    {certForm.personalPhotoUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setCertForm({ ...certForm, personalPhotoUrl: '' })}
+                        className="text-xs font-bold text-red-700 hover:underline cursor-pointer"
+                      >
+                        مسح الصورة
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-[#141413] mb-1.5">
                   ديباجة عمود النسب والتوثيق التاريخي:
@@ -2297,7 +2615,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                     className="px-5 py-2.5 rounded-xl bg-[#695022] text-white text-xs font-extrabold hover:bg-[#533f1b] flex items-center gap-1.5 cursor-pointer shadow-sm"
                   >
                     <Printer className="w-4 h-4" />
-                    <span>طباعة / تصدير PDF</span>
+                    <span>طباعة / تصدير PDF (صفحة A4 مستقلة)</span>
                   </button>
                 </div>
               </div>
@@ -2314,21 +2632,31 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                 </h3>
               </div>
 
-              <div className="space-y-3 max-h-[460px] overflow-y-auto pr-1">
+              <div className="space-y-3 max-h-[540px] overflow-y-auto pr-1">
                 {issuedCertificates.map((c) => (
                   <div
                     key={c.serialNumber}
-                    className="p-3.5 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] flex items-center justify-between gap-3"
+                    className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 ${
+                      c.archived
+                        ? 'bg-zinc-100 border-zinc-300 opacity-75'
+                        : 'bg-[#F7F6F2] border-[#E6E2D8]'
+                    }`}
                   >
                     <div className="min-w-0">
-                      <div className="font-mono text-xs font-extrabold text-[#0F291E] flex items-center gap-2">
+                      <div className="font-mono text-xs font-extrabold text-[#0F291E] flex flex-wrap items-center gap-1.5">
                         <span>{c.serialNumber}</span>
                         <span className="px-2 py-0.5 rounded bg-[#0F291E]/10 text-[10px] font-sans font-bold text-[#0F291E]">
                           آل {c.familyTitle || 'الصعيدي'}
                         </span>
+                        {c.archived && (
+                          <span className="px-2 py-0.5 rounded bg-amber-100 text-[10px] font-sans font-bold text-amber-900">
+                            مؤرشف
+                          </span>
+                        )}
                       </div>
                       <div className="text-sm font-bold text-[#141413] truncate">{c.arabicName}</div>
                       <div className="text-[10px] font-mono text-[#695022] truncate" dir="ltr">
+                        {c.memberReferenceId ? `${c.memberReferenceId} · ` : ''}
                         elsaidy.org/verify/{c.serialNumber}
                       </div>
                     </div>
@@ -2349,6 +2677,10 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                             issueDateGregorian: c.issueDateGregorian,
                             issueDateHijri: c.issueDateHijri,
                             includeFamilyTreeStamp: true,
+                            personalPhotoUrl: c.personalPhotoUrl || '',
+                            memberReferenceId: c.memberReferenceId || '',
+                            ancestralRoot: c.ancestralRoot || '',
+                            currentResidence: c.currentResidence || '',
                           })
                         }
                         className="px-2.5 py-1.5 rounded-lg bg-white border border-[#E6E2D8] text-xs font-bold text-[#0F291E] cursor-pointer"
@@ -2357,7 +2689,16 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                       </button>
                       <button
                         type="button"
+                        onClick={() => handleToggleArchiveCertificate(c.serialNumber)}
+                        title={c.archived ? 'إلغاء الأرشفة' : 'أرشفة السجل بدلاً من الحذف'}
+                        className="px-2 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-900 cursor-pointer"
+                      >
+                        {c.archived ? 'استعادة' : 'أرشفة'}
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => handleDeleteCertificate(c.serialNumber)}
+                        title="حذف السجل"
                         className="p-1.5 rounded-lg bg-red-50 border border-red-200 text-red-700 cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -2370,10 +2711,10 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
           </div>
 
           {/* Live Printable Preview */}
-          <div className="bg-white rounded-2xl border border-[#E6E2D8] p-4 sm:p-8 shadow-sm">
+          <div className="print-certificate-wrapper bg-white rounded-2xl border border-[#E6E2D8] p-4 sm:p-8 shadow-sm">
             <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-extrabold text-[#695022]">
-                معاينة حية للوثيقة الجاهزة للطباعة (الرابط داخل رمز QR:{' '}
+                معاينة حية للوثيقة الجاهزة للطباعة كصفحة A4 مستقلة (الرابط داخل رمز QR:{' '}
                 <span className="font-mono text-[#0F291E]" dir="ltr">
                   https://elsaidy.org/verify/{certForm.serialNumber}
                 </span>
@@ -2394,6 +2735,10 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                 issueDateGregorian: certForm.issueDateGregorian,
                 issueDateHijri: certForm.issueDateHijri,
                 status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
+                personalPhotoUrl: certForm.personalPhotoUrl || undefined,
+                memberReferenceId: certForm.memberReferenceId || undefined,
+                ancestralRoot: certForm.ancestralRoot || undefined,
+                currentResidence: certForm.currentResidence || undefined,
               }}
               familyTitle={certForm.familyTitle || 'الصعيدي'}
               includeFamilyTreeStamp={certForm.includeFamilyTreeStamp}
@@ -2407,7 +2752,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       )}
 
       {/* ====================================================================
-          MODULE 6: TREE IMAGE, SEO NAMES, 2X COUNTER & GITHUB API SYNC
+          MODULE 6: TREE IMAGE, SEO NAMES, COUNTER, BACKUP & GITHUB SYNC
       ==================================================================== */}
       {activeTab === 'github' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -2576,15 +2921,15 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
               </div>
             </div>
 
-            {/* 2x Visitor Counter Control */}
+            {/* Visitor Counter Control */}
             <div className="bg-white rounded-2xl border border-[#E6E2D8] p-6 sm:p-8 shadow-sm space-y-4">
               <div className="border-b border-[#E6E2D8] pb-3 flex items-center justify-between">
                 <div>
                   <div className="text-xs font-bold text-[#695022]">
-                    2X DOUBLE-INCREMENT VISITOR TELEMETRY
+                    PORTAL TELEMETRY & VISITOR COUNTER
                   </div>
                   <h3 className="text-lg font-extrabold text-[#141413]">
-                    إدارة عداد الزوار المباشر (حساب الزائر بـ 2 نشط)
+                    إدارة عداد زيارات البوابة الوثائقية
                   </h3>
                 </div>
                 <Users className="w-5 h-5 text-[#0F291E]" />
@@ -2604,6 +2949,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                     const parsed = parseInt(manualVisitorInput, 10);
                     if (!isNaN(parsed) && parsed >= 148923) {
                       onUpdateVisitorCount(parsed);
+                      appendLog('تحديث عداد الزيارات', String(parsed));
                       setStatusBanner({
                         type: 'success',
                         message: `تم تحديث عداد زيارات البوابة إلى ${parsed.toLocaleString('en-US')}.`,
@@ -2629,112 +2975,172 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
             </div>
           </div>
 
-          {/* Right Column: GitHub Direct API Sync */}
-          <div className="lg:col-span-6 bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-8 shadow-sm space-y-5">
-            <div className="border-b border-[#E6E2D8] pb-4">
-              <div className="text-xs font-bold text-[#695022]">
-                SERVERLESS GITHUB API CMS ENGINE
+          {/* Right Column: Server-Side / In-Memory GitHub Sync + JSON Import/Export + Audit Log */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-8 shadow-sm space-y-5">
+              <div className="border-b border-[#E6E2D8] pb-4">
+                <div className="text-xs font-bold text-[#695022]">
+                  CLOUDFLARE PAGES FUNCTION & GITHUB API SYNC
+                </div>
+                <h2 className="text-xl font-extrabold text-[#141413] mt-0.5">
+                  المزامنة السحابية المباشرة والنسخ الاحتياطي (cms-db.json)
+                </h2>
+                <p className="text-xs text-zinc-600 mt-1 leading-relaxed">
+                  يدعم النظام المزامنة الآمنة عبر نقطة النهاية الخلفية{' '}
+                  <span className="font-mono font-bold text-[#0F291E]">/api/cms-sync</span> على
+                  Cloudflare Pages، أو عبر إدخال رمز GitHub PAT مؤقتاً في ذاكرة الجلسة (لا يُحفظ
+                  أبداً في المتصفح أو localStorage)، بالإضافة إلى التصدير والاستيراد المباشر لملف{' '}
+                  <span className="font-mono font-bold text-[#0F291E]">cms-db.json</span>.
+                </p>
               </div>
-              <h2 className="text-xl font-extrabold text-[#141413] mt-0.5">
-                المزامنة السحابية المباشرة مع مستودع GitHub (Cloudflare Pages)
-              </h2>
-              <p className="text-xs text-zinc-600 mt-1 leading-relaxed">
-                عند الضغط على «مزامنة ونشر التحديثات إلى GitHub»، يقوم النظام بتحديث ملف{' '}
-                <span className="font-mono font-bold text-[#0F291E]">public/data/cms-db.json</span>{' '}
-                مباشرةً في مستودعك، مما يحفظ الشعار والهوية والبانر والبوابات والمقالات والشهادات
-                بشكل دائم.
-              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-[#141413] mb-1">
+                    رمز GitHub PAT المؤقت في الذاكرة فقط (اختياري في حال عدم تفعيل متغير الخادم):
+                  </label>
+                  <input
+                    type="password"
+                    dir="ltr"
+                    autoComplete="off"
+                    value={githubConfig.token}
+                    onChange={(e) => setGithubConfig({ ...githubConfig, token: e.target.value })}
+                    placeholder="ghp_... (يبقى في ذاكرة RAM فقط ويُمسح فور إغلاق الصفحة)"
+                    className="w-full px-3.5 py-2.5 text-xs font-mono rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-[#141413] mb-1">
+                      المالك (Owner):
+                    </label>
+                    <input
+                      type="text"
+                      dir="ltr"
+                      value={githubConfig.owner}
+                      onChange={(e) => setGithubConfig({ ...githubConfig, owner: e.target.value })}
+                      placeholder="AliAhmedElseidy"
+                      className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#141413] mb-1">
+                      المستودع (Repo):
+                    </label>
+                    <input
+                      type="text"
+                      dir="ltr"
+                      value={githubConfig.repo}
+                      onChange={(e) => setGithubConfig({ ...githubConfig, repo: e.target.value })}
+                      placeholder="elsaidy-org"
+                      className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#141413] mb-1">
+                      الفرع (Branch):
+                    </label>
+                    <input
+                      type="text"
+                      dir="ltr"
+                      value={githubConfig.branch}
+                      onChange={(e) => setGithubConfig({ ...githubConfig, branch: e.target.value })}
+                      placeholder="main"
+                      className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-[#E6E2D8]">
+                  <button
+                    type="button"
+                    onClick={handleSyncToGitHub}
+                    disabled={isSyncingGitHub}
+                    className="px-5 py-3 rounded-xl bg-[#0F291E] text-white text-xs font-extrabold hover:bg-[#141E28] transition-colors flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                  >
+                    <RefreshCw
+                      className={`w-4 h-4 text-[#D4AF37] ${isSyncingGitHub ? 'animate-spin' : ''}`}
+                    />
+                    <span>
+                      {isSyncingGitHub
+                        ? 'جاري المزامنة السحابية...'
+                        : 'مزامنة ونشر التحديثات إلى GitHub'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleSaveGitHubConfig}
+                    className="px-4 py-3 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-xs font-bold text-[#141413] hover:border-[#695022] cursor-pointer"
+                  >
+                    حفظ اسم المستودع والفرع
+                  </button>
+                </div>
+
+                {/* JSON Backup Export & Import */}
+                <div className="pt-4 border-t border-[#E6E2D8] flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleDownloadJsonBackup}
+                    className="px-4 py-2.5 rounded-xl bg-white border border-[#E6E2D8] text-xs font-bold text-[#695022] hover:border-[#695022] flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>تصدير قاعدة البيانات (cms-db.json)</span>
+                  </button>
+
+                  <label className="px-4 py-2.5 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] hover:border-[#0F291E] text-xs font-bold text-[#0F291E] flex items-center gap-1.5 cursor-pointer">
+                    <FileText className="w-3.5 h-3.5 text-[#695022]" />
+                    <span>استيراد ملف قاعدة بيانات (JSON)</span>
+                    <input
+                      type="file"
+                      accept="application/json,.json"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleImportJsonBackup(file);
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-[#141413] mb-1">
-                  رمز الوصول الشخصي (GitHub Personal Access Token — بصلاحية repo):
-                </label>
-                <input
-                  type="password"
-                  dir="ltr"
-                  value={githubConfig.token}
-                  onChange={(e) => setGithubConfig({ ...githubConfig, token: e.target.value })}
-                  placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                  className="w-full px-3.5 py-2.5 text-xs font-mono rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Audit ChangeLog Viewer */}
+            <div className="bg-white rounded-2xl border border-[#E6E2D8] p-6 sm:p-8 shadow-sm space-y-4">
+              <div className="border-b border-[#E6E2D8] pb-3 flex items-center justify-between">
                 <div>
-                  <label className="block text-xs font-bold text-[#141413] mb-1">
-                    المالك (Owner):
-                  </label>
-                  <input
-                    type="text"
-                    dir="ltr"
-                    value={githubConfig.owner}
-                    onChange={(e) => setGithubConfig({ ...githubConfig, owner: e.target.value })}
-                    placeholder="AliAhmedElseidy"
-                    className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#141413] mb-1">
-                    المستودع (Repo):
-                  </label>
-                  <input
-                    type="text"
-                    dir="ltr"
-                    value={githubConfig.repo}
-                    onChange={(e) => setGithubConfig({ ...githubConfig, repo: e.target.value })}
-                    placeholder="elsaidy-org"
-                    className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#141413] mb-1">
-                    الفرع (Branch):
-                  </label>
-                  <input
-                    type="text"
-                    dir="ltr"
-                    value={githubConfig.branch}
-                    onChange={(e) => setGithubConfig({ ...githubConfig, branch: e.target.value })}
-                    placeholder="main"
-                    className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
-                  />
+                  <div className="text-xs font-bold text-[#695022]">
+                    ADMIN AUDIT LOG ({changeLog.length})
+                  </div>
+                  <h3 className="text-lg font-extrabold text-[#141413]">
+                    سجل العمليات والتعديلات الإدارية (Audit Trail)
+                  </h3>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-[#E6E2D8]">
-                <button
-                  type="button"
-                  onClick={handleSyncToGitHub}
-                  disabled={isSyncingGitHub}
-                  className="px-6 py-3 rounded-xl bg-[#0F291E] text-white text-xs font-extrabold hover:bg-[#141E28] transition-colors flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                >
-                  <RefreshCw className={`w-4 h-4 text-[#D4AF37] ${isSyncingGitHub ? 'animate-spin' : ''}`} />
-                  <span>
-                    {isSyncingGitHub
-                      ? 'جاري رفع البيانات إلى GitHub...'
-                      : 'مزامنة ونشر كافة تعديلات الموقع إلى GitHub الآن'}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleSaveGitHubConfig}
-                  className="px-4 py-3 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-xs font-bold text-[#141413] hover:border-[#695022] cursor-pointer"
-                >
-                  حفظ بيانات الربط محلياً
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleDownloadJsonBackup}
-                  className="px-4 py-3 rounded-xl bg-white border border-[#E6E2D8] text-xs font-bold text-[#695022] hover:border-[#695022] flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>تنزيل نسخة احتياطية (cms-db.json)</span>
-                </button>
-              </div>
+              {changeLog.length === 0 ? (
+                <p className="text-xs text-zinc-500">
+                  لم يتم تسجيل عمليات تعديل جديدة في هذه الجلسة بعد.
+                </p>
+              ) : (
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                  {changeLog.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="p-3 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] flex items-center justify-between gap-2 text-xs"
+                    >
+                      <div>
+                        <span className="font-extrabold text-[#0F291E]">{entry.action}: </span>
+                        <span className="font-semibold text-[#141413]">{entry.details}</span>
+                      </div>
+                      <span className="font-mono text-[10px] text-zinc-500 shrink-0" dir="ltr">
+                        {entry.timestamp}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -2742,3 +3148,6 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     </div>
   );
 };
+
+export default AdminCmsPage;
+

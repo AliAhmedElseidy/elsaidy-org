@@ -1,560 +1,460 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import {
+  DEFAULT_VERIFIED_CERTIFICATES,
+  IssuedCertificateRecord,
+  PageRoute,
+  SiteConfig,
+  DEFAULT_SITE_CONFIG,
+  sanitizeSafeUrl,
+} from '../data/familyData';
+import { CertificateDocumentView } from '../components/CertificateDocumentView';
 import {
   ShieldCheck,
   Search,
-  CheckCircle2,
-  XCircle,
-  Printer,
-  FileCheck2,
   Award,
-  Globe,
-  MapPin,
-  Calendar,
-  Share2,
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
+  Copy,
   Check,
+  Printer,
+  Share2,
   ExternalLink,
+  Lock,
 } from 'lucide-react';
-import {
-  PageRoute,
-  DEFAULT_VERIFIED_CERTIFICATES,
-  IssuedCertificateRecord,
-  SiteConfig,
-  DEFAULT_SITE_CONFIG,
-} from '../data/familyData';
-import { CertificateDocumentView } from '../components/CertificateDocumentView';
 
 interface VerifyPageProps {
-  onNavigate: (page: PageRoute) => void;
+  onNavigate: (route: PageRoute) => void;
   issuedCertificates?: IssuedCertificateRecord[];
   siteConfig?: SiteConfig;
+  initialSerial?: string;
 }
 
-function getSerialFromUrl(): string {
-  if (typeof window === 'undefined') return 'ELS-2026-EG-001';
-  const path = window.location.pathname.replace(/\/+$/, '');
-  if (path.startsWith('/verify/')) {
-    const seg = decodeURIComponent(path.slice('/verify/'.length)).trim();
-    if (seg) return seg.toUpperCase();
+const getSerialFromUrl = (): string => {
+  if (typeof window === 'undefined') return '';
+  const pathMatch = window.location.pathname.match(/^\/verify\/([^/]+)/i);
+  if (pathMatch && pathMatch[1]) {
+    try {
+      return decodeURIComponent(pathMatch[1]).trim().toUpperCase();
+    } catch {
+      return pathMatch[1].trim().toUpperCase();
+    }
   }
   const params = new URLSearchParams(window.location.search);
-  const refParam = params.get('ref') || params.get('serial');
-  if (refParam && refParam.trim()) {
-    return refParam.trim().toUpperCase();
+  const q = params.get('serial') || params.get('ref') || params.get('id');
+  if (q && q.trim()) {
+    return q.trim().toUpperCase();
   }
-  return 'ELS-2026-EG-001';
-}
+  return '';
+};
 
 export const VerifyPage: React.FC<VerifyPageProps> = ({
-  issuedCertificates = [],
+  onNavigate,
+  issuedCertificates = DEFAULT_VERIFIED_CERTIFICATES,
   siteConfig = DEFAULT_SITE_CONFIG,
+  initialSerial,
 }) => {
-  const [searchSerial, setSearchSerial] = useState<string>(getSerialFromUrl);
-  const [queriedSerial, setQueriedSerial] = useState<string>(getSerialFromUrl);
-  const [previewDocType, setPreviewDocType] = useState<'a4-certificate' | 'vip-id'>(
-    'a4-certificate'
-  );
-  const [copiedDirectLink, setCopiedDirectLink] = useState<boolean>(false);
-
-  const allCertificates = useMemo(() => {
-    const map = new Map<string, IssuedCertificateRecord>();
-    for (const item of DEFAULT_VERIFIED_CERTIFICATES) {
-      map.set(item.serialNumber.toUpperCase(), item);
+  const [serialQuery, setSerialQuery] = useState<string>(() => {
+    if (initialSerial && initialSerial.trim()) {
+      return initialSerial.trim().toUpperCase();
     }
-    for (const item of issuedCertificates) {
-      map.set(item.serialNumber.toUpperCase(), item);
+    return getSerialFromUrl();
+  });
+
+  const [searchedSerial, setSearchedSerial] = useState<string>(() => {
+    if (initialSerial && initialSerial.trim()) {
+      return initialSerial.trim().toUpperCase();
     }
-    return Array.from(map.values());
-  }, [issuedCertificates]);
+    return getSerialFromUrl();
+  });
 
-  const verifiedRecord = useMemo(() => {
-    const normalized = queriedSerial.trim().toUpperCase();
-    if (!normalized) return null;
-    return (
-      allCertificates.find((c) => c.serialNumber.toUpperCase() === normalized) ||
-      null
-    );
-  }, [queriedSerial, allCertificates]);
+  const [copiedSerial, setCopiedSerial] = useState<boolean>(false);
+  const [copiedDirectUrl, setCopiedDirectUrl] = useState<boolean>(false);
 
-  // Listen to browser back/forward on /verify/:serial
+  // Sync state whenever URL or initialSerial prop changes (Fixes BUG-007)
+  useEffect(() => {
+    const nextSerial =
+      initialSerial && initialSerial.trim()
+        ? initialSerial.trim().toUpperCase()
+        : getSerialFromUrl();
+    setSerialQuery(nextSerial);
+    setSearchedSerial(nextSerial);
+  }, [initialSerial]);
+
   useEffect(() => {
     const handlePopState = () => {
-      const nextSerial = getSerialFromUrl();
-      setSearchSerial(nextSerial);
-      setQueriedSerial(nextSerial);
+      const next = getSerialFromUrl();
+      setSerialQuery(next);
+      setSearchedSerial(next);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Sync documentType when a new verifiedRecord loads
-  useEffect(() => {
-    if (verifiedRecord?.documentType) {
-      setPreviewDocType(verifiedRecord.documentType);
-    }
-  }, [verifiedRecord]);
+  // Merge CMS-issued certificates with default verified records (excluding archived records from public lookup)
+  const allCertificates = React.useMemo(() => {
+    const map = new Map<string, IssuedCertificateRecord>();
+    DEFAULT_VERIFIED_CERTIFICATES.forEach((c) => {
+      if (!c.archived) {
+        map.set(c.serialNumber.toUpperCase(), c);
+      }
+    });
+    issuedCertificates.forEach((c) => {
+      if (c.archived) {
+        map.delete(c.serialNumber.toUpperCase());
+      } else {
+        map.set(c.serialNumber.toUpperCase(), c);
+      }
+    });
+    return Array.from(map.values());
+  }, [issuedCertificates]);
 
-  // Dynamic SEO Title for Dedicated Standalone Certificate Page
-  useEffect(() => {
-    if (verifiedRecord) {
-      document.title = `وثيقة نسب معتمدة: ${verifiedRecord.arabicName} | بوابة الصعيدي`;
-    } else if (queriedSerial.trim()) {
-      document.title = `تحذير أمني: وثيقة غير مسجلة (${queriedSerial.trim()}) | بوابة الصعيدي`;
-    }
-  }, [verifiedRecord, queriedSerial]);
+  const matchedRecord = React.useMemo(() => {
+    const normalized = searchedSerial.trim().toUpperCase();
+    if (!normalized) return null;
+    return allCertificates.find((c) => c.serialNumber.toUpperCase() === normalized) || null;
+  }, [allCertificates, searchedSerial]);
 
-  const selectAndNavigateSerial = (serial: string) => {
+  // Dynamically update document title when a standalone certificate is viewed
+  useEffect(() => {
+    if (matchedRecord) {
+      const title = matchedRecord.familyTitle || 'الصعيدي';
+      document.title = `وثيقة نسب معتمدة: ${matchedRecord.arabicName} (${matchedRecord.serialNumber}) | عائلات ${title} — elsaidy.org`;
+    }
+  }, [matchedRecord]);
+
+  const navigateToCertificateUrl = (serial: string) => {
     const cleaned = serial.trim().toUpperCase();
-    if (!cleaned) return;
-    setSearchSerial(cleaned);
-    setQueriedSerial(cleaned);
-    try {
-      window.history.pushState({}, '', `/verify/${encodeURIComponent(cleaned)}`);
-    } catch {
-      // ignore in restricted environments
+    setSerialQuery(cleaned);
+    setSearchedSerial(cleaned);
+    if (typeof window !== 'undefined') {
+      const targetPath = cleaned ? `/verify/${encodeURIComponent(cleaned)}` : '/verify';
+      if (window.location.pathname !== targetPath) {
+        try {
+          window.history.pushState({ page: 'verify', serial: cleaned }, '', targetPath);
+        } catch {
+          // Ignore pushState restrictions in sandboxed environments
+        }
+      }
     }
   };
 
   const handleVerifySubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    selectAndNavigateSerial(searchSerial);
+    navigateToCertificateUrl(serialQuery);
   };
 
-  const handlePrintVerified = () => {
+  const handleCopySerial = (serial: string) => {
+    navigator.clipboard?.writeText(serial);
+    setCopiedSerial(true);
+    setTimeout(() => setCopiedSerial(false), 2000);
+  };
+
+  const handleCopyDirectLink = (serial: string) => {
+    const directUrl = `https://elsaidy.org/verify/${serial}`;
+    navigator.clipboard?.writeText(directUrl);
+    setCopiedDirectUrl(true);
+    setTimeout(() => setCopiedDirectUrl(false), 2500);
+  };
+
+  const handlePrintStandaloneCertificate = () => {
     window.print();
   };
 
-  const handleCopyCertificateUrl = (serial: string) => {
-    const directUrl = `https://elsaidy.org/verify/${serial}`;
-    navigator.clipboard.writeText(directUrl);
-    setCopiedDirectLink(true);
-    setTimeout(() => setCopiedDirectLink(false), 2500);
-  };
-
-  const directCertificateUrl = verifiedRecord
-    ? `https://elsaidy.org/verify/${verifiedRecord.serialNumber}`
-    : `https://elsaidy.org/verify/${queriedSerial.trim().toUpperCase()}`;
-
-  const whatsappShareHref = verifiedRecord
-    ? `https://wa.me/?text=${encodeURIComponent(
-        `وثيقة نسب معتمدة: ${verifiedRecord.arabicName} — عائلات ${
-          verifiedRecord.familyTitle || 'الصعيدي'
-        } (رقم المرجع: ${verifiedRecord.serialNumber})\nرابط التحقق الرسمي المباشر:\n${directCertificateUrl}`
-      )}`
-    : '#';
-
   return (
-    <article className="pb-20">
-      {/* Hero Header (Hidden in Print) */}
-      <header className="no-print relative bg-gradient-to-b from-[#0A141D] via-[#0F291E] to-[#141413] text-white border-b border-[#695022]/40 overflow-hidden rounded-b-2xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-6 border-b border-white/10 text-xs text-[#E6DFD3]">
-            <div className="flex items-center gap-2.5">
-              <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
-              <span className="font-bold tracking-wide text-[#D4AF37]">
-                منظومة التحقق الرقمي والسجل العام لشهادات النسب والعضوية
-              </span>
-            </div>
-            <div className="font-mono text-[#E6DFD3]" dir="ltr">
-              {verifiedRecord
-                ? `elsaidy.org/verify/${verifiedRecord.serialNumber}`
-                : 'ELSAIDY OFFICIAL VERIFICATION PORTAL — elsaidy.org/verify'}
-            </div>
+    <div className="space-y-10 sm:space-y-12 lg:space-y-16 py-6 sm:py-8 lg:py-12">
+      {/* Page Breadcrumb & Institutional Header (Hidden when printing standalone certificate) */}
+      <section className="no-print bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-5 sm:p-10 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-5 mb-5 border-b border-[#E6E2D8] text-xs text-zinc-600">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onNavigate('home')}
+              className="hover:text-[#695022] font-bold transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+              <span>الرئيسية</span>
+            </button>
+            <span aria-hidden="true">/</span>
+            <button
+              type="button"
+              onClick={() => navigateToCertificateUrl('')}
+              className="font-bold text-[#0F291E] hover:underline cursor-pointer"
+            >
+              بوابة التحقق وتوثيق الشهادات
+            </button>
+            {matchedRecord && (
+              <>
+                <span aria-hidden="true">/</span>
+                <span className="font-mono font-bold text-[#695022]" dir="ltr">
+                  {matchedRecord.serialNumber}
+                </span>
+              </>
+            )}
           </div>
 
-          <div className="max-w-4xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-[#D4AF37]/40 mb-4">
-              <Award className="w-4 h-4 text-[#D4AF37]" />
-              <span className="text-xs font-bold text-[#D4AF37]">
-                السجل العام المعتمد للأمانة العامة ولجنة التوثيق والأنساب
-              </span>
-            </div>
-            <h1 className="font-serif text-3xl sm:text-5xl font-bold leading-tight text-white mb-4">
-              {verifiedRecord
-                ? `وثيقة نسب معتمدة: ${verifiedRecord.arabicName}`
-                : 'بوابة التحقق الرقمي الفوري من شهادات النسب والعضوية'}
-            </h1>
-            <p className="text-base sm:text-lg text-[#E6DFD3] leading-relaxed">
-              تتيح هذه البوابة الرسمية الفحص الفوري والتأكد من صحة شهادات النسب وبطاقات
-              العضوية الشرفية الصادرة عن الأمانة العامة لعائلات الصعيدي في الوطن العربي
-              ومجموعة الصعيدي عبر مسح رمز (QR Code) أو إدخال الرقم المرجعي للوثيقة.
-            </p>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0F291E]/10 text-[#0F291E] font-bold">
+            <ShieldCheck className="w-4 h-4 text-[#695022]" />
+            <span>السجل الرقمي العام للوثائق الصادرة — elsaidy.org</span>
           </div>
         </div>
-      </header>
 
-      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pt-8 space-y-10">
-        {/* Public Verification Search Box */}
-        <section
-          aria-labelledby="public-verify-heading"
-          className="no-print bg-white border border-[#E6E2D8] rounded-2xl p-5 sm:p-10 shadow-sm"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-6 border-b border-[#E6E2D8]">
-            <div>
-              <span className="text-xs font-bold text-[#695022] uppercase tracking-wider block mb-1">
-                السجل العام للتحقق الرقمي المباشر (PUBLIC VERIFICATION REGISTRY)
-              </span>
-              <h2
-                id="public-verify-heading"
-                className="font-serif text-2xl sm:text-3xl font-bold text-[#141413]"
-              >
-                فحص ومطابقة الرقم المرجعي للوثيقة (Serial Number)
-              </h2>
-            </div>
-            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0F291E]/10 text-[#0F291E] text-xs font-bold">
-              <FileCheck2 className="w-4 h-4 text-[#0F291E]" />
-              <span>إجمالي الوثائق المسجلة بالسجل العام: {allCertificates.length}</span>
-            </div>
+        <div className="max-w-4xl">
+          <div className="text-xs font-bold text-[#695022] mb-2">
+            الأمانة العامة ولجنة التوثيق والأنساب · الموقع الرسمي لعائلات الصعيدي (elsaidy.org)
           </div>
-
-          <form
-            onSubmit={handleVerifySubmit}
-            className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end mb-6"
+          <h1
+            className="font-extrabold text-[#141413] tracking-tight leading-[1.25] mb-3"
+            style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.75rem)', textWrap: 'balance' }}
           >
-            <div className="md:col-span-9">
-              <label
-                htmlFor="certificate-serial-input"
-                className="block text-xs font-bold text-[#141413] mb-2"
-              >
-                أدخل الرقم المرجعي للشهادة أو البطاقة (مثال: ELS-2026-EG-001 أو ELS-2026-EG-014):
-              </label>
-              <div className="relative">
-                <Search className="w-5 h-5 text-[#695022] absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  id="certificate-serial-input"
-                  type="text"
-                  value={searchSerial}
-                  onChange={(e) => setSearchSerial(e.target.value)}
-                  placeholder="ELS-2026-EG-001"
-                  dir="ltr"
-                  className="w-full pr-12 pl-4 py-3.5 bg-[#F7F6F2] border border-[#D5D0C5] rounded-xl text-left font-mono text-base font-bold text-[#141413] focus:outline-none focus:border-[#0F291E] focus:bg-white transition-colors"
-                />
-              </div>
-            </div>
-            <div className="md:col-span-3">
-              <button
-                type="submit"
-                className="w-full py-3.5 px-6 rounded-xl bg-[#0F291E] hover:bg-[#163d2c] text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-sm cursor-pointer"
-              >
-                <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
-                <span>تحقق من الوثيقة الآن</span>
-              </button>
-            </div>
-          </form>
+            {matchedRecord
+              ? `الصفحة الرسمية للوثيقة المرجعية (${matchedRecord.serialNumber}) — ${matchedRecord.arabicName}`
+              : 'بوابة التحقق الرقمي الفوري من شهادات النسب وبطاقات العضوية الرسمية'}
+          </h1>
+          <p className="text-sm sm:text-base text-zinc-700 leading-[1.85] max-w-[75ch]">
+            تتيح هذه البوابة الرسمية الفحص الفوري للتحقق من صحة ومطابقة شهادات النسب وبطاقات
+            العضوية الصادرة عن الأمانة العامة لعائلات الصعيدي (آل الصعيدي) عبر الرقم المرجعي للوثيقة
+            أو مسح رمز الاستجابة السريعة (QR Code).
+          </p>
+        </div>
+      </section>
 
-          {/* Quick Sample Serials */}
-          <div className="flex flex-wrap items-center gap-2 mb-8 text-xs">
-            <span className="font-bold text-[#4A4946]">صفحات وثائق معتمدة للفحص السريع:</span>
-            {allCertificates.slice(0, 8).map((cert) => (
-              <button
-                key={cert.serialNumber}
-                type="button"
-                onClick={() => selectAndNavigateSerial(cert.serialNumber)}
-                className={`px-3 py-1.5 rounded-lg font-mono font-bold border transition-colors cursor-pointer ${
-                  queriedSerial.toUpperCase() === cert.serialNumber.toUpperCase()
-                    ? 'bg-[#0F291E] text-[#D4AF37] border-[#0F291E]'
-                    : 'bg-[#F7F6F2] text-[#141413] border-[#E6E2D8] hover:border-[#695022]'
-                }`}
+      {/* Search & Verification Bar (Strict Privacy: Zero Serial Chips Exposed) */}
+      <section className="no-print bg-white rounded-2xl border border-[#E6E2D8] p-5 sm:p-8 shadow-sm space-y-5">
+        <form onSubmit={handleVerifySubmit} className="max-w-3xl space-y-3">
+          <label
+            htmlFor="cert-serial-search"
+            className="block text-xs sm:text-sm font-extrabold text-[#141413]"
+          >
+            أدخل الرقم المرجعي للشهادة أو البطاقة للتحقق الفوري وفتح صفحتها المستقلة:
+          </label>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-zinc-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                id="cert-serial-search"
+                type="text"
                 dir="ltr"
-              >
-                {cert.serialNumber}
-              </button>
-            ))}
+                value={serialQuery}
+                onChange={(e) => setSerialQuery(e.target.value)}
+                placeholder="ELS-2026-XX-XXX"
+                className="w-full pr-11 pl-4 py-3.5 rounded-xl bg-[#F7F6F2] border-2 border-[#E6E2D8] text-sm font-mono font-bold text-[#141413] uppercase tracking-wider outline-none focus:border-[#0F291E] focus:bg-white transition-all"
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-7 py-3.5 rounded-xl bg-[#0F291E] text-white text-xs sm:text-sm font-extrabold hover:bg-[#141E28] transition-colors flex items-center justify-center gap-2 cursor-pointer shrink-0 shadow-sm"
+            >
+              <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
+              <span>فحص ومطابقة الوثيقة</span>
+            </button>
           </div>
+        </form>
 
-          {/* Dedicated Certificate Verification Result Card */}
-          {verifiedRecord ? (
-            <div className="bg-[#F4F8F5] border-2 border-[#0F291E] rounded-2xl p-5 sm:p-8 transition-all space-y-6">
-              {/* Green Official Verification Header Banner */}
-              <div className="p-4 rounded-xl bg-[#0F291E] text-white border border-[#D4AF37]/40 flex flex-wrap items-center justify-between gap-3">
+        {/* Formal Privacy Protection Notice (Replaces Quick Serial Chips — Fixes BUG-002) */}
+        <div className="pt-4 border-t border-[#E6E2D8] flex items-start gap-2.5 text-xs text-zinc-600">
+          <Lock className="w-4 h-4 text-[#695022] shrink-0 mt-0.5" />
+          <p className="leading-relaxed">
+            <strong className="text-[#141413]">حماية خصوصية السجلات العائلية: </strong>
+            حفاظاً على سرية بيانات الأعضاء ومنع التصفح العشوائي للوثائق، لا يتم عرض قائمة بأرقام
+            الشهادات علناً. يُرجى إدخال الرقم المرجعي المدون أعلى الشهادة مباشرةً أو مسح رمز
+            الاستجابة السريعة (QR Code) المطبوع على الوثيقة الأصلية.
+          </p>
+        </div>
+      </section>
+
+      {/* Verification Result & Standalone Official Document View */}
+      <section className="print-certificate-wrapper">
+        {!searchedSerial ? (
+          <div className="no-print bg-white rounded-2xl border border-[#E6E2D8] p-6 sm:p-10 text-center max-w-2xl mx-auto space-y-3 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-[#0F291E]/10 text-[#0F291E] flex items-center justify-center mx-auto">
+              <ShieldCheck className="w-6 h-6 text-[#695022]" />
+            </div>
+            <h2 className="text-lg sm:text-xl font-extrabold text-[#141413]">
+              أدخل الرقم المرجعي للوثيقة لبدء الفحص الفوري
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed">
+              عند إدخال الرقم المرجعي الصحيح أو مسح رمز (QR Code) من كاميرا الهاتف، ستظهر هنا
+              البطاقة الرسمية للوثيقة بكامل بيانات القيد العائلي والنسخة الجاهزة للطباعة بحجم A4.
+            </p>
+          </div>
+        ) : matchedRecord ? (
+          <div className="space-y-8">
+            {/* Official Verification Status Card (Hidden on Print so ONLY the A4 Certificate prints) */}
+            <div className="no-print bg-white rounded-2xl border-2 border-[#0F291E] p-5 sm:p-8 shadow-md">
+              <div className="flex flex-wrap items-center justify-between gap-4 pb-5 mb-6 border-b border-[#E6E2D8]">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#D4AF37] text-[#0F291E] flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-[#0F291E] text-[#D4AF37] flex items-center justify-center shrink-0">
                     <CheckCircle2 className="w-6 h-6" />
                   </div>
                   <div>
-                    <div className="text-xs sm:text-sm font-extrabold text-[#D4AF37]">
-                      وثيقة أصلية ومعتمدة في السجل العام لعائلات الصعيدي - مطابقة 100%
-                    </div>
-                    <div className="text-[11px] text-zinc-200 mt-0.5">
-                      الرابط الرسمي الدائم للوثيقة:{' '}
-                      <span className="font-mono text-[#D4AF37]" dir="ltr">
-                        {directCertificateUrl}
+                    <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#0F291E]">
+                      <span>سجل الأمان الرسمي: وثيقة أصلية مسجلة ومطابقة</span>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-[#0F291E] text-[10px]">
+                        VERIFIED 100%
                       </span>
                     </div>
+                    <h2 className="text-lg sm:text-2xl font-extrabold text-[#141413]">
+                      {matchedRecord.status}
+                    </h2>
                   </div>
                 </div>
 
-                <span
-                  className="px-3 py-1 rounded-lg bg-white/10 border border-[#D4AF37]/40 font-mono text-xs font-extrabold text-[#D4AF37]"
-                  dir="ltr"
-                >
-                  {verifiedRecord.serialNumber}
-                </span>
-              </div>
-
-              {/* Person Header & Primary Actions (Print & Share via WhatsApp / Copy Link) */}
-              <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-[#0F291E]/15">
-                <div>
-                  <span className="text-xs font-bold text-[#695022] block">
-                    صاحب الوثيقة المسجل بالأرشيف الرسمي:
-                  </span>
-                  <h3 className="font-serif text-2xl sm:text-3xl font-bold text-[#141413] mt-0.5">
-                    {verifiedRecord.arabicName}
-                  </h3>
-                  {verifiedRecord.englishName && (
-                    <div className="font-mono text-xs font-bold text-[#4A4946] mt-0.5" dir="ltr">
-                      {verifiedRecord.englishName}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
-                    onClick={handlePrintVerified}
-                    className="py-2.5 px-4 rounded-xl bg-[#0F291E] hover:bg-[#163d2c] text-[#D4AF37] font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer shadow-sm"
+                    onClick={() => handleCopyDirectLink(matchedRecord.serialNumber)}
+                    className="px-3.5 py-2 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
-                    <Printer className="w-4 h-4" />
-                    <span>طباعة الوثيقة الرسمية</span>
-                  </button>
-
-                  <a
-                    href={whatsappShareHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="py-2.5 px-4 rounded-xl bg-[#695022] hover:bg-[#533f1a] text-white font-bold text-xs flex items-center gap-2 transition-colors shadow-sm"
-                  >
-                    <Share2 className="w-4 h-4" />
-                    <span>مشاركة رابط الوثيقة (واتساب)</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-
-                  <button
-                    type="button"
-                    onClick={() => handleCopyCertificateUrl(verifiedRecord.serialNumber)}
-                    className="py-2.5 px-3.5 rounded-xl bg-white border border-[#D5D0C5] hover:border-[#695022] text-[#141413] font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    {copiedDirectLink ? (
+                    {copiedDirectUrl ? (
                       <>
-                        <Check className="w-3.5 h-3.5 text-emerald-700" />
-                        <span>تم نسخ الرابط</span>
+                        <Check className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        <span>تم نسخ رابط صفحة الشهادة!</span>
                       </>
                     ) : (
                       <>
-                        <Share2 className="w-3.5 h-3.5 text-[#695022]" />
-                        <span>نسخ رابط الصفحة</span>
+                        <Share2 className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        <span>نسخ الرابط المباشر للشهادة</span>
                       </>
                     )}
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleCopySerial(matchedRecord.serialNumber)}
+                    className="px-3.5 py-2 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-xs font-mono font-bold text-[#0F291E] hover:border-[#695022] transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>{matchedRecord.serialNumber}</span>
+                    {copiedSerial ? (
+                      <Check className="w-3.5 h-3.5 text-[#0F291E]" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5 text-[#695022]" />
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handlePrintStandaloneCertificate}
+                    className="px-4 py-2 rounded-xl bg-[#695022] text-white text-xs font-bold hover:bg-[#533f1b] transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    <span>طباعة الوثيقة المستقلة (A4)</span>
+                  </button>
                 </div>
               </div>
 
-              {/* Official Summary Verification Table */}
-              <div className="bg-white rounded-xl border border-[#E6E2D8] overflow-hidden">
-                <div className="px-4 py-3 bg-[#F7F6F2] border-b border-[#E6E2D8] text-xs font-extrabold text-[#0F291E] flex items-center justify-between">
-                  <span>جدول بيانات المطابقة والتوثيق المرجعي</span>
-                  <span className="font-mono text-[11px] text-[#695022]" dir="ltr">
-                    STATUS: 100% VERIFIED
+              {/* Direct Standalone URL Banner */}
+              <div className="mb-6 p-3.5 rounded-xl bg-[#F4F1E8] border border-[#695022]/30 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2 font-bold text-[#0F291E]">
+                  <ExternalLink className="w-4 h-4 text-[#695022] shrink-0" />
+                  <span>الرابط الرسمي المستقل لهذه الوثيقة (المدمج في رمز QR):</span>
+                </div>
+                <span
+                  className="font-mono font-bold text-[#695022] select-all break-all"
+                  dir="ltr"
+                >
+                  https://elsaidy.org/verify/{matchedRecord.serialNumber}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] flex items-center gap-3">
+                  {sanitizeSafeUrl(matchedRecord.personalPhotoUrl) && (
+                    <img
+                      src={sanitizeSafeUrl(matchedRecord.personalPhotoUrl)}
+                      alt={matchedRecord.arabicName}
+                      className="w-12 h-12 rounded-lg object-cover border border-[#695022] shrink-0"
+                    />
+                  )}
+                  <div>
+                    <span className="text-zinc-600 block mb-1">اسم صاحب الوثيقة المعتمد:</span>
+                    <strong className="text-base font-extrabold text-[#141413] block">
+                      {matchedRecord.arabicName}
+                    </strong>
+                    <span className="font-mono text-[11px] text-[#695022]" dir="ltr">
+                      {matchedRecord.englishName}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]">
+                  <span className="text-zinc-600 block mb-1">اللقب العائلي ورقم القيد المميز:</span>
+                  <strong className="text-sm font-extrabold text-[#0F291E] block">
+                    عائلات {matchedRecord.familyTitle || 'الصعيدي'} (آل{' '}
+                    {matchedRecord.familyTitle || 'الصعيدي'})
+                  </strong>
+                  <span className="font-mono text-[11px] font-bold text-[#695022] block mt-1" dir="ltr">
+                    ID:{' '}
+                    {matchedRecord.memberReferenceId ||
+                      `REG-${matchedRecord.serialNumber.replace(/^ELS-\d+-/, '')}`}
                   </span>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-right text-xs sm:text-sm border-collapse">
-                    <tbody className="divide-y divide-[#E6E2D8]">
-                      <tr>
-                        <th className="py-3 px-4 bg-[#F7F6F2]/60 font-bold text-[#695022] w-1/3 sm:w-1/4">
-                          الرقم المرجعي للوثيقة
-                        </th>
-                        <td className="py-3 px-4 font-mono font-bold text-[#0F291E]" dir="ltr">
-                          {verifiedRecord.serialNumber}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th className="py-3 px-4 bg-[#F7F6F2]/60 font-bold text-[#695022]">
-                          الاسم الكامل الموثق
-                        </th>
-                        <td className="py-3 px-4 font-bold text-[#141413]">
-                          {verifiedRecord.arabicName}{' '}
-                          {verifiedRecord.englishName ? `(${verifiedRecord.englishName})` : ''}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th className="py-3 px-4 bg-[#F7F6F2]/60 font-bold text-[#695022]">
-                          اللقب / العائلة المعتمدة
-                        </th>
-                        <td className="py-3 px-4 font-extrabold text-[#0F291E]">
-                          عائلات {verifiedRecord.familyTitle || 'الصعيدي'} (آل{' '}
-                          {verifiedRecord.familyTitle || 'الصعيدي'})
-                        </td>
-                      </tr>
-                      <tr>
-                        <th className="py-3 px-4 bg-[#F7F6F2]/60 font-bold text-[#695022]">
-                          الدولة والإقليم والحاضرة
-                        </th>
-                        <td className="py-3 px-4 font-semibold text-[#141413]">
-                          {verifiedRecord.country} — {verifiedRecord.regionBranch}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th className="py-3 px-4 bg-[#F7F6F2]/60 font-bold text-[#695022]">
-                          تاريخ الإصدار والاعتماد
-                        </th>
-                        <td className="py-3 px-4 font-semibold text-[#141413]">
-                          {verifiedRecord.issueDateGregorian} م ({verifiedRecord.issueDateHijri})
-                        </td>
-                      </tr>
-                      <tr>
-                        <th className="py-3 px-4 bg-[#F7F6F2]/60 font-bold text-[#695022]">
-                          ملخص عمود النسب والتوثيق
-                        </th>
-                        <td className="py-3 px-4 font-serif text-base text-[#141413] leading-relaxed">
-                          {verifiedRecord.lineageNarrative}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-4 rounded-xl border border-[#E6E2D8]">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#695022] mb-1">
-                    <Globe className="w-3.5 h-3.5" />
-                    <span>الدولة والإقليم المعتمد</span>
-                  </div>
-                  <div className="text-sm font-bold text-[#141413]">
-                    {verifiedRecord.country}
-                  </div>
+                <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]">
+                  <span className="text-zinc-600 block mb-1">الجد الجامع / الفخذ والحاضرة:</span>
+                  <strong className="text-xs font-bold text-[#141413] block">
+                    {matchedRecord.ancestralRoot || matchedRecord.regionBranch}
+                  </strong>
+                  <span className="text-[11px] text-[#0F291E] font-semibold block mt-1">
+                    {matchedRecord.currentResidence ||
+                      `${matchedRecord.country} — ${matchedRecord.regionBranch}`}
+                  </span>
                 </div>
 
-                <div className="bg-white p-4 rounded-xl border border-[#E6E2D8]">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#695022] mb-1">
-                    <MapPin className="w-3.5 h-3.5" />
-                    <span>الفرع الجغرافي والحاضرة</span>
-                  </div>
-                  <div className="text-sm font-bold text-[#141413]">
-                    {verifiedRecord.regionBranch}
-                  </div>
-                </div>
-
-                <div className="bg-white p-4 rounded-xl border border-[#E6E2D8]">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#695022] mb-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>تاريخ القيد والتوثيق</span>
-                  </div>
-                  <div className="text-sm font-bold text-[#141413]">
-                    {verifiedRecord.issueDateGregorian} ({verifiedRecord.issueDateHijri})
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                <div className="text-xs font-bold text-[#4A4946]">
-                  اختر نمط عرض الوثيقة الموثقة للطباعة أو المعاينة:
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPreviewDocType('a4-certificate')}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
-                      previewDocType === 'a4-certificate'
-                        ? 'bg-[#0F291E] text-white border-[#0F291E]'
-                        : 'bg-white text-[#141413] border-[#D5D0C5]'
-                    }`}
-                  >
-                    شهادة نسب ملكية (A4)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPreviewDocType('vip-id')}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
-                      previewDocType === 'vip-id'
-                        ? 'bg-[#0F291E] text-white border-[#0F291E]'
-                        : 'bg-white text-[#141413] border-[#D5D0C5]'
-                    }`}
-                  >
-                    بطاقة عضوية شرفية (VIP ID)
-                  </button>
+                <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]">
+                  <span className="text-zinc-600 block mb-1">تاريخ الإصدار والقيد:</span>
+                  <strong className="text-sm font-bold text-[#141413] block">
+                    {matchedRecord.issueDateHijri}
+                  </strong>
+                  <span className="font-mono text-[11px] text-zinc-600" dir="ltr">
+                    Gregorian: {matchedRecord.issueDateGregorian}
+                  </span>
                 </div>
               </div>
             </div>
-          ) : (
-            <div
-              role="alert"
-              className="bg-[#FDF4F4] border-2 border-[#991B1B] rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-md"
-            >
-              <div className="w-12 h-12 rounded-xl bg-[#991B1B] text-white flex items-center justify-center shrink-0">
-                <XCircle className="w-7 h-7" />
-              </div>
-              <div className="space-y-1.5">
-                <div className="inline-block px-2.5 py-0.5 rounded bg-[#991B1B]/10 text-[#991B1B] font-mono text-xs font-extrabold">
-                  SECURITY ALERT · UNREGISTERED SERIAL ({queriedSerial})
-                </div>
-                <h3 className="text-base sm:text-lg font-extrabold text-[#991B1B]">
-                  تحذير أمني: هذه الوثيقة غير مسجلة في الأرشيف الرسمي لبوابة الصعيدي ولا يُعتد بها
-                </h3>
-                <p className="text-xs sm:text-sm text-[#4A4946] leading-relaxed">
-                  لم يتم العثور على أي سجل مطابق للرقم المرجعي المدخل ({queriedSerial}) في قاعدة
-                  بيانات السجل العام للأمانة العامة لعائلات الصعيدي (elsaidy.org). يرجى التأكد من
-                  صحة الرقم المرجعي أو مسح رمز (QR Code) الأصلي المطبوع على الشهادة المعتمدة.
-                </p>
-              </div>
-            </div>
-          )}
-        </section>
 
-        {/* Printable / Previewable Certificate View for the Verified Record */}
-        {verifiedRecord && (
-          <section aria-label="معاينة الشهادة الرسمية الموثقة" className="pt-2">
-            <div className="no-print flex flex-wrap items-center justify-between gap-4 mb-4">
-              <div>
-                <span className="text-xs font-bold text-[#695022] block">
-                  نسخة إلكترونية مطابقة للأصل المعتمد · صفحة الوثيقة المستقلة
+            {/* Full Visual Rendering of the Verified Certificate (Prints Standalone on 1 A4 Page) */}
+            <div className="bg-white rounded-2xl border border-[#E6E2D8] p-3 sm:p-8 shadow-sm print-certificate-wrapper">
+              <div className="no-print flex items-center justify-between gap-2 mb-4 pb-3 border-b border-[#E6E2D8]">
+                <div className="flex items-center gap-2 text-xs font-extrabold text-[#0F291E]">
+                  <Award className="w-4 h-4 text-[#695022]" />
+                  <span>النسخة الإلكترونية المطابقة للأصل للوثيقة ({matchedRecord.serialNumber})</span>
+                </div>
+                <span className="text-[11px] text-zinc-600">
+                  شاملة الختم الرسمي ورمز التحقق السريع (QR) الموجه لصفحة الشهادة
                 </span>
-                <h3 className="font-serif text-2xl font-bold text-[#141413]">
-                  معاينة وطباعة الوثيقة الرسمية ({verifiedRecord.serialNumber})
-                </h3>
               </div>
-              <div className="flex flex-wrap items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={handlePrintVerified}
-                  className="py-2.5 px-5 rounded-xl bg-[#0F291E] hover:bg-[#163d2c] text-[#D4AF37] font-bold text-xs flex items-center gap-2 transition-colors shadow-sm cursor-pointer"
-                >
-                  <Printer className="w-4 h-4" />
-                  <span>طباعة الوثيقة الرسمية (Print / Save PDF)</span>
-                </button>
-                <a
-                  href={whatsappShareHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="py-2.5 px-4 rounded-xl bg-[#695022] hover:bg-[#533f1a] text-white font-bold text-xs flex items-center gap-2 transition-colors shadow-sm"
-                >
-                  <Share2 className="w-4 h-4" />
-                  <span>مشاركة رابط الوثيقة</span>
-                </a>
-              </div>
-            </div>
 
-            <CertificateDocumentView
-              record={verifiedRecord}
-              serialNumber={verifiedRecord.serialNumber}
-              arabicName={verifiedRecord.arabicName}
-              englishName={verifiedRecord.englishName}
-              familyTitle={verifiedRecord.familyTitle || 'الصعيدي'}
-              country={verifiedRecord.country}
-              regionBranch={verifiedRecord.regionBranch}
-              lineageNarrative={verifiedRecord.lineageNarrative}
-              documentType={previewDocType}
-              issueDateGregorian={verifiedRecord.issueDateGregorian}
-              issueDateHijri={verifiedRecord.issueDateHijri}
-              includeFamilyTreeStamp={true}
-              customLogoUrl={siteConfig.branding.logoUrl}
-              customSealImageUrl={siteConfig.branding.sealImageUrl}
-              customTreeImageUrl={siteConfig.familyTreeConfig.treeImageUrl}
-              siteTitle={siteConfig.branding.siteTitle}
-            />
-          </section>
+              <CertificateDocumentView
+                record={matchedRecord}
+                includeFamilyTreeStamp={true}
+                customLogoUrl={siteConfig.branding.logoUrl}
+                customSealImageUrl={siteConfig.branding.sealImageUrl}
+                customTreeImageUrl={siteConfig.familyTreeConfig.treeImageUrl}
+                siteTitle={siteConfig.branding.siteTitle}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="no-print bg-white rounded-2xl border-2 border-red-300 p-6 sm:p-8 shadow-sm flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-red-100 text-red-800 flex items-center justify-center shrink-0">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs font-bold text-red-800">نتيجة الفحص الرقمي</div>
+              <h2 className="text-lg font-extrabold text-[#141413]">
+                لم يتم العثور على وثيقة مسجلة بالرقم المرجعي ({searchedSerial})
+              </h2>
+              <p className="text-xs sm:text-sm text-zinc-700 leading-relaxed">
+                يرجى التأكد من كتابة الرقم المرجعي بشكل صحيح كما هو مدون أعلى الشهادة، أو التواصل مع
+                الأمانة العامة للموقع الرسمي لعائلات الصعيدي للتحقق من القيد.
+              </p>
+            </div>
+          </div>
         )}
-      </div>
-    </article>
+      </section>
+    </div>
   );
 };
+
+export default VerifyPage;

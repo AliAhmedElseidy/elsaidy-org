@@ -252,3 +252,5 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
     </div>
   );
 };
+
+export default ProjectsPage;

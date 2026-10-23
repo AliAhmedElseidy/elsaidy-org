@@ -600,48 +600,28 @@ export const HomePage: React.FC<HomePageProps> = ({
             ))}
           </div>
 
-          {/* Orthographic & Linguistic Index Box */}
-          <div className="bg-white rounded-xl border border-[#E6E2D8] p-6 sm:p-8 space-y-5 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E6E2D8] pb-4">
-              <h3 className="text-lg font-extrabold text-[#141413]">
-                فهرس المطابقة اللغوية والجغرافية المعتمد في محركات البحث والأرشيف الدولي
+          {/* Clean Archival & Linguistic Reference Summary (Replaces Keyword Stuffing Dump — SEO-005) */}
+          <div className="bg-white rounded-xl border border-[#E6E2D8] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+            <div className="space-y-1">
+              <h3 className="text-base sm:text-lg font-extrabold text-[#141413]">
+                الفهرس الوثائقي الموحد لأعلام وفروع عائلات الصعيدي في الوطن العربي
               </h3>
-              <span className="font-mono text-xs text-[#695022] font-bold">
-                Official Orthographic & Regional Index — elsaidy.org
-              </span>
+              <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed">
+                يعتمد الأرشيف الرسمي مطابقة الأسماء الثلاثية والمركبة وصيغ كتابتها المعتمدة باللغتين العربية والإنجليزية (Elsaidy / Elseidy / Alsaidi) في كافة الأقاليم العربية.
+              </p>
             </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-xs leading-relaxed">
-              <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]">
-                <div className="font-bold text-[#0F291E] mb-1.5">
-                  ١. الصيغ والمسميات العربية المعتمدة:
-                </div>
-                <p className="text-zinc-700">
-                  {SEO_KEYWORD_CLUSTERS.arabicCore.join(' · ')}
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]">
-                <div className="font-bold text-[#0F291E] mb-1.5">
-                  ٢. النطاق الجغرافي والحواضر العربية الموثقة:
-                </div>
-                <p className="text-zinc-700">
-                  {SEO_KEYWORD_CLUSTERS.arabicRegions.join(' · ')}
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]" dir="ltr">
-                <div className="font-bold text-[#0F291E] mb-1.5 text-right" dir="rtl">
-                  ٣. الصيغ الإنجليزية المعتمدة (English Transliterations):
-                </div>
-                <p className="font-mono text-[11px] text-zinc-700 leading-relaxed">
-                  {SEO_KEYWORD_CLUSTERS.englishVariations.join(' · ')}
-                </p>
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate('tree')}
+              className="px-5 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors cursor-pointer shrink-0"
+            >
+              تصفح دليل الأعلام والشجرة ←
+            </button>
           </div>
         </div>
       </section>
     </div>
   );
 };
+
+export default HomePage;

@@ -62,6 +62,8 @@ export interface WhiteLabeledPortal {
 
 export interface DiwanArticle {
   id: string;
+  slug?: string;
+  isoDate?: string;
   index: string;
   title: string;
   category: 'research' | 'documents' | 'news' | 'heritage';
@@ -1169,7 +1171,34 @@ export interface IssuedCertificateRecord {
   issueDateGregorian: string;
   issueDateHijri: string;
   status: string;
+  personalPhotoUrl?: string;
+  memberReferenceId?: string;
+  ancestralRoot?: string;
+  currentResidence?: string;
+  archived?: boolean;
 }
+
+export interface AdminChangeLogEntry {
+  id: string;
+  timestamp: string;
+  action: string;
+  details: string;
+}
+
+export const sanitizeSafeUrl = (rawUrl: string | undefined, fallback = ''): string => {
+  if (!rawUrl) return fallback;
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return fallback;
+  if (
+    trimmed.startsWith('/') ||
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('data:image/')
+  ) {
+    return trimmed;
+  }
+  return fallback;
+};
 
 export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
   {
@@ -1185,22 +1214,28 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
     documentType: 'a4-certificate',
     issueDateGregorian: '2026-10-22',
     issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
-    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام'
+    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
+    memberReferenceId: 'REG-EG-GH-0001',
+    ancestralRoot: 'الجد السابع إبراهيم الصعيدي الجهني — فرع الغربية وطنطا والقاهرة',
+    currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة'
   },
   {
     serialNumber: 'ELS-2026-EG-014',
-    arabicName: 'أحمد علي الصعيدي',
-    englishName: 'Ahmed Ali Elsaidy',
+    arabicName: 'علي أحمد علي الصعيدي',
+    englishName: 'Ali Ahmed Ali Elsaidy',
     familyTitle: 'الصعيدي',
     country: 'جمهورية مصر العربية',
     countryCode: 'EG',
-    regionBranch: 'محافظة الغربية - مدينة طنطا / الدلتا',
+    regionBranch: 'محافظة الغربية - مدينة طنطا / صعيد مصر / القاهرة',
     lineageNarrative:
-      'ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).',
+      'ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).',
     documentType: 'a4-certificate',
-    issueDateGregorian: '2026-10-22',
+    issueDateGregorian: '2026-10-23',
     issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
-    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام'
+    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
+    memberReferenceId: 'REG-EG-GH-0014',
+    ancestralRoot: 'الجد السابع إبراهيم الصعيدي الجهني — فرع الغربية وطنطا وصعيد مصر',
+    currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة'
   },
   {
     serialNumber: 'ELS-2026-EG-002',
@@ -1211,11 +1246,14 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
     countryCode: 'EG',
     regionBranch: 'صعيد مصر / محافظة الغربية - طنطا',
     lineageNarrative:
-      'من الأعلام الموثقين في السجل التاريخي لعائلات الصعيدي (آل الصعيدي) في صعيد مصر ومحافظة الغربية وطنطا.',
+      'من الأعلام الموثقين في السجل التاريخي لعائلات الصعيدي (آل الصعيدي) والامتداد الحجازي الموثق في صعيد مصر ومحافظة الغربية وطنطا.',
     documentType: 'a4-certificate',
     issueDateGregorian: '2026-10-22',
     issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
-    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام'
+    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
+    memberReferenceId: 'REG-EG-SD-0002',
+    ancestralRoot: 'الامتداد الحجازي الصعيدي — أعقاب مرسي الحجاج وآل الصعيدي',
+    currentResidence: 'جمهورية مصر العربية — صعيد مصر / محافظة الغربية'
   },
   {
     serialNumber: 'ELS-2026-SA-001',
@@ -1230,7 +1268,10 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
     documentType: 'a4-certificate',
     issueDateGregorian: '2026-10-22',
     issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
-    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام'
+    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
+    memberReferenceId: 'REG-SA-HL-0001',
+    ancestralRoot: 'إبراهيم الصعيدي ← عوض البراهيم ← صالح ← عبد الله ← إبراهيم',
+    currentResidence: 'المملكة العربية السعودية — منطقة حائل (حي الزبارة)'
   },
   {
     serialNumber: 'ELS-2026-SA-002',
@@ -1245,7 +1286,10 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
     documentType: 'a4-certificate',
     issueDateGregorian: '2026-10-22',
     issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
-    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام'
+    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
+    memberReferenceId: 'REG-SA-RY-0002',
+    ancestralRoot: 'إبراهيم الصعيدي ← عوض البراهيم ← صالح ← عبد الله ← ناصر ← حمود',
+    currentResidence: 'المملكة العربية السعودية — مدينة الرياض'
   }
 ];
 

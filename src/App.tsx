@@ -63,6 +63,7 @@ const CMS_ARTICLES_STORAGE_KEY = 'elsaidy_cms_articles_v1';
 const CMS_CERTS_STORAGE_KEY = 'elsaidy_cms_certificates_v1';
 const CMS_NAMES_STORAGE_KEY = 'elsaidy_cms_custom_names_v1';
 const CMS_SITE_CONFIG_STORAGE_KEY = 'elsaidy_cms_site_config_v1';
+const CMS_LAST_UPDATED_STORAGE_KEY = 'elsaidy_cms_last_updated_v1';
 
 const DEFAULT_CUSTOM_NAMES = [
   'علي أحمد علي الصعيدي (Ali Ahmed Ali Elsaidy)',
@@ -83,7 +84,7 @@ function getInitialRoute(): PageRoute {
   if (path === '/about') return 'about';
   if (path === '/tree') return 'tree';
   if (path === '/verify' || path.startsWith('/verify/')) return 'verify';
-  if (path === '/diwan' || path === '/blog') return 'diwan';
+  if (path === '/diwan' || path.startsWith('/diwan/') || path === '/blog') return 'diwan';
   if (path === '/portals' || path === '/projects') return 'portals';
   if (path === '/admin-elsaidy') return 'admin-elsaidy';
   return 'home';
@@ -119,7 +120,7 @@ export default function App() {
   const [shareToastMessage, setShareToastMessage] = useState<string | null>(null);
   const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
 
-  // 2x Double-Increment Live Visitor Counter & Telemetry State
+  // Portal Visit Counter & Archive Telemetry State
   const [totalVisits, setTotalVisits] = useState<number>(() => {
     try {
       const saved = localStorage.getItem(VISITOR_STORAGE_KEY);
@@ -130,7 +131,6 @@ export default function App() {
     }
   });
   const [isCounterPulsing, setIsCounterPulsing] = useState<boolean>(false);
-  const [activeVisitorsNow, setActiveVisitorsNow] = useState<number>(48);
 
   // Secret 5-click trigger counter for Footer copyright seal
   const secretClickCountRef = useRef<number>(0);
@@ -210,11 +210,6 @@ export default function App() {
     return DEFAULT_CUSTOM_NAMES;
   });
 
-  // Formal Portal Login / Redirect Modal State
-  const [loginIdentifier, setLoginIdentifier] = useState<string>('');
-  const [loginPasscode, setLoginPasscode] = useState<string>('');
-  const [loginStatus, setLoginStatus] = useState<string>('');
-
   // Corporate & Official Email Request Form State
   const [inquiryForm, setInquiryForm] = useState({
     fullName: '',
@@ -226,9 +221,9 @@ export default function App() {
   });
   const [inquiryStatus, setInquiryStatus] = useState<string>('');
 
-  const triggerCounterIncrementByTwo = () => {
+  const recordPortalVisit = () => {
     setTotalVisits((prev) => {
-      const next = Math.max(148923, prev) + 2;
+      const next = Math.max(148923, prev) + 1;
       try {
         localStorage.setItem(VISITOR_STORAGE_KEY, String(next));
       } catch {
@@ -237,7 +232,7 @@ export default function App() {
       return next;
     });
     setIsCounterPulsing(true);
-    setTimeout(() => setIsCounterPulsing(false), 900);
+    setTimeout(() => setIsCounterPulsing(false), 700);
   };
 
   // Dynamically update <link rel="icon"> when siteConfig.branding.faviconUrl changes
@@ -260,6 +255,19 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Global Escape key listener for all modals (A11Y-002, A11Y-004)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isCorporateModalOpen) setIsCorporateModalOpen(false);
+        if (inspectedPortal) setInspectedPortal(null);
+        if (activeArticleModal) setActiveArticleModal(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isCorporateModalOpen, inspectedPortal, activeArticleModal]);
+
   // Scroll listener for Back to Top button
   useEffect(() => {
     const handleScroll = () => {
@@ -269,18 +277,23 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 1) Initial +2 increment on page entry/reload + fetch /data/cms-db.json + 2) Live +2 ticker every 15 seconds
+  // Sync remote /data/cms-db.json with timestamp comparison (Fixes BUG-001 stale cache)
   useEffect(() => {
-    triggerCounterIncrementByTwo();
+    recordPortalVisit();
 
-    // Load remote /data/cms-db.json if available to sync any GitHub-committed data
-    fetch('/data/cms-db.json')
+    fetch('/data/cms-db.json', { cache: 'no-cache' })
       .then((r) => (r.ok ? r.json() : null))
       .then((db) => {
         if (!db || typeof db !== 'object') return;
+
+        const remoteTimestamp = typeof db.lastUpdated === 'string' ? db.lastUpdated : '';
+        const localTimestamp = localStorage.getItem(CMS_LAST_UPDATED_STORAGE_KEY) || '';
+        const isRemoteNewer =
+          !localTimestamp || (remoteTimestamp && remoteTimestamp >= localTimestamp);
+
         if (typeof db.visitorCount === 'number' && db.visitorCount > 148923) {
           setTotalVisits((prev) => {
-            const highest = Math.max(prev, db.visitorCount + 2);
+            const highest = Math.max(prev, db.visitorCount);
             try {
               localStorage.setItem(VISITOR_STORAGE_KEY, String(highest));
             } catch {
@@ -289,12 +302,13 @@ export default function App() {
             return highest;
           });
         }
+
         if (
           db.siteConfig &&
           typeof db.siteConfig === 'object' &&
-          !localStorage.getItem(CMS_SITE_CONFIG_STORAGE_KEY)
+          (isRemoteNewer || !localStorage.getItem(CMS_SITE_CONFIG_STORAGE_KEY))
         ) {
-          setSiteConfig({
+          const mergedConfig: SiteConfig = {
             branding: { ...DEFAULT_SITE_CONFIG.branding, ...(db.siteConfig.branding || {}) },
             announcementBar: {
               ...DEFAULT_SITE_CONFIG.announcementBar,
@@ -317,43 +331,90 @@ export default function App() {
               ...DEFAULT_SITE_CONFIG.contactAndFooter,
               ...(db.siteConfig.contactAndFooter || {}),
             },
+          };
+          setSiteConfig(mergedConfig);
+          try {
+            localStorage.setItem(CMS_SITE_CONFIG_STORAGE_KEY, JSON.stringify(mergedConfig));
+          } catch {
+            // ignore
+          }
+        }
+
+        if (
+          Array.isArray(db.articles) &&
+          db.articles.length > 0 &&
+          (isRemoteNewer || !localStorage.getItem(CMS_ARTICLES_STORAGE_KEY))
+        ) {
+          setCmsArticles(db.articles);
+          try {
+            localStorage.setItem(CMS_ARTICLES_STORAGE_KEY, JSON.stringify(db.articles));
+          } catch {
+            // ignore
+          }
+        }
+
+        if (Array.isArray(db.certificates) && db.certificates.length > 0) {
+          // Merge remote certificates with local certificates so no issued certificate is ever lost
+          setCmsCertificates((prevLocal) => {
+            const bySerial = new Map<string, IssuedCertificateRecord>();
+            for (const c of DEFAULT_VERIFIED_CERTIFICATES) {
+              bySerial.set(c.serialNumber, c);
+            }
+            for (const c of prevLocal) {
+              bySerial.set(c.serialNumber, c);
+            }
+            for (const c of db.certificates as IssuedCertificateRecord[]) {
+              if (c && c.serialNumber) {
+                bySerial.set(c.serialNumber, c);
+              }
+            }
+            const merged = Array.from(bySerial.values());
+            try {
+              localStorage.setItem(CMS_CERTS_STORAGE_KEY, JSON.stringify(merged));
+            } catch {
+              // ignore
+            }
+            return merged;
           });
         }
-        if (Array.isArray(db.articles) && db.articles.length > 0 && !localStorage.getItem(CMS_ARTICLES_STORAGE_KEY)) {
-          setCmsArticles(db.articles);
-        }
-        if (Array.isArray(db.certificates) && db.certificates.length > 0 && !localStorage.getItem(CMS_CERTS_STORAGE_KEY)) {
-          setCmsCertificates(db.certificates);
-        }
-        if (Array.isArray(db.customNames) && db.customNames.length > 0 && !localStorage.getItem(CMS_NAMES_STORAGE_KEY)) {
+
+        if (
+          Array.isArray(db.customNames) &&
+          db.customNames.length > 0 &&
+          (isRemoteNewer || !localStorage.getItem(CMS_NAMES_STORAGE_KEY))
+        ) {
           setCmsCustomNames(db.customNames);
+          try {
+            localStorage.setItem(CMS_NAMES_STORAGE_KEY, JSON.stringify(db.customNames));
+          } catch {
+            // ignore
+          }
+        }
+
+        if (remoteTimestamp && isRemoteNewer) {
+          try {
+            localStorage.setItem(CMS_LAST_UPDATED_STORAGE_KEY, remoteTimestamp);
+          } catch {
+            // ignore
+          }
         }
       })
       .catch(() => {
         // ignore fetch errors
       });
-
-    // Live Real-Time Ticker Simulation: every 15 seconds increment total counter by +2
-    const liveVisitInterval = setInterval(() => {
-      triggerCounterIncrementByTwo();
-    }, 15000);
-
-    // Realistic fluctuation for Active Visitors Now between 42 and 68
-    const activeReadersInterval = setInterval(() => {
-      setActiveVisitorsNow((prev) => {
-        const delta = Math.floor(Math.random() * 5) - 2; // -2 to +2
-        return Math.max(42, Math.min(68, prev + delta));
-      });
-    }, 6500);
-
-    return () => {
-      clearInterval(liveVisitInterval);
-      clearInterval(activeReadersInterval);
-    };
   }, []);
+
+  const touchLocalTimestamp = () => {
+    try {
+      localStorage.setItem(CMS_LAST_UPDATED_STORAGE_KEY, new Date().toISOString());
+    } catch {
+      // ignore
+    }
+  };
 
   const handleUpdateSiteConfig = (nextConfig: SiteConfig) => {
     setSiteConfig(nextConfig);
+    touchLocalTimestamp();
     try {
       localStorage.setItem(CMS_SITE_CONFIG_STORAGE_KEY, JSON.stringify(nextConfig));
     } catch {
@@ -363,6 +424,7 @@ export default function App() {
 
   const handleUpdateArticles = (nextArticles: DiwanArticle[]) => {
     setCmsArticles(nextArticles);
+    touchLocalTimestamp();
     try {
       localStorage.setItem(CMS_ARTICLES_STORAGE_KEY, JSON.stringify(nextArticles));
     } catch {
@@ -372,6 +434,7 @@ export default function App() {
 
   const handleUpdateCertificates = (nextCerts: IssuedCertificateRecord[]) => {
     setCmsCertificates(nextCerts);
+    touchLocalTimestamp();
     try {
       localStorage.setItem(CMS_CERTS_STORAGE_KEY, JSON.stringify(nextCerts));
     } catch {
@@ -381,6 +444,7 @@ export default function App() {
 
   const handleUpdateCustomNames = (nextNames: string[]) => {
     setCmsCustomNames(nextNames);
+    touchLocalTimestamp();
     try {
       localStorage.setItem(CMS_NAMES_STORAGE_KEY, JSON.stringify(nextNames));
     } catch {
@@ -390,6 +454,7 @@ export default function App() {
 
   const handleUpdateVisitorCount = (nextCount: number) => {
     setTotalVisits(nextCount);
+    touchLocalTimestamp();
     try {
       localStorage.setItem(VISITOR_STORAGE_KEY, String(nextCount));
     } catch {
@@ -399,8 +464,7 @@ export default function App() {
 
   const navigateTo = (route: PageRoute) => {
     setCurrentRoute(route);
-    // 2x Visitor Multiplier Rule: Every navigation between pages increments total counter by +2
-    triggerCounterIncrementByTwo();
+    recordPortalVisit();
     const targetPath = route === 'home' ? '/' : `/${route}`;
     try {
       window.history.pushState({}, '', targetPath);
@@ -436,23 +500,7 @@ export default function App() {
   };
 
   const handleOpenPortalModal = (portal: WhiteLabeledPortal) => {
-    setLoginStatus('');
     setInspectedPortal(portal);
-  };
-
-  const handlePortalLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!loginIdentifier.trim() || !loginIdentifier.includes('@')) {
-      setLoginStatus('يرجى إدخال المعرّف الرسمي المعتمد (@elsaidy.org) بشكل صحيح.');
-      return;
-    }
-    if (!loginPasscode.trim() || loginPasscode.trim().length < 4) {
-      setLoginStatus('يرجى إدخال رمز التحقق أو كلمة المرور المؤسسية.');
-      return;
-    }
-    setLoginStatus(
-      `تم التحقق من بيانات المعرّف (${loginIdentifier}). جاري التوجيه الآمن إلى «${inspectedPortal?.officialName}» (${inspectedPortal?.domain})...`
-    );
   };
 
   const handleCorporateInquirySubmit = (e: React.FormEvent) => {
@@ -461,8 +509,21 @@ export default function App() {
       setInquiryStatus('يرجى إدخال الاسم الكامل وبيانات التواصل لإتمام الطلب.');
       return;
     }
+    const targetMail = siteConfig.contactAndFooter.officialEmail || 'info@elsaidy.org';
+    const subject = encodeURIComponent(
+      `طلب رسمي عبر بوابة الصعيدي (${inquiryForm.requestType}) — ${inquiryForm.fullName}`
+    );
+    const body = encodeURIComponent(
+      `الاسم الكامل: ${inquiryForm.fullName}\n` +
+        `الإقليم / الدولة: ${inquiryForm.countryRegion}\n` +
+        `نوع الطلب: ${inquiryForm.requestType}\n` +
+        `المعرف المقترح: ${inquiryForm.preferredEmailPrefix || 'غير محدد'}\n` +
+        `وسيلة التواصل: ${inquiryForm.contactInfo}\n\n` +
+        `التفاصيل:\n${inquiryForm.details}`
+    );
+    window.location.href = `mailto:${targetMail}?subject=${subject}&body=${body}`;
     setInquiryStatus(
-      `تم تسجيل طلبكم بنجاح باسم (${inquiryForm.fullName}) لدى أمانة مجموعة الصعيدي (elsaidy.org). سيتم التواصل معكم قريباً لإتمام الإجراءات.`
+      `تم تجهيز رسالتكم الرسمية باسم (${inquiryForm.fullName}) وتوجيهها إلى البريد المعتمد (${targetMail}).`
     );
   };
 
@@ -520,12 +581,18 @@ export default function App() {
       } else {
         navigateTo('verify');
       }
-    } else if (link.startsWith('http')) {
+    } else if (link.startsWith('http://') || link.startsWith('https://')) {
       window.location.href = link;
     } else {
       navigateTo('verify');
     }
   };
+
+  // Normalize copyright text so "© 2026" is never duplicated (Fixes BUG-012)
+  const rawCopyrightText = (siteConfig.contactAndFooter.copyrightText || '').replace(
+    /^©\s*\d{4}\s*/u,
+    ''
+  );
 
   return (
     <div
@@ -533,7 +600,11 @@ export default function App() {
       className="min-h-screen flex flex-col justify-between bg-[#F7F6F2] text-[#141413] selection:bg-[#695022]/20 selection:text-[#141413] overflow-x-hidden pb-20 md:pb-0"
     >
       {/* Dynamic SEO & JSON-LD Structured Data Engine */}
-      <SEOManager currentPage={currentRoute} customNames={cmsCustomNames} />
+      <SEOManager
+        currentPage={currentRoute}
+        customNames={cmsCustomNames}
+        articles={cmsArticles}
+      />
 
       <div>
         {/* Dynamic Top Announcement Ticker Bar (Controlled from /admin-elsaidy) */}
@@ -788,7 +859,7 @@ export default function App() {
         </main>
       </div>
 
-      {/* Luxury Dark Institutional Footer (#0D131A with #D4AF37 Gold Accents & Live Telemetry Counter) */}
+      {/* Luxury Dark Institutional Footer (#0D131A with #D4AF37 Gold Accents & Official Archive Telemetry) */}
       <footer className="no-print bg-[#0D131A] text-zinc-200 border-t-4 border-[#695022] mt-12 sm:mt-16">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-12 lg:py-16">
           {/* Top Footer Row: Identity, Pan-Arab Scope & Quick Actions */}
@@ -836,15 +907,24 @@ export default function App() {
                 والخابورة، الكويت، قطر، والبحرين) · ٥. المغرب العربي والسودان.
               </p>
 
+              {/* Contact Row: Only render separator dot if whatsappOrPhone is non-empty (Fixes BUG-009) */}
               <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-300 pt-1">
                 <span>
                   البريد الرسمي:{' '}
-                  <strong className="font-mono text-[#D4AF37]">
-                    {siteConfig.contactAndFooter.officialEmail}
-                  </strong>
+                  <a
+                    href={`mailto:${siteConfig.contactAndFooter.officialEmail || 'info@elsaidy.org'}`}
+                    className="font-mono font-bold text-[#D4AF37] hover:underline"
+                  >
+                    {siteConfig.contactAndFooter.officialEmail || 'info@elsaidy.org'}
+                  </a>
                 </span>
-                <span aria-hidden="true">·</span>
-                <span>{siteConfig.contactAndFooter.whatsappOrPhone}</span>
+                {siteConfig.contactAndFooter.whatsappOrPhone &&
+                  siteConfig.contactAndFooter.whatsappOrPhone.trim().length > 0 && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span>{siteConfig.contactAndFooter.whatsappOrPhone}</span>
+                    </>
+                  )}
               </div>
             </div>
 
@@ -896,27 +976,26 @@ export default function App() {
             </div>
           </div>
 
-          {/* 4. OFFICIAL LIVE VISITOR COUNTER & TELEMETRY RIBBON IN FOOTER */}
+          {/* OFFICIAL ARCHIVE TELEMETRY & VISITOR COUNTER RIBBON IN FOOTER */}
           <div className="py-8 border-b border-white/10">
             <div className="flex items-center justify-between gap-2 mb-4">
               <div className="text-xs font-bold text-[#D4AF37] flex items-center gap-2">
                 <Activity className="w-4 h-4 text-[#D4AF37]" />
                 <span>
-                  شريط إحصائيات البوابة والأرشيف الرسمي (Live Portal Telemetry &amp; Visitor
-                  Counter)
+                  شريط إحصائيات البوابة والأرشيف الرسمي (Official Portal &amp; Archive Statistics)
                 </span>
               </div>
               <span className="font-mono text-[11px] text-zinc-300 hidden sm:inline">
-                ELSAIDY TELEMETRY · REAL-TIME VERIFIED (2X MULTIPLIER ACTIVE)
+                ELSAIDY ARCHIVE REGISTRY · VERIFIED METRICS
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Badge 1: Total Portal Visits (2x Double-Increment with Live Pulse) */}
+              {/* Badge 1: Total Portal Visits */}
               <div
                 className={`p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border transition-all duration-500 flex items-center justify-between ${
                   isCounterPulsing
-                    ? 'border-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.25)] scale-[1.01]'
+                    ? 'border-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.25)]'
                     : 'border-[#D4AF37]/35'
                 }`}
               >
@@ -928,11 +1007,6 @@ export default function App() {
                     <div className="font-mono text-2xl font-extrabold text-[#D4AF37] tabular-nums">
                       {totalVisits.toLocaleString('en-US')}
                     </div>
-                    {isCounterPulsing && (
-                      <span className="text-[11px] font-mono font-bold text-emerald-400 animate-bounce">
-                        +2
-                      </span>
-                    )}
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
@@ -940,22 +1014,22 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Badge 2: Active Visitors Now */}
+              {/* Badge 2: Verified Lineage Documents & Studies */}
               <div className="p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border border-[#D4AF37]/35 flex items-center justify-between">
                 <div>
                   <div className="text-[11px] text-zinc-300 font-semibold mb-1">
-                    المتصفحون النشطون الآن
+                    الدراسات والوثائق المعتمدة بالديوان
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                     <span className="font-mono text-2xl font-extrabold text-white tabular-nums">
-                      {activeVisitorsNow}
+                      {cmsArticles.length + cmsCertificates.filter((c) => !c.archived).length}
                     </span>
-                    <span className="text-xs text-emerald-400 font-bold">متصل الآن</span>
+                    <span className="text-xs text-emerald-400 font-bold">وثيقة ودراسة</span>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                  <Activity className="w-5 h-5" />
+                  <FileText className="w-5 h-5" />
                 </div>
               </div>
 
@@ -991,13 +1065,13 @@ export default function App() {
             </div>
           </div>
 
-          {/* Bottom Copyright Row (5 clicks on the copyright text or seal unlocks /admin-elsaidy) */}
+          {/* Bottom Copyright Row (Single © Year — Fixes BUG-012) */}
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-300">
             <div
               onClick={handleSecretCopyrightClick}
               className="select-none cursor-default text-center sm:text-right"
             >
-              © {new Date().getFullYear()} {siteConfig.contactAndFooter.copyrightText}
+              © {new Date().getFullYear()} {rawCopyrightText}
             </div>
             <div className="text-[11px] text-zinc-400 text-center sm:text-left">
               ELSAIDY Enterprise &amp; Brand Solutions · Core Management · @elsaidy.org Official Mail ·
@@ -1055,7 +1129,11 @@ export default function App() {
 
       {/* Sleek Toast Notification when Official Portal Link is Copied */}
       {shareToastMessage && (
-        <div className="no-print fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-50 px-5 py-3.5 rounded-xl bg-[#0D131A] text-white border-2 border-[#D4AF37] shadow-2xl flex items-center gap-2.5 text-xs font-bold">
+        <div
+          role="status"
+          aria-live="polite"
+          className="no-print fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-50 px-5 py-3.5 rounded-xl bg-[#0D131A] text-white border-2 border-[#D4AF37] shadow-2xl flex items-center gap-2.5 text-xs font-bold"
+        >
           <Check className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{shareToastMessage}</span>
         </div>
@@ -1064,6 +1142,9 @@ export default function App() {
       {/* Corporate Inquiry & Official @elsaidy.org Email Request Modal */}
       {isCorporateModalOpen && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="corporate-modal-title"
           className="no-print fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 overflow-y-auto"
           onClick={() => setIsCorporateModalOpen(false)}
         >
@@ -1074,9 +1155,12 @@ export default function App() {
             <div className="flex items-start justify-between gap-4 pb-4 mb-5 border-b border-[#E6E2D8]">
               <div>
                 <div className="text-xs text-[#695022] font-bold">
-                  ELSAIDY BRAND & OFFICIAL MAIL HUB · elsaidy.org
+                  ELSAIDY BRAND &amp; OFFICIAL MAIL HUB · elsaidy.org
                 </div>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-[#141413] mt-1">
+                <h3
+                  id="corporate-modal-title"
+                  className="text-xl sm:text-2xl font-extrabold text-[#141413] mt-1"
+                >
                   طلب بريد رسمي (@elsaidy.org) أو تواصل للأعمال والمشاريع
                 </h3>
               </div>
@@ -1090,7 +1174,7 @@ export default function App() {
               </button>
             </div>
 
-            <form onSubmit={handleCorporateInquirySubmit} className="space-y-4" noValidate>
+            <form onSubmit={handleCorporateInquirySubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-[#141413] mb-1.5">
@@ -1098,6 +1182,7 @@ export default function App() {
                   </label>
                   <input
                     type="text"
+                    required
                     value={inquiryForm.fullName}
                     onChange={(e) => setInquiryForm({ ...inquiryForm, fullName: e.target.value })}
                     placeholder="مثال: علي أحمد الصعيدي"
@@ -1166,6 +1251,7 @@ export default function App() {
                 </label>
                 <input
                   type="text"
+                  required
                   value={inquiryForm.contactInfo}
                   onChange={(e) => setInquiryForm({ ...inquiryForm, contactInfo: e.target.value })}
                   placeholder="أدخل وسيلة التواصل المباشرة..."
@@ -1187,35 +1273,49 @@ export default function App() {
               </div>
 
               {inquiryStatus && (
-                <div className="p-3.5 rounded-xl bg-[#F7F6F2] border border-[#695022] text-xs font-bold text-[#0F291E] leading-relaxed">
+                <div
+                  role="status"
+                  className="p-3.5 rounded-xl bg-[#F7F6F2] border border-[#695022] text-xs font-bold text-[#0F291E] leading-relaxed"
+                >
                   {inquiryStatus}
                 </div>
               )}
 
-              <div className="pt-3 border-t border-[#E6E2D8] flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsCorporateModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl border border-[#E6E2D8] text-xs font-bold text-zinc-700 cursor-pointer"
+              <div className="pt-3 border-t border-[#E6E2D8] flex flex-wrap items-center justify-between gap-3">
+                <a
+                  href={`mailto:${siteConfig.contactAndFooter.officialEmail || 'info@elsaidy.org'}`}
+                  className="text-xs font-mono font-bold text-[#695022] hover:underline"
                 >
-                  إغلاق
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  <Check className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>إرسال الطلب الرسمي</span>
-                </button>
+                  {siteConfig.contactAndFooter.officialEmail || 'info@elsaidy.org'}
+                </a>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsCorporateModalOpen(false)}
+                    className="px-4 py-2.5 rounded-xl border border-[#E6E2D8] text-xs font-bold text-zinc-700 cursor-pointer"
+                  >
+                    إغلاق
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors flex items-center gap-2 cursor-pointer"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <span>إرسال عبر البريد الرسمي</span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Formal Login / Redirect Modal for Official Digital Portals */}
+      {/* Official Subdomain Gateway & Redirect Modal for Digital Portals (Fixes SEC-005) */}
       {inspectedPortal && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="portal-gateway-modal-title"
           className="no-print fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
           onClick={() => setInspectedPortal(null)}
         >
@@ -1226,9 +1326,12 @@ export default function App() {
             <div className="flex items-start justify-between gap-4 pb-4 mb-5 border-b border-[#E6E2D8]">
               <div>
                 <div className="text-xs text-[#695022] font-bold">
-                  بوابة الدخول والتوجيه الرسمي · {inspectedPortal.domain}
+                  بوابة التوجيه المؤسسي المباشر · {inspectedPortal.domain}
                 </div>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-[#141413] mt-1">
+                <h3
+                  id="portal-gateway-modal-title"
+                  className="text-xl sm:text-2xl font-extrabold text-[#141413] mt-1"
+                >
                   {inspectedPortal.officialName}
                 </h3>
                 <div className="text-xs text-[#0F291E] font-bold mt-0.5">
@@ -1245,67 +1348,46 @@ export default function App() {
               </button>
             </div>
 
-            <form onSubmit={handlePortalLoginSubmit} className="space-y-4" noValidate>
-              <p className="text-xs text-zinc-700 leading-relaxed">
+            <div className="space-y-4">
+              <p className="text-xs sm:text-sm text-zinc-700 leading-relaxed">
                 {inspectedPortal.summary}
               </p>
 
-              <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] space-y-3">
-                <div>
-                  <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                    المعرّف الرسمي أو البريد المعتمد (@elsaidy.org):
-                  </label>
-                  <input
-                    type="email"
-                    dir="ltr"
-                    value={loginIdentifier}
-                    onChange={(e) => setLoginIdentifier(e.target.value)}
-                    placeholder="user@elsaidy.org"
-                    className="w-full px-3.5 py-2.5 text-sm text-right font-mono rounded-lg bg-white border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
-                  />
+              <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] space-y-2">
+                <div className="flex items-center gap-2 text-xs font-extrabold text-[#0F291E]">
+                  <Lock className="w-4 h-4 text-[#695022]" />
+                  <span>نطاق المصادقة المستقل ({inspectedPortal.domain})</span>
                 </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                    رمز التحقق أو كلمة المرور المؤسسية:
-                  </label>
-                  <input
-                    type="password"
-                    dir="ltr"
-                    value={loginPasscode}
-                    onChange={(e) => setLoginPasscode(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full px-3.5 py-2.5 text-sm text-right font-mono rounded-lg bg-white border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#695022]"
-                  />
-                </div>
+                <p className="text-xs text-zinc-600 leading-relaxed">
+                  حفاظاً على أمن البيانات المؤسسية، تتم عملية تسجيل الدخول والمصادقة (SSO) حصرياً
+                  على النطاق الفرعي المستقل للخدمة{' '}
+                  <span className="font-mono font-bold text-[#0F291E]" dir="ltr">
+                    {inspectedPortal.url}
+                  </span>{' '}
+                  وليس داخل البوابة الوثائقية العامة.
+                </p>
               </div>
-
-              {loginStatus && (
-                <div className="p-3.5 rounded-xl bg-[#F7F6F2] border border-[#695022] text-xs font-bold text-[#141413] leading-relaxed">
-                  {loginStatus}
-                </div>
-              )}
 
               <div className="pt-3 border-t border-[#E6E2D8] flex flex-wrap items-center justify-between gap-3">
                 <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors flex items-center gap-2 cursor-pointer"
+                  type="button"
+                  onClick={() => setInspectedPortal(null)}
+                  className="px-4 py-2.5 rounded-xl border border-[#E6E2D8] text-xs font-bold text-zinc-700 cursor-pointer"
                 >
-                  <Lock className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>التحقق وتسجيل الدخول</span>
+                  إغلاق
                 </button>
 
                 <a
                   href={inspectedPortal.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2.5 rounded-xl bg-[#695022] text-white text-xs font-bold hover:bg-[#533f1b] transition-colors flex items-center gap-1.5"
+                  className="px-5 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-extrabold hover:bg-[#141E28] transition-colors flex items-center gap-2"
                 >
-                  <span>التوجيه المباشر ({inspectedPortal.domain})</span>
-                  <ArrowUpLeft className="w-3.5 h-3.5" />
+                  <span>الانتقال الآمن إلى {inspectedPortal.domain}</span>
+                  <ArrowUpLeft className="w-3.5 h-3.5 text-[#D4AF37]" />
                 </a>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
@@ -1313,6 +1395,9 @@ export default function App() {
       {/* Article Reader Modal (Triggered from HomePage previews) */}
       {activeArticleModal && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="article-reader-modal-title"
           className="no-print fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 overflow-y-auto"
           onClick={() => setActiveArticleModal(null)}
         >
@@ -1326,7 +1411,10 @@ export default function App() {
                   {activeArticleModal.categoryLabel} · {activeArticleModal.hijriDate} (
                   {activeArticleModal.publishDate})
                 </div>
-                <h3 className="text-xl sm:text-2xl lg:text-3xl font-extrabold leading-snug">
+                <h3
+                  id="article-reader-modal-title"
+                  className="text-xl sm:text-2xl lg:text-3xl font-extrabold leading-snug"
+                >
                   {activeArticleModal.title}
                 </h3>
               </div>
@@ -1379,3 +1467,4 @@ export default function App() {
     </div>
   );
 }
+

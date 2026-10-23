@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-Disallow: /admin-elsaidy
 Sitemap: https://elsaidy.org/sitemap.xml

@@ -256,7 +256,44 @@
       "documentType": "a4-certificate",
       "issueDateGregorian": "2026-10-23",
       "issueDateHijri": "١١ ربيع الآخر ١٤٤٨ هـ",
-      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام"
+      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام",
+      "memberReferenceId": "REG-EG-GH-0014",
+      "ancestralRoot": "الجد السابع إبراهيم الصعيدي الجهني — فرع الغربية وطنطا وصعيد مصر",
+      "currentResidence": "جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة"
+    },
+    {
+      "serialNumber": "ELS-2026-EG-001",
+      "arabicName": "علي أحمد علي الصعيدي",
+      "englishName": "Ali Ahmed Ali Elsaidy",
+      "familyTitle": "الصعيدي",
+      "country": "جمهورية مصر العربية",
+      "countryCode": "EG",
+      "regionBranch": "محافظة الغربية - مدينة طنطا / القاهرة الكبرى",
+      "lineageNarrative": "ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).",
+      "documentType": "a4-certificate",
+      "issueDateGregorian": "2026-10-22",
+      "issueDateHijri": "١١ ربيع الآخر ١٤٤٨ هـ",
+      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام",
+      "memberReferenceId": "REG-EG-GH-0001",
+      "ancestralRoot": "الجد السابع إبراهيم الصعيدي الجهني — فرع الغربية وطنطا والقاهرة",
+      "currentResidence": "جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة"
+    },
+    {
+      "serialNumber": "ELS-2026-EG-002",
+      "arabicName": "مرسي الحجاج (مرسي حجاج الصعيدي)",
+      "englishName": "Morsi Hagag Elsaidy",
+      "familyTitle": "الصعيدي",
+      "country": "جمهورية مصر العربية",
+      "countryCode": "EG",
+      "regionBranch": "صعيد مصر / محافظة الغربية - طنطا",
+      "lineageNarrative": "من الأعلام الموثقين في السجل التاريخي لعائلات الصعيدي (آل الصعيدي) والامتداد الحجازي الموثق في صعيد مصر ومحافظة الغربية وطنطا.",
+      "documentType": "a4-certificate",
+      "issueDateGregorian": "2026-10-22",
+      "issueDateHijri": "١١ ربيع الآخر ١٤٤٨ هـ",
+      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام",
+      "memberReferenceId": "REG-EG-SD-0002",
+      "ancestralRoot": "الامتداد الحجازي الصعيدي — أعقاب مرسي الحجاج وآل الصعيدي",
+      "currentResidence": "جمهورية مصر العربية — صعيد مصر / محافظة الغربية"
     },
     {
       "serialNumber": "ELS-2026-SA-001",
@@ -270,7 +307,10 @@
       "documentType": "a4-certificate",
       "issueDateGregorian": "2026-10-22",
       "issueDateHijri": "١١ ربيع الآخر ١٤٤٨ هـ",
-      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام"
+      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام",
+      "memberReferenceId": "REG-SA-HL-0001",
+      "ancestralRoot": "إبراهيم الصعيدي ← عوض البراهيم ← صالح ← عبد الله ← إبراهيم",
+      "currentResidence": "المملكة العربية السعودية — منطقة حائل (حي الزبارة)"
     },
     {
       "serialNumber": "ELS-2026-SA-002",
@@ -284,7 +324,10 @@
       "documentType": "a4-certificate",
       "issueDateGregorian": "2026-10-22",
       "issueDateHijri": "١١ ربيع الآخر ١٤٤٨ هـ",
-      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام"
+      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام",
+      "memberReferenceId": "REG-SA-RY-0002",
+      "ancestralRoot": "إبراهيم الصعيدي ← عوض البراهيم ← صالح ← عبد الله ← ناصر ← حمود",
+      "currentResidence": "المملكة العربية السعودية — مدينة الرياض"
     }
   ],
   "articles": [

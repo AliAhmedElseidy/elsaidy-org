@@ -1,26 +1,93 @@
-import React, { useState } from 'react';
-import { DIWAN_ARTICLES, DiwanArticle, PageRoute } from '../data/familyData';
+import React, { useState, useEffect } from 'react';
+import { DIWAN_ARTICLES, DiwanArticle, PageRoute, sanitizeSafeUrl } from '../data/familyData';
 import {
   Search,
   ArrowRight,
   ChevronLeft,
   BookOpen,
   ShieldCheck,
+  Share2,
+  Check,
 } from 'lucide-react';
 
 interface BlogPageProps {
   onNavigate: (route: PageRoute) => void;
   articles?: DiwanArticle[];
+  initialArticleSlug?: string;
+  onSelectArticleSlug?: (slug: string | null) => void;
 }
 
 export const BlogPage: React.FC<BlogPageProps> = ({
   onNavigate,
   articles = DIWAN_ARTICLES,
+  initialArticleSlug,
+  onSelectArticleSlug,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [copiedArticleLink, setCopiedArticleLink] = useState<boolean>(false);
+
+  const findArticleBySlug = React.useCallback(
+    (slug?: string | null): DiwanArticle | null => {
+      if (!slug) return null;
+      const cleaned = slug.trim().toLowerCase();
+      return (
+        articles.find(
+          (a) =>
+            (a.slug && a.slug.toLowerCase() === cleaned) ||
+            a.id.toLowerCase() === cleaned
+        ) || null
+      );
+    },
+    [articles]
+  );
+
   const [dedicatedReadingArticle, setDedicatedReadingArticle] =
-    useState<DiwanArticle | null>(null);
+    useState<DiwanArticle | null>(() => findArticleBySlug(initialArticleSlug));
+
+  useEffect(() => {
+    setDedicatedReadingArticle(findArticleBySlug(initialArticleSlug));
+  }, [initialArticleSlug, findArticleBySlug]);
+
+  const handleOpenArticle = (article: DiwanArticle) => {
+    const slug = article.slug || article.id;
+    setDedicatedReadingArticle(article);
+    onSelectArticleSlug?.(slug);
+    if (typeof window !== 'undefined') {
+      const targetPath = `/diwan/${encodeURIComponent(slug)}`;
+      if (window.location.pathname !== targetPath) {
+        try {
+          window.history.pushState({ page: 'diwan', articleSlug: slug }, '', targetPath);
+        } catch {
+          // ignore
+        }
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleCloseArticle = () => {
+    setDedicatedReadingArticle(null);
+    onSelectArticleSlug?.(null);
+    if (typeof window !== 'undefined') {
+      if (window.location.pathname !== '/diwan') {
+        try {
+          window.history.pushState({ page: 'diwan' }, '', '/diwan');
+        } catch {
+          // ignore
+        }
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleCopyArticleUrl = (article: DiwanArticle) => {
+    const slug = article.slug || article.id;
+    const url = `https://elsaidy.org/diwan/${slug}`;
+    navigator.clipboard?.writeText(url);
+    setCopiedArticleLink(true);
+    setTimeout(() => setCopiedArticleLink(false), 2200);
+  };
 
   const filteredArticles = articles.filter((art) => {
     const matchesCat =
@@ -36,17 +103,38 @@ export const BlogPage: React.FC<BlogPageProps> = ({
   });
 
   if (dedicatedReadingArticle) {
+    const safeCover = sanitizeSafeUrl(dedicatedReadingArticle.coverImage);
     return (
       <div className="py-10 lg:py-16 space-y-8">
         <div className="pb-6 border-b border-[#E6E2D8] flex flex-wrap items-center justify-between gap-4 text-xs">
-          <button
-            type="button"
-            onClick={() => setDedicatedReadingArticle(null)}
-            className="px-5 py-2.5 rounded-xl bg-[#0F291E] text-white font-bold hover:bg-[#141E28] transition-colors flex items-center gap-2 cursor-pointer"
-          >
-            <ArrowRight className="w-3.5 h-3.5" />
-            <span>العودة إلى فهرس الديوان والمقالات</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="button"
+              onClick={handleCloseArticle}
+              className="px-5 py-2.5 rounded-xl bg-[#0F291E] text-white font-bold hover:bg-[#141E28] transition-colors flex items-center gap-2 cursor-pointer"
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+              <span>العودة إلى فهرس الديوان والمقالات</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleCopyArticleUrl(dedicatedReadingArticle)}
+              className="px-4 py-2.5 rounded-xl bg-white border border-[#E6E2D8] text-[#0F291E] font-bold hover:border-[#695022] transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              {copiedArticleLink ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>تم نسخ رابط الدراسة المستقل!</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-3.5 h-3.5 text-[#695022]" />
+                  <span>نسخ الرابط المباشر للدراسة</span>
+                </>
+              )}
+            </button>
+          </div>
 
           <div className="text-zinc-600">
             <span className="font-bold text-[#695022]">
@@ -90,10 +178,10 @@ export const BlogPage: React.FC<BlogPageProps> = ({
             </div>
           </div>
 
-          {dedicatedReadingArticle.coverImage && (
+          {safeCover && (
             <div className="mb-8 rounded-xl overflow-hidden border border-[#E6E2D8] bg-[#F7F6F2]">
               <img
-                src={dedicatedReadingArticle.coverImage}
+                src={safeCover}
                 alt={dedicatedReadingArticle.title}
                 width="900"
                 height="480"
@@ -122,13 +210,13 @@ export const BlogPage: React.FC<BlogPageProps> = ({
           </div>
 
           <div className="mt-12 pt-6 border-t border-[#E6E2D8] flex flex-wrap items-center justify-between gap-4">
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-zinc-600">
               الموقع الرسمي لعائلات الصعيدي في الوطن العربي — الأرشيف الوثائقي والمنصة
-              المعرفية
+              المعرفية (elsaidy.org/diwan/{dedicatedReadingArticle.slug || dedicatedReadingArticle.id})
             </span>
             <button
               type="button"
-              onClick={() => setDedicatedReadingArticle(null)}
+              onClick={handleCloseArticle}
               className="px-6 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors cursor-pointer"
             >
               العودة إلى قائمة المقالات
@@ -155,7 +243,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({
             <span aria-hidden="true">/</span>
             <span className="font-bold text-[#0F291E]">الديوان والمقالات</span>
             <span aria-hidden="true">·</span>
-            <span className="font-mono text-[11px] text-zinc-500">
+            <span className="font-mono text-[11px] text-zinc-600">
               ELSAIDY Knowledge &amp; Heritage Cloud
             </span>
           </div>
@@ -220,8 +308,12 @@ export const BlogPage: React.FC<BlogPageProps> = ({
         </div>
 
         <div className="relative w-full lg:w-80">
-          <Search className="w-4 h-4 text-zinc-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <label htmlFor="diwan-search-input" className="sr-only">
+            ابحث في مقالات ووثائق الديوان
+          </label>
+          <Search className="w-4 h-4 text-zinc-600 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
+            id="diwan-search-input"
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -253,65 +345,79 @@ export const BlogPage: React.FC<BlogPageProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-            {filteredArticles.map((article) => (
-              <article
-                key={article.id}
-                onClick={() => setDedicatedReadingArticle(article)}
-                className="p-7 sm:p-9 rounded-xl bg-white border border-[#E6E2D8] border-t-4 border-t-[#695022] shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between cursor-pointer group"
-              >
-                <div>
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs pb-3 mb-4 border-b border-[#E6E2D8]">
-                    <span className="font-bold text-[#695022]">
-                      إصدار {article.index} · {article.categoryLabel}
-                    </span>
-                    <span className="text-zinc-500">
-                      {article.hijriDate} ({article.publishDate})
-                    </span>
-                  </div>
-
-                  {article.coverImage && (
-                    <div className="mb-4 rounded-lg overflow-hidden border border-[#E6E2D8] bg-[#F7F6F2] h-44">
-                      <img
-                        src={article.coverImage}
-                        alt={article.title}
-                        width="600"
-                        height="260"
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
-                      />
+            {filteredArticles.map((article) => {
+              const safeCover = sanitizeSafeUrl(article.coverImage);
+              const slug = article.slug || article.id;
+              return (
+                <article
+                  key={article.id}
+                  onClick={() => handleOpenArticle(article)}
+                  className="p-7 sm:p-9 rounded-xl bg-white border border-[#E6E2D8] border-t-4 border-t-[#695022] shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between cursor-pointer group"
+                >
+                  <div>
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs pb-3 mb-4 border-b border-[#E6E2D8]">
+                      <span className="font-bold text-[#695022]">
+                        إصدار {article.index} · {article.categoryLabel}
+                      </span>
+                      <span className="text-zinc-600">
+                        {article.hijriDate} ({article.publishDate})
+                      </span>
                     </div>
-                  )}
 
-                  <h2 className="text-xl sm:text-2xl font-extrabold text-[#141413] leading-snug mb-3 group-hover:text-[#0F291E] transition-colors">
-                    {article.title}
-                  </h2>
+                    {safeCover && (
+                      <div className="mb-4 rounded-lg overflow-hidden border border-[#E6E2D8] bg-[#F7F6F2] h-44">
+                        <img
+                          src={safeCover}
+                          alt={article.title}
+                          width="600"
+                          height="260"
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+                        />
+                      </div>
+                    )}
 
-                  <p className="font-display text-lg text-zinc-700 leading-[1.9] mb-6 text-justify">
-                    {article.excerpt}
-                  </p>
-                </div>
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-[#141413] leading-snug mb-3 group-hover:text-[#0F291E] transition-colors">
+                      <a
+                        href={`/diwan/${slug}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleOpenArticle(article);
+                        }}
+                      >
+                        {article.title}
+                      </a>
+                    </h2>
 
-                <div className="pt-4 border-t border-[#E6E2D8] flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <div className="text-zinc-600">
-                    <span className="font-bold text-[#141413]">{article.author}</span>
-                    <span className="mx-1.5" aria-hidden="true">
-                      ·
-                    </span>
-                    <span>{article.readTime}</span>
+                    <p className="font-display text-lg text-zinc-700 leading-[1.9] mb-6 text-justify">
+                      {article.excerpt}
+                    </p>
                   </div>
 
-                  <span className="font-extrabold text-[#0F291E] flex items-center gap-1.5 group-hover:text-[#695022] transition-colors">
-                    <BookOpen className="w-3.5 h-3.5" />
-                    <span>قراءة المقال كاملاً</span>
-                    <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-                  </span>
-                </div>
-              </article>
-            ))}
+                  <div className="pt-4 border-t border-[#E6E2D8] flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div className="text-zinc-600">
+                      <span className="font-bold text-[#141413]">{article.author}</span>
+                      <span className="mx-1.5" aria-hidden="true">
+                        ·
+                      </span>
+                      <span>{article.readTime}</span>
+                    </div>
+
+                    <span className="font-extrabold text-[#0F291E] flex items-center gap-1.5 group-hover:text-[#695022] transition-colors">
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>قراءة المقال كاملاً</span>
+                      <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
+                    </span>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
     </div>
   );
 };
+
+export default BlogPage;

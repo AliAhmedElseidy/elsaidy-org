@@ -24,19 +24,27 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Dedicated A4 Certificate & VIP ID Card Print Rules */
+/* Dedicated Standalone A4 Certificate & VIP ID Card Print Rules (BUG-010) */
 @media print {
   @page {
     size: A4 portrait;
-    margin: 8mm;
+    margin: 6mm;
+  }
+
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   html,
   body {
     background: #FFFFFF !important;
     color: #141413 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
   }
 
   .no-print,
@@ -46,12 +54,29 @@ body {
     display: none !important;
   }
 
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .print-certificate-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  .print-certificate-canvas,
   .print-only-certificate {
     display: block !important;
     width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
+    max-width: 196mm !important;
+    margin: 0 auto !important;
     box-shadow: none !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 }
