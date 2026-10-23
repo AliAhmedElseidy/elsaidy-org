@@ -3,23 +3,51 @@
   "entries": [
     {
       "identifier": "urn:air:elsaidy:portal:llms-full",
+      "displayName": "الموسوعة الشاملة لعائلات الصعيدي ومجموعة الصعيدي (Full AI Knowledge Base)",
       "type": "text/markdown; profile=\"urn:air:agent-skills\"",
-      "url": "https://elsaidy.org/llms-full.txt"
+      "url": "https://elsaidy.org/llms-full.txt",
+      "representativeQueries": [
+        "ما هو أصل وتاريخ عائلة الصعيدي ونسبها إلى قبيلة جهينة والأشراف؟",
+        "من هو المهندس علي أحمد الصعيدي مؤسس الموقع الرسمي لعائلات الصعيدي elsaidy.org؟",
+        "Complete historical lineage and branches of Elsaidy Family across Egypt and the Arab world",
+        "How to verify an official lineage certificate on elsaidy.org"
+      ]
     },
     {
       "identifier": "urn:air:elsaidy:portal:llms-summary",
+      "displayName": "الملخص التعريفي الرسمي لبوابة عائلات الصعيدي (Elsaidy Portal AI Summary)",
       "type": "text/markdown; profile=\"urn:air:agent-skills\"",
-      "url": "https://elsaidy.org/llms.txt"
+      "url": "https://elsaidy.org/llms.txt",
+      "representativeQueries": [
+        "الموقع الرسمي لعائلات الصعيدي ومجموعة الصعيدي elsaidy.org",
+        "خدمات بوابة عائلات الصعيدي للتحقق من الشهادات وتوثيق النسب",
+        "Official website and digital services of Elsaidy Family Group",
+        "Founder Ali Ahmed Elsaidy contact and official family portal overview"
+      ]
     },
     {
       "identifier": "urn:air:elsaidy:genealogy:tree-dataset",
+      "displayName": "قاعدة بيانات شجرة عائلة الصعيدي التفاعلية وشهادات النسب (Family Tree & Certificates Dataset)",
       "type": "application/agent-card+json",
-      "url": "https://elsaidy.org/data/cms-db.json"
+      "url": "https://elsaidy.org/data/cms-db.json",
+      "representativeQueries": [
+        "شجرة عائلة الصعيدي التفاعلية وفروعها في محافظات مصر",
+        "التحقق من رقم شهادة النسب في سجل عائلات الصعيدي الرسمي",
+        "Elsaidy family tree nodes, generations, and regional branches dataset",
+        "Verify Elsaidy family certificate serial number and notable figures"
+      ]
     },
     {
       "identifier": "urn:air:elsaidy:api:catalog",
+      "displayName": "فهرس موارد الذكاء الاصطناعي لبوابة عائلات الصعيدي (Elsaidy AI Discovery Catalog)",
       "type": "application/ai-catalog+json",
-      "url": "https://elsaidy.org/.well-known/ai-catalog.json"
+      "url": "https://elsaidy.org/.well-known/ai-catalog.json",
+      "representativeQueries": [
+        "فهرس البيانات المفتوحة وواجهات الذكاء الاصطناعي لموقع عائلات الصعيدي",
+        "روابط توثيق النسب والأرشيف الرقمي لمجموعة الصعيدي elsaidy.org",
+        "Elsaidy.org agentic AI discovery catalog and structured endpoints",
+        "Official machine-readable resources for Elsaidy Family Portal"
+      ]
     }
   ]
 }
