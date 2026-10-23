@@ -6,6 +6,7 @@ import {
   VERBATIM_TITLE_REASON_HEADING,
   VERBATIM_TITLE_REASON,
   EGYPT_HISTORICAL_EXTENSION_TEXT,
+  UPPER_EGYPT_AND_HIJAZI_HAGAG_LINEAGE_TEXT,
   DOCUMENTED_REFERENCES,
   MARGINALIA_NOTES,
   PageRoute
@@ -417,3 +418,6 @@ export const AboutPage: React.FC<AboutPageProps> = ({
     </div>
   );
 };
+
+export default AboutPage;
+

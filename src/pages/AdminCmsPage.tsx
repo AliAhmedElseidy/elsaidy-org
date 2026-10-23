@@ -338,9 +338,11 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
         index: nextIdx,
         officialName: portalForm.officialName.trim(),
         portalSubTitle: portalForm.portalSubTitle.trim() || 'منظومة رقمية معتمدة — ELSAIDY Portal',
+        englishSubtitle: 'ELSAIDY Official Digital Portal',
         domain: portalForm.domain.trim() || 'elsaidy.org',
         url: portalForm.url.trim() || 'https://elsaidy.org',
         accessClassification: portalForm.accessClassification.trim() || 'بوابة مؤسسية معتمدة',
+        securityProtocol: 'تشفير مؤسسي موحد (TLS 1.3 / ELSAIDY SSO)',
         summary: portalForm.summary.trim(),
         departments:
           departments.length > 0
