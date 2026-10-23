@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import {
   DEFAULT_VERIFIED_CERTIFICATES,
   IssuedCertificateRecord,
@@ -7,7 +7,12 @@ import {
   DEFAULT_SITE_CONFIG,
   sanitizeSafeUrl,
 } from '../data/familyData';
-import { CertificateDocumentView } from '../components/CertificateDocumentView';
+
+const CertificateDocumentView = lazy(() =>
+  import('../components/CertificateDocumentView').then((m) => ({
+    default: m.CertificateDocumentView,
+  }))
+);
 import {
   ShieldCheck,
   Search,
@@ -425,14 +430,22 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                 </span>
               </div>
 
-              <CertificateDocumentView
-                record={matchedRecord}
-                includeFamilyTreeStamp={true}
-                customLogoUrl={siteConfig.branding.logoUrl}
-                customSealImageUrl={siteConfig.branding.sealImageUrl}
-                customTreeImageUrl={siteConfig.familyTreeConfig.treeImageUrl}
-                siteTitle={siteConfig.branding.siteTitle}
-              />
+              <Suspense
+                fallback={
+                  <div className="p-8 text-center text-xs font-bold text-[#0F291E] bg-[#F7F6F2] rounded-xl border border-[#E6E2D8]">
+                    جاري تجهيز الوثيقة الرسمية للعرض...
+                  </div>
+                }
+              >
+                <CertificateDocumentView
+                  record={matchedRecord}
+                  includeFamilyTreeStamp={true}
+                  customLogoUrl={siteConfig.branding.logoUrl}
+                  customSealImageUrl={siteConfig.branding.sealImageUrl}
+                  customTreeImageUrl={siteConfig.familyTreeConfig.treeImageUrl}
+                  siteTitle={siteConfig.branding.siteTitle}
+                />
+              </Suspense>
             </div>
           </div>
         ) : (

@@ -229,6 +229,218 @@
     "محمود الصعيدي (Mahmoud Elsaidy)",
     "مصطفى الصعيدي (Mostafa Elsaidy)"
   ],
+  "treeNodes": [
+    {
+      "id": "node-ibrahim-root",
+      "name": "إبراهيم الصعيدي",
+      "title": "الجد السابع الجامع للعائلة · قبيلة جهينة القضاعية",
+      "parentId": null,
+      "branchName": "العمود الجامع — قبيلة جهينة (ينبع النخل)",
+      "generation": "الجد السابع الجامع",
+      "location": "ينبع النخل — الساحل الغربي لشبه الجزيرة العربية"
+    },
+    {
+      "id": "node-awad-brahim",
+      "name": "عوض البراهيم الصعيدي",
+      "title": "عمود التفرع الجامع لأبناء وأحفاد العائلة",
+      "parentId": "node-ibrahim-root",
+      "branchName": "العمود الجامع — قبيلة جهينة (ينبع النخل)",
+      "generation": "الجيل الثاني",
+      "location": "ينبع النخل / الحجاز / صعيد مصر"
+    },
+    {
+      "id": "node-egypt-pillar",
+      "name": "حاضرة آل الصعيدي والامتداد الحجازي في الديار المصرية",
+      "title": "الركيزة التاريخية الكبرى في صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة",
+      "parentId": "node-ibrahim-root",
+      "branchName": "فرع مصر (الغربية وطنطا والصعيد والقاهرة)",
+      "generation": "الأصول التاريخية بمصر",
+      "location": "صعيد مصر · محافظة الغربية (طنطا) · الدلتا · القاهرة"
+    },
+    {
+      "id": "node-morsi-hagag",
+      "name": "مرسي الحجاج (مرسي حجاج الصعيدي)",
+      "title": "من الأعلام الموثقين في السجل التاريخي والامتداد الحجازي الصعيدي",
+      "parentId": "node-egypt-pillar",
+      "branchName": "فرع مصر (الغربية وطنطا والصعيد والقاهرة)",
+      "generation": "الجيل الخامس",
+      "location": "صعيد مصر / محافظة الغربية — مدينة طنطا"
+    },
+    {
+      "id": "node-ali-elder-eg",
+      "name": "علي الصعيدي",
+      "title": "من أعلام وبيوتات عائلة الصعيدي في محافظة الغربية وطنطا",
+      "parentId": "node-egypt-pillar",
+      "branchName": "فرع مصر (الغربية وطنطا والصعيد والقاهرة)",
+      "generation": "الجيل الخامس",
+      "location": "محافظة الغربية — مدينة طنطا / صعيد مصر"
+    },
+    {
+      "id": "node-ahmed-ali-eg",
+      "name": "أحمد علي الصعيدي",
+      "title": "من أعلام عائلة الصعيدي في محافظة الغربية وطنطا والقاهرة",
+      "parentId": "node-ali-elder-eg",
+      "branchName": "فرع مصر (الغربية وطنطا والصعيد والقاهرة)",
+      "generation": "الجيل السادس",
+      "location": "محافظة الغربية — مدينة طنطا / القاهرة"
+    },
+    {
+      "id": "node-ali-ahmed-eg",
+      "name": "علي أحمد علي الصعيدي",
+      "title": "مؤسس ومطور البوابة الرسمية ومجموعة الصعيدي (Eng. Ali Ahmed Ali Elsaidy)",
+      "parentId": "node-ahmed-ali-eg",
+      "branchName": "فرع مصر (الغربية وطنطا والصعيد والقاهرة)",
+      "generation": "الجيل السابع المعاصر",
+      "serialNumber": "ELS-2026-EG-002",
+      "location": "محافظة الغربية (طنطا) / القاهرة — جمهورية مصر العربية"
+    },
+    {
+      "id": "node-abdullah-awad",
+      "name": "عبد الله بن عوض البراهيم الصعيدي",
+      "title": "جد فرع محافظة تيماء (المملكة العربية السعودية)",
+      "parentId": "node-awad-brahim",
+      "branchName": "١. فرع عبد الله (تيماء)",
+      "generation": "الجيل الثالث",
+      "location": "محافظة تيماء — شمال غرب المملكة العربية السعودية"
+    },
+    {
+      "id": "node-awad-abdullah",
+      "name": "عوض بن عبد الله بن عوض الصعيدي",
+      "title": "الابن الأول لعبد الله بن عوض في تيماء",
+      "parentId": "node-abdullah-awad",
+      "branchName": "١. فرع عبد الله (تيماء)",
+      "generation": "الجيل الرابع",
+      "location": "محافظة تيماء"
+    },
+    {
+      "id": "node-hamed-abdullah",
+      "name": "حامد بن عبد الله بن عوض الصعيدي",
+      "title": "الابن الثاني لعبد الله بن عوض في تيماء",
+      "parentId": "node-abdullah-awad",
+      "branchName": "١. فرع عبد الله (تيماء)",
+      "generation": "الجيل الرابع",
+      "location": "محافظة تيماء"
+    },
+    {
+      "id": "node-hamdan-abdullah",
+      "name": "حمدان بن عبد الله بن عوض الصعيدي",
+      "title": "الابن الثالث لعبد الله بن عوض في تيماء",
+      "parentId": "node-abdullah-awad",
+      "branchName": "١. فرع عبد الله (تيماء)",
+      "generation": "الجيل الرابع",
+      "location": "محافظة تيماء"
+    },
+    {
+      "id": "node-bashir-abdullah",
+      "name": "بشير بن عبد الله بن عوض الصعيدي",
+      "title": "الابن الرابع لعبد الله بن عوض في تيماء",
+      "parentId": "node-abdullah-awad",
+      "branchName": "١. فرع عبد الله (تيماء)",
+      "generation": "الجيل الرابع",
+      "location": "محافظة تيماء"
+    },
+    {
+      "id": "node-salama-awad",
+      "name": "سلامة بن عوض البراهيم الصعيدي",
+      "title": "جد فرع بلاد الشام (جبل العرب — قرية أم ولد)",
+      "parentId": "node-awad-brahim",
+      "branchName": "٢. فرع سلامة (الشام)",
+      "generation": "الجيل الثالث",
+      "location": "قرية أم ولد — جبل العرب (بلاد الشام / سوريا)"
+    },
+    {
+      "id": "node-saleh-awad",
+      "name": "صالح بن عوض البراهيم الصعيدي",
+      "title": "جد فروع حائل والرياض والإمارات وسلطنة عُمان",
+      "parentId": "node-awad-brahim",
+      "branchName": "٣. فرع صالح (حائل والرياض والخليج)",
+      "generation": "الجيل الثالث",
+      "location": "ضواحي منطقة حائل — المملكة العربية السعودية"
+    },
+    {
+      "id": "node-abdullah-saleh",
+      "name": "عبد الله بن صالح بن عوض الصعيدي",
+      "title": "استقر داخل مدينة حائل وله ثلاثة أبناء (إبراهيم، ناصر، علي)",
+      "parentId": "node-saleh-awad",
+      "branchName": "٣. فرع صالح (حائل والرياض والخليج)",
+      "generation": "الجيل الرابع",
+      "location": "مدينة حائل — المملكة العربية السعودية"
+    },
+    {
+      "id": "node-ibrahim-abdullah",
+      "name": "إبراهيم بن عبد الله بن صالح الصعيدي",
+      "title": "جد فرع مدينة حائل (حي الزبارة)",
+      "parentId": "node-abdullah-saleh",
+      "branchName": "٣. فرع صالح (حائل والرياض والخليج)",
+      "generation": "الجيل الخامس",
+      "serialNumber": "ELS-2026-SA-001",
+      "location": "مدينة حائل — حي الزبارة"
+    },
+    {
+      "id": "node-nasser-abdullah",
+      "name": "ناصر بن عبد الله بن صالح الصعيدي",
+      "title": "جد فرع مدينة الرياض",
+      "parentId": "node-abdullah-saleh",
+      "branchName": "٣. فرع صالح (حائل والرياض والخليج)",
+      "generation": "الجيل الخامس",
+      "location": "مدينة حائل / مدينة الرياض"
+    },
+    {
+      "id": "node-hammoud-nasser",
+      "name": "حمود بن ناصر بن عبد الله الصعيدي",
+      "title": "تولى شؤون البادية في بداية حكم الملك عبد العزيز يرحمه الله",
+      "parentId": "node-nasser-abdullah",
+      "branchName": "٣. فرع صالح (حائل والرياض والخليج)",
+      "generation": "الجيل السادس",
+      "serialNumber": "ELS-2026-SA-002",
+      "location": "مدينة الرياض — المملكة العربية السعودية"
+    },
+    {
+      "id": "node-ali-abdullah",
+      "name": "علي بن عبد الله بن صالح الصعيدي",
+      "title": "جد الفروع الخليجية والقصيم (الإمارات وسلطنة عُمان)",
+      "parentId": "node-abdullah-saleh",
+      "branchName": "٣. فرع صالح (حائل والرياض والخليج)",
+      "generation": "الجيل الخامس",
+      "location": "نجد / ساحل الخليج العربي / الإمارات"
+    },
+    {
+      "id": "node-abdullah-ali-najdi",
+      "name": "عبد الله بن علي الصعيدي (النجدي القصيمي)",
+      "title": "المعروف بـ (النجدي القصيمي)",
+      "parentId": "node-ali-abdullah",
+      "branchName": "٣. فرع صالح (حائل والرياض والخليج)",
+      "generation": "الجيل السادس",
+      "location": "منطقة القصيم / نجد"
+    },
+    {
+      "id": "node-omar-ali-uae",
+      "name": "عمر بن علي بن عبد الله الصعيدي",
+      "title": "فرع دولة الإمارات العربية المتحدة (عجمان)",
+      "parentId": "node-ali-abdullah",
+      "branchName": "٣. فرع صالح (حائل والرياض والخليج)",
+      "generation": "الجيل السادس",
+      "location": "عجمان — حي مشرف والجرف (الإمارات العربية المتحدة)"
+    },
+    {
+      "id": "node-mohamed-ali-uae",
+      "name": "محمد بن علي بن عبد الله الصعيدي",
+      "title": "فرع دولة الإمارات العربية المتحدة (عجمان)",
+      "parentId": "node-ali-abdullah",
+      "branchName": "٣. فرع صالح (حائل والرياض والخليج)",
+      "generation": "الجيل السادس",
+      "location": "عجمان — حي مشرف والجرف (الإمارات العربية المتحدة)"
+    },
+    {
+      "id": "node-khalifa-ali-oman",
+      "name": "خليفة بن علي بن عبد الله الصعيدي",
+      "title": "فرع سلطنة عُمان (الباطنة — الخابورة)",
+      "parentId": "node-ali-abdullah",
+      "branchName": "٣. فرع صالح (حائل والرياض والخليج)",
+      "generation": "الجيل السادس",
+      "location": "سلطنة عُمان — الباطنة (ولاية الخابورة)"
+    }
+  ],
   "certificates": [
     {
       "serialNumber": "ELS-2026-SA-001",

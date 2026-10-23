@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import {
   Lock,
   Unlock,
@@ -34,10 +34,17 @@ import {
   SiteConfig,
   WhiteLabeledPortal,
   DEFAULT_SITE_CONFIG,
+  DEFAULT_FAMILY_TREE_NODES,
+  FamilyTreeNode,
   AdminChangeLogEntry,
   sanitizeSafeUrl,
 } from '../data/familyData';
-import { CertificateDocumentView } from '../components/CertificateDocumentView';
+
+const CertificateDocumentView = lazy(() =>
+  import('../components/CertificateDocumentView').then((m) => ({
+    default: m.CertificateDocumentView,
+  }))
+);
 
 interface AdminCmsPageProps {
   onNavigate: (page: PageRoute) => void;
@@ -49,6 +56,8 @@ interface AdminCmsPageProps {
   onUpdateCertificates: (newCerts: IssuedCertificateRecord[]) => void;
   customNames: string[];
   onUpdateCustomNames: (newNames: string[]) => void;
+  treeNodes?: FamilyTreeNode[];
+  onUpdateTreeNodes?: (newNodes: FamilyTreeNode[]) => void;
   siteConfig: SiteConfig;
   onUpdateSiteConfig: (newConfig: SiteConfig) => void;
 }
@@ -81,6 +90,8 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
   onUpdateCertificates,
   customNames,
   onUpdateCustomNames,
+  treeNodes = DEFAULT_FAMILY_TREE_NODES,
+  onUpdateTreeNodes,
   siteConfig,
   onUpdateSiteConfig,
 }) => {
@@ -91,8 +102,8 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
   const [authError, setAuthError] = useState<string>('');
 
   const [activeTab, setActiveTab] = useState<
-    'brand' | 'hero' | 'portals' | 'posts' | 'certificates' | 'github'
-  >('brand');
+    'github' | 'brand' | 'hero' | 'portals' | 'posts' | 'certificates'
+  >('github');
 
   const [statusBanner, setStatusBanner] = useState<{
     type: 'success' | 'error' | 'info';
@@ -643,7 +654,133 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     });
   };
 
-  // --- MODULE 6 HANDLERS: SEO NAMES & GITHUB SYNC ---
+  // --- MODULE 6 HANDLERS: DYNAMIC TREE BUILDER, SEO NAMES & GITHUB SYNC ---
+  const [editingTreeNodeId, setEditingTreeNodeId] = useState<string | null>(null);
+  const [treeNodeSearch, setTreeNodeSearch] = useState<string>('');
+  const [treeNodeForm, setTreeNodeForm] = useState<{
+    name: string;
+    title: string;
+    parentId: string;
+    branchName: string;
+    generation: string;
+    serialNumber: string;
+    location: string;
+  }>({
+    name: '',
+    title: '',
+    parentId: 'node-ahmed-ali-eg',
+    branchName: 'فرع مصر (الغربية وطنطا والصعيد والقاهرة)',
+    generation: 'الجيل السابع المعاصر',
+    serialNumber: '',
+    location: 'محافظة الغربية — مدينة طنطا / القاهرة',
+  });
+
+  const handleSaveTreeNode = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanName = treeNodeForm.name.trim();
+    if (!cleanName) {
+      setStatusBanner({
+        type: 'error',
+        message: 'يرجى إدخال الاسم الكامل للعضو أو العلم لإضافته في الشجرة التفاعلية.',
+      });
+      return;
+    }
+
+    const resolvedParentId =
+      treeNodeForm.parentId && treeNodeForm.parentId !== 'ROOT' ? treeNodeForm.parentId : null;
+
+    if (editingTreeNodeId && resolvedParentId === editingTreeNodeId) {
+      setStatusBanner({
+        type: 'error',
+        message: 'لا يمكن ربط العضو بنفسه كأب مباشر. يرجى اختيار الأب أو الجد الأعلى الصحيح.',
+      });
+      return;
+    }
+
+    const updatedNode: FamilyTreeNode = {
+      id: editingTreeNodeId || `node-cms-${Date.now()}`,
+      name: cleanName,
+      title: treeNodeForm.title.trim() || 'عضو موثق في شجرة عائلات الصعيدي',
+      parentId: resolvedParentId,
+      branchName: treeNodeForm.branchName.trim() || 'فرع مصر (الغربية وطنطا والصعيد والقاهرة)',
+      generation: treeNodeForm.generation.trim() || 'الجيل المعاصر',
+      ...(treeNodeForm.serialNumber.trim()
+        ? { serialNumber: treeNodeForm.serialNumber.trim().toUpperCase() }
+        : {}),
+      location: treeNodeForm.location.trim() || 'جمهورية مصر العربية / الوطن العربي',
+    };
+
+    const nextNodes = editingTreeNodeId
+      ? treeNodes.map((n) => (n.id === editingTreeNodeId ? updatedNode : n))
+      : [...treeNodes, updatedNode];
+
+    if (onUpdateTreeNodes) {
+      onUpdateTreeNodes(nextNodes);
+    }
+
+    if (!customNames.some((cn) => cn.includes(cleanName))) {
+      onUpdateCustomNames([cleanName, ...customNames]);
+    }
+
+    const parentObj = treeNodes.find((p) => p.id === resolvedParentId);
+    appendLog(
+      editingTreeNodeId ? 'تحديث عضو في الشجرة التفاعلية' : 'إضافة عضو جديد للشجرة التفاعلية',
+      `${cleanName} (${updatedNode.branchName}) — الأب/الجد: ${parentObj ? parentObj.name : 'جذر رئيسي'}`
+    );
+
+    setStatusBanner({
+      type: 'success',
+      message: editingTreeNodeId
+        ? `تم تحديث بيانات "${cleanName}" في الشجرة التفاعلية بنجاح. يمكنك الآن الضغط على زر (نشر التعديلات إلى GitHub) لمزامنتها في cms-db.json.`
+        : `تمت إضافة "${cleanName}" وربطه بـ (${parentObj ? parentObj.name : 'الجذر الرئيسي'}) في الشجرة التفاعلية وفهرس الأسماء بنجاح!`,
+    });
+
+    setEditingTreeNodeId(null);
+    setTreeNodeForm({
+      name: '',
+      title: '',
+      parentId: resolvedParentId || 'node-ibrahim-root',
+      branchName: treeNodeForm.branchName,
+      generation: treeNodeForm.generation,
+      serialNumber: '',
+      location: treeNodeForm.location,
+    });
+  };
+
+  const handleEditTreeNodeClick = (node: FamilyTreeNode) => {
+    setEditingTreeNodeId(node.id);
+    setTreeNodeForm({
+      name: node.name,
+      title: node.title,
+      parentId: node.parentId || 'ROOT',
+      branchName: node.branchName,
+      generation: node.generation,
+      serialNumber: node.serialNumber || '',
+      location: node.location,
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteTreeNode = (nodeId: string) => {
+    const target = treeNodes.find((n) => n.id === nodeId);
+    if (!target) return;
+    const fallbackParentId = target.parentId;
+    const nextNodes = treeNodes
+      .filter((n) => n.id !== nodeId)
+      .map((n) => (n.parentId === nodeId ? { ...n, parentId: fallbackParentId } : n));
+    if (onUpdateTreeNodes) {
+      onUpdateTreeNodes(nextNodes);
+    }
+    if (editingTreeNodeId === nodeId) {
+      setEditingTreeNodeId(null);
+    }
+    appendLog('حذف عضو من الشجرة التفاعلية', target.name);
+    setStatusBanner({
+      type: 'info',
+      message: `تم حذف "${target.name}" من الشجرة التفاعلية مع الحفاظ على ربط الأبناء الفرعيين بأمان.`,
+    });
+  };
+
   const handleAddCompoundName = (e: React.FormEvent) => {
     e.preventDefault();
     const cleaned = newNameInput.trim();
@@ -690,7 +827,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     setStatusBanner({
       type: 'info',
       message:
-        'جاري مزامنة قاعدة البيانات الشاملة (public/data/cms-db.json)...',
+        'جاري مزامنة قاعدة البيانات الشاملة والشجرة التفاعلية (public/data/cms-db.json)...',
     });
 
     try {
@@ -708,6 +845,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
         lastUpdated: new Date().toISOString(),
         siteConfig,
         customNames,
+        treeNodes,
         certificates: issuedCertificates,
         articles,
       };
@@ -716,7 +854,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       const branch = githubConfig.branch.trim() || 'main';
       const jsonString = JSON.stringify(dbPayload, null, 2);
       const base64Content = encodeUtf8ToBase64(jsonString);
-      const commitMessage = `Sync ELSAIDY Site Config & CMS DB (${new Date().toISOString().slice(0, 10)})`;
+      const commitMessage = `Sync ELSAIDY Site Config, Interactive Tree & CMS DB (${new Date().toISOString().slice(0, 10)})`;
 
       // Path 1: Try Server-Side Cloudflare Pages Function (/api/cms-sync) first if no in-memory token is entered
       if (!githubConfig.token.trim()) {
@@ -799,7 +937,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       setStatusBanner({
         type: 'success',
         message:
-          'تمت المزامنة السحابية بنجاح! تم تحديث ملف (public/data/cms-db.json) شاملاً الهوية واللوجو والبانر والبوابات والمقالات والشهادات في GitHub.',
+          'تمت المزامنة السحابية بنجاح! تم تحديث ملف (public/data/cms-db.json) شاملاً الشجرة التفاعلية والهوية واللوجو والبانر والبوابات والمقالات والشهادات في GitHub.',
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'خطأ غير معروف';
@@ -818,6 +956,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       lastUpdated: new Date().toISOString(),
       siteConfig,
       customNames,
+      treeNodes,
       certificates: issuedCertificates,
       articles,
     };
@@ -850,6 +989,9 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
         if (Array.isArray(parsed.customNames)) {
           onUpdateCustomNames(parsed.customNames);
         }
+        if (Array.isArray(parsed.treeNodes) && onUpdateTreeNodes) {
+          onUpdateTreeNodes(parsed.treeNodes);
+        }
         if (Array.isArray(parsed.certificates)) {
           onUpdateCertificates(parsed.certificates);
         }
@@ -859,7 +1001,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
         appendLog('استيراد قاعدة بيانات JSON', `تم استيراد ملف ${file.name} بنجاح`);
         setStatusBanner({
           type: 'success',
-          message: `تم استيراد وتفعيل قاعدة البيانات (${file.name}) بنجاح بكافة الشهادات والمقالات والإعدادات!`,
+          message: `تم استيراد وتفعيل قاعدة البيانات (${file.name}) بنجاح بكافة عقد الشجرة التفاعلية والشهادات والمقالات والإعدادات!`,
         });
       } catch {
         setStatusBanner({
@@ -962,7 +1104,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                 ELSAIDY 100% DYNAMIC SITE CUSTOMIZER & GITHUB CMS
               </div>
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white">
-                لوحة التحكم الشاملة وبناء الهوية الرقمية (elsaidy.org)
+                لوحة التحكم الشاملة وبناء الشجرة التفاعلية (elsaidy.org)
               </h1>
             </div>
           </div>
@@ -976,6 +1118,15 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
             >
               <CloudUpload className="w-4 h-4" />
               <span>{isSyncingGitHub ? 'جاري النشر لـ GitHub...' : 'نشر التعديلات إلى GitHub'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onNavigate('tree')}
+              className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer"
+            >
+              <GitBranch className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span>معاينة الشجرة</span>
             </button>
 
             <button
@@ -998,44 +1149,44 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
           </div>
         </div>
 
-        {/* 6-Module Navigation Tabs (Horizontally Scrollable Pill Bar on Mobile) */}
+        {/* 6-Module Navigation Tabs (Tab 1: الشجرة والأسماء ومزامنة GitHub) */}
         <div className="flex overflow-x-auto pb-2 gap-2.5 no-scrollbar">
           {[
             {
+              id: 'github' as const,
+              label: `١. الشجرة والأسماء (${treeNodes.length} علم)`,
+              sub: 'Dynamic Tree Builder & GitHub Sync',
+              icon: GitBranch,
+            },
+            {
               id: 'brand' as const,
-              label: '١. الهوية واللوجو والمظهر',
+              label: '٢. الهوية واللوجو والمظهر',
               sub: 'Logo, Seal & Theme Studio',
               icon: Palette,
             },
             {
               id: 'hero' as const,
-              label: '٢. شريط الأخبار والبانر الرئيسي',
+              label: '٣. شريط الأخبار والبانر الرئيسي',
               sub: 'Ticker & Hero Editor',
               icon: Megaphone,
             },
             {
               id: 'portals' as const,
-              label: `٣. البوابات الرقمية (${(siteConfig.digitalPortals || []).length})`,
+              label: `٤. البوابات الرقمية (${(siteConfig.digitalPortals || []).length})`,
               sub: 'Portals & Links Manager',
               icon: Building2,
             },
             {
               id: 'posts' as const,
-              label: `٤. الديوان والمقالات (${articles.length})`,
+              label: `٥. الديوان والمقالات (${articles.length})`,
               sub: 'Blogger-Style Posts CMS',
               icon: FileText,
             },
             {
               id: 'certificates' as const,
-              label: `٥. شهادات النسب والعضوية (${issuedCertificates.length})`,
+              label: `٦. شهادات النسب والعضوية (${issuedCertificates.length})`,
               sub: 'A4 Certificate & VIP ID',
               icon: Award,
-            },
-            {
-              id: 'github' as const,
-              label: '٦. الشجرة والأسماء ومزامنة GitHub',
-              sub: `${visitorCount.toLocaleString('en-US')} زيارة · GitHub API`,
-              icon: GitBranch,
             },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -2721,41 +2872,410 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                 ):
               </span>
             </div>
-            <CertificateDocumentView
-              record={{
-                serialNumber: certForm.serialNumber,
-                arabicName: certForm.arabicName,
-                englishName: certForm.englishName,
-                familyTitle: certForm.familyTitle || 'الصعيدي',
-                country: certForm.country,
-                countryCode: certForm.countryCode,
-                regionBranch: certForm.regionBranch,
-                lineageNarrative: certForm.lineageNarrative,
-                documentType: certForm.documentType,
-                issueDateGregorian: certForm.issueDateGregorian,
-                issueDateHijri: certForm.issueDateHijri,
-                status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
-                personalPhotoUrl: certForm.personalPhotoUrl || undefined,
-                memberReferenceId: certForm.memberReferenceId || undefined,
-                ancestralRoot: certForm.ancestralRoot || undefined,
-                currentResidence: certForm.currentResidence || undefined,
-              }}
-              familyTitle={certForm.familyTitle || 'الصعيدي'}
-              includeFamilyTreeStamp={certForm.includeFamilyTreeStamp}
-              customLogoUrl={siteConfig.branding.logoUrl}
-              customSealImageUrl={siteConfig.branding.sealImageUrl}
-              customTreeImageUrl={siteConfig.familyTreeConfig.treeImageUrl}
-              siteTitle={siteConfig.branding.siteTitle}
-            />
+            <Suspense
+              fallback={
+                <div className="p-8 text-center text-xs font-bold text-[#0F291E] bg-[#F7F6F2] rounded-xl border border-[#E6E2D8]">
+                  جاري تجهيز معاينة الشهادة...
+                </div>
+              }
+            >
+              <CertificateDocumentView
+                record={{
+                  serialNumber: certForm.serialNumber,
+                  arabicName: certForm.arabicName,
+                  englishName: certForm.englishName,
+                  familyTitle: certForm.familyTitle || 'الصعيدي',
+                  country: certForm.country,
+                  countryCode: certForm.countryCode,
+                  regionBranch: certForm.regionBranch,
+                  lineageNarrative: certForm.lineageNarrative,
+                  documentType: certForm.documentType,
+                  issueDateGregorian: certForm.issueDateGregorian,
+                  issueDateHijri: certForm.issueDateHijri,
+                  status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
+                  personalPhotoUrl: certForm.personalPhotoUrl || undefined,
+                  memberReferenceId: certForm.memberReferenceId || undefined,
+                  ancestralRoot: certForm.ancestralRoot || undefined,
+                  currentResidence: certForm.currentResidence || undefined,
+                }}
+                familyTitle={certForm.familyTitle || 'الصعيدي'}
+                includeFamilyTreeStamp={certForm.includeFamilyTreeStamp}
+                customLogoUrl={siteConfig.branding.logoUrl}
+                customSealImageUrl={siteConfig.branding.sealImageUrl}
+                customTreeImageUrl={siteConfig.familyTreeConfig.treeImageUrl}
+                siteTitle={siteConfig.branding.siteTitle}
+              />
+            </Suspense>
           </div>
         </div>
       )}
 
       {/* ====================================================================
-          MODULE 6: TREE IMAGE, SEO NAMES, COUNTER, BACKUP & GITHUB SYNC
+          TAB 1: DYNAMIC INTERACTIVE TREE BUILDER, SEO NAMES, COUNTER & GITHUB SYNC
       ==================================================================== */}
       {activeTab === 'github' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="space-y-8">
+          {/* FULL INTERACTIVE DYNAMIC FAMILY TREE BUILDER */}
+          <div className="bg-white rounded-2xl border-2 border-[#695022] p-6 sm:p-8 shadow-sm space-y-6">
+            <div className="border-b border-[#E6E2D8] pb-4 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div className="text-xs font-bold text-[#695022]">
+                  INTERACTIVE HIERARCHICAL FAMILY TREE BUILDER · ({treeNodes.length} عضو وعَلَم مسجل)
+                </div>
+                <h2 className="text-xl sm:text-2xl font-extrabold text-[#141413] mt-0.5">
+                  إدارة وبناء الشجرة التفاعلية (Dynamic Tree Nodes)
+                </h2>
+                <p className="text-xs text-zinc-600 mt-1 leading-relaxed">
+                  أضف أو عدّل أفراد وأعلام العائلة، واختر الأب أو الجد الأعلى المباشر (<span className="font-mono font-bold text-[#0F291E]">parentId</span>) من القائمة ليتم رسمهم وتوليد تفرعاتهم تلقائياً في المخطط التفاعلي بصفحة الشجرة (<span className="font-mono font-bold text-[#0F291E]">/tree</span>) ومزامنتهم مع GitHub (<span className="font-mono font-bold text-[#0F291E]">cms-db.json</span>).
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSyncToGitHub}
+                  disabled={isSyncingGitHub}
+                  className="px-4 py-2 rounded-xl bg-[#0F291E] text-white text-xs font-extrabold hover:bg-[#141E28] transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+                >
+                  <CloudUpload className="w-4 h-4 text-[#D4AF37]" />
+                  <span>{isSyncingGitHub ? 'جاري المزامنة...' : 'حفظ ومزامنة الشجرة مع GitHub'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onUpdateTreeNodes) {
+                      onUpdateTreeNodes(DEFAULT_FAMILY_TREE_NODES);
+                    }
+                    setEditingTreeNodeId(null);
+                    setStatusBanner({
+                      type: 'info',
+                      message: 'تمت استعادة الهيكلة الافتراضية المعتمدة لشجرة عائلة الصعيدي.',
+                    });
+                  }}
+                  className="px-3 py-2 rounded-xl border border-[#E6E2D8] text-xs font-bold text-zinc-700 hover:border-[#695022] flex items-center gap-1.5 cursor-pointer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>استعادة الشجرة الافتراضية</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Add / Edit Member Node Form */}
+              <form
+                onSubmit={handleSaveTreeNode}
+                className="lg:col-span-5 bg-[#F7F6F2] rounded-xl border border-[#E6E2D8] p-5 space-y-4"
+              >
+                <div className="flex items-center justify-between border-b border-[#E6E2D8] pb-3">
+                  <span className="text-sm font-extrabold text-[#0F291E]">
+                    {editingTreeNodeId
+                      ? 'تعديل بيانات العضو / العلم في الشجرة'
+                      : 'إضافة عضو أو فرع جديد إلى الشجرة التفاعلية'}
+                  </span>
+                  {editingTreeNodeId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingTreeNodeId(null);
+                        setTreeNodeForm({
+                          name: '',
+                          title: '',
+                          parentId: 'node-ahmed-ali-eg',
+                          branchName: 'فرع مصر (الغربية وطنطا والصعيد والقاهرة)',
+                          generation: 'الجيل السابع المعاصر',
+                          serialNumber: '',
+                          location: 'محافظة الغربية — مدينة طنطا / القاهرة',
+                        });
+                      }}
+                      className="text-xs font-bold text-red-700 hover:underline cursor-pointer"
+                    >
+                      إلغاء التعديل
+                    </button>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#141413] mb-1">
+                    الاسم الكامل للعضو أو العلم (Name):
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={treeNodeForm.name}
+                    onChange={(e) => setTreeNodeForm({ ...treeNodeForm, name: e.target.value })}
+                    placeholder="مثال: محمد علي أحمد الصعيدي"
+                    className="w-full px-3.5 py-2.5 text-sm font-bold rounded-xl bg-white border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#0F291E]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#141413] mb-1">
+                    الأب / الجد الأعلى المباشر في الشجرة (Parent Node):
+                  </label>
+                  <select
+                    value={treeNodeForm.parentId}
+                    onChange={(e) => setTreeNodeForm({ ...treeNodeForm, parentId: e.target.value })}
+                    className="w-full px-3.5 py-2.5 text-xs font-bold rounded-xl bg-white border border-[#E6E2D8] text-[#141413] outline-none focus:border-[#0F291E]"
+                  >
+                    <option value="ROOT">جذر رئيسي أعلى (بدون أب مباشر — Root Node)</option>
+                    {treeNodes
+                      .filter((n) => n.id !== editingTreeNodeId)
+                      .map((n) => (
+                        <option key={n.id} value={n.id}>
+                          {n.name} — ({n.branchName} · {n.generation})
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-[#141413] mb-1">
+                      الفرع العائلي (Branch):
+                    </label>
+                    <input
+                      type="text"
+                      list="elsaidy-branches-list"
+                      value={treeNodeForm.branchName}
+                      onChange={(e) =>
+                        setTreeNodeForm({ ...treeNodeForm, branchName: e.target.value })
+                      }
+                      placeholder="فرع مصر (الغربية وطنطا والصعيد والقاهرة)"
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-[#E6E2D8]"
+                    />
+                    <datalist id="elsaidy-branches-list">
+                      <option value="العمود الجامع — قبيلة جهينة (ينبع النخل)" />
+                      <option value="فرع مصر (الغربية وطنطا والصعيد والقاهرة)" />
+                      <option value="١. فرع عبد الله (تيماء)" />
+                      <option value="٢. فرع سلامة (الشام)" />
+                      <option value="٣. فرع صالح (حائل والرياض والخليج)" />
+                    </datalist>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#141413] mb-1">
+                      الجيل / الطبقة (Generation):
+                    </label>
+                    <input
+                      type="text"
+                      list="elsaidy-generations-list"
+                      value={treeNodeForm.generation}
+                      onChange={(e) =>
+                        setTreeNodeForm({ ...treeNodeForm, generation: e.target.value })
+                      }
+                      placeholder="الجيل السابع المعاصر"
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-[#E6E2D8]"
+                    />
+                    <datalist id="elsaidy-generations-list">
+                      <option value="الجد السابع الجامع" />
+                      <option value="الجيل الثاني" />
+                      <option value="الجيل الثالث" />
+                      <option value="الجيل الرابع" />
+                      <option value="الجيل الخامس" />
+                      <option value="الجيل السادس" />
+                      <option value="الجيل السابع المعاصر" />
+                      <option value="الجيل الثامن المعاصر" />
+                    </datalist>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#141413] mb-1">
+                    الصفة أو اللقب أو النبذة التوثيقية (Title):
+                  </label>
+                  <input
+                    type="text"
+                    value={treeNodeForm.title}
+                    onChange={(e) => setTreeNodeForm({ ...treeNodeForm, title: e.target.value })}
+                    placeholder="مثال: من أعلام وأبناء عائلة الصعيدي في الغربية وطنطا"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-[#E6E2D8]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-[#141413] mb-1">
+                      الموقع الجغرافي / الحاضرة (Location):
+                    </label>
+                    <input
+                      type="text"
+                      value={treeNodeForm.location}
+                      onChange={(e) =>
+                        setTreeNodeForm({ ...treeNodeForm, location: e.target.value })
+                      }
+                      placeholder="محافظة الغربية (طنطا) / القاهرة"
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-[#E6E2D8]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#141413] mb-1">
+                      رقم شهادة النسب (اختياري):
+                    </label>
+                    <input
+                      type="text"
+                      dir="ltr"
+                      list="elsaidy-certs-serial-list"
+                      value={treeNodeForm.serialNumber}
+                      onChange={(e) =>
+                        setTreeNodeForm({ ...treeNodeForm, serialNumber: e.target.value })
+                      }
+                      placeholder="ELS-2026-EG-002"
+                      className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-white border border-[#E6E2D8]"
+                    />
+                    <datalist id="elsaidy-certs-serial-list">
+                      {issuedCertificates.map((c) => (
+                        <option key={c.serialNumber} value={c.serialNumber}>
+                          {c.arabicName}
+                        </option>
+                      ))}
+                    </datalist>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex flex-wrap items-center gap-2.5">
+                  <button
+                    type="submit"
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-[#0F291E] text-white text-xs font-extrabold hover:bg-[#141E28] transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                  >
+                    <Plus className="w-4 h-4 text-[#D4AF37]" />
+                    <span>
+                      {editingTreeNodeId
+                        ? 'حفظ تعديلات العضو في الشجرة'
+                        : 'إضافة العضو وربطه بالشجرة التفاعلية'}
+                    </span>
+                  </button>
+                </div>
+              </form>
+
+              {/* Existing Tree Nodes Directory & Hierarchy Table */}
+              <div className="lg:col-span-7 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-extrabold text-[#141413]">
+                      قائمة الأعضاء والأعلام في الشجرة التفاعلية ({treeNodes.length})
+                    </h3>
+                    <p className="text-xs text-zinc-500">
+                      انقر على «تعديل» لتغيير الأب المباشر أو الفرع، أو «إضافة ابن» لتفريع ذرية جديدة تحت أي علم.
+                    </p>
+                  </div>
+
+                  <input
+                    type="text"
+                    value={treeNodeSearch}
+                    onChange={(e) => setTreeNodeSearch(e.target.value)}
+                    placeholder="ابحث في أعضاء الشجرة..."
+                    className="w-full sm:w-64 px-3.5 py-2 text-xs rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] outline-none focus:border-[#695022]"
+                  />
+                </div>
+
+                <div className="space-y-2.5 max-h-[520px] overflow-y-auto pr-1">
+                  {treeNodes
+                    .filter((node) => {
+                      const q = treeNodeSearch.trim().toLowerCase();
+                      if (!q) return true;
+                      return (
+                        node.name.toLowerCase().includes(q) ||
+                        node.branchName.toLowerCase().includes(q) ||
+                        node.location.toLowerCase().includes(q) ||
+                        (node.serialNumber || '').toLowerCase().includes(q)
+                      );
+                    })
+                    .map((node) => {
+                      const parentNode = treeNodes.find((p) => p.id === node.parentId);
+                      const childrenCount = treeNodes.filter((c) => c.parentId === node.id).length;
+                      return (
+                        <div
+                          key={node.id}
+                          className="p-3.5 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] hover:border-[#695022] transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                        >
+                          <div className="space-y-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-sm font-extrabold text-[#141413]">
+                                {node.name}
+                              </span>
+                              <span className="text-[11px] font-bold text-[#695022]">
+                                · {node.generation}
+                              </span>
+                              {node.serialNumber && (
+                                <span
+                                  dir="ltr"
+                                  className="font-mono text-[10px] font-bold text-[#0F291E] bg-white px-2 py-0.5 rounded border border-[#E6E2D8]"
+                                >
+                                  {node.serialNumber}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="text-xs text-zinc-600 truncate">{node.title}</div>
+
+                            <div className="flex flex-wrap items-center gap-2 text-[11px] text-zinc-500">
+                              <span>
+                                <strong className="text-[#0F291E]">الأب / الجد:</strong>{' '}
+                                {parentNode ? parentNode.name : 'جذر رئيسي أعلى (Root)'}
+                              </span>
+                              <span aria-hidden="true">·</span>
+                              <span>
+                                <strong className="text-[#695022]">الفرع:</strong> {node.branchName}
+                              </span>
+                              <span aria-hidden="true">·</span>
+                              <span>
+                                <strong className="text-[#141413]">الأبناء المسجلون:</strong>{' '}
+                                {childrenCount}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingTreeNodeId(null);
+                                setTreeNodeForm({
+                                  name: '',
+                                  title: '',
+                                  parentId: node.id,
+                                  branchName: node.branchName,
+                                  generation: 'الجيل التالي',
+                                  serialNumber: '',
+                                  location: node.location,
+                                });
+                              }}
+                              className="px-2.5 py-1.5 rounded-lg bg-[#0F291E] text-white text-[11px] font-bold hover:bg-[#141E28] cursor-pointer flex items-center gap-1"
+                              title="إضافة ابن مباشر لهذا العلم"
+                            >
+                              <Plus className="w-3 h-3 text-[#D4AF37]" />
+                              <span>إضافة ابن</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleEditTreeNodeClick(node)}
+                              className="px-2.5 py-1.5 rounded-lg bg-white border border-[#E6E2D8] text-xs font-bold text-[#0F291E] hover:border-[#695022] cursor-pointer flex items-center gap-1"
+                            >
+                              <Edit3 className="w-3 h-3" />
+                              <span>تعديل</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteTreeNode(node.id)}
+                              className="p-1.5 rounded-lg bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 cursor-pointer"
+                              title="حذف العضو"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Family Tree Customizer + SEO Names + Visitor Counter */}
           <div className="lg:col-span-6 space-y-6">
             {/* Family Tree Image Customizer */}
@@ -3142,6 +3662,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                 </div>
               )}
             </div>
+          </div>
           </div>
         </div>
       )}

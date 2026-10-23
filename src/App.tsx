@@ -9,11 +9,13 @@ import {
   DIWAN_ARTICLES,
   DEFAULT_VERIFIED_CERTIFICATES,
   DEFAULT_SITE_CONFIG,
+  DEFAULT_FAMILY_TREE_NODES,
   PageRoute,
   WhiteLabeledPortal,
   DiwanArticle,
   IssuedCertificateRecord,
   SiteConfig,
+  FamilyTreeNode,
 } from './data/familyData';
 import { HomePage } from './pages/HomePage';
 import { SEOManager } from './components/SEOManager';
@@ -62,6 +64,7 @@ const VISITOR_STORAGE_KEY = 'elsaidy_official_portal_visits_v3';
 const CMS_ARTICLES_STORAGE_KEY = 'elsaidy_cms_articles_v1';
 const CMS_CERTS_STORAGE_KEY = 'elsaidy_cms_certificates_v1';
 const CMS_NAMES_STORAGE_KEY = 'elsaidy_cms_custom_names_v1';
+const CMS_TREE_NODES_STORAGE_KEY = 'elsaidy_cms_tree_nodes_v1';
 const CMS_SITE_CONFIG_STORAGE_KEY = 'elsaidy_cms_site_config_v1';
 const CMS_LAST_UPDATED_STORAGE_KEY = 'elsaidy_cms_last_updated_v1';
 
@@ -170,7 +173,7 @@ export default function App() {
     return DEFAULT_SITE_CONFIG;
   });
 
-  // Shared CMS State (Articles, Certificates, Custom SEO Names)
+  // Shared CMS State (Articles, Certificates, Custom SEO Names, Dynamic Family Tree Nodes)
   const [cmsArticles, setCmsArticles] = useState<DiwanArticle[]>(() => {
     try {
       const saved = localStorage.getItem(CMS_ARTICLES_STORAGE_KEY);
@@ -208,6 +211,19 @@ export default function App() {
       // ignore
     }
     return DEFAULT_CUSTOM_NAMES;
+  });
+
+  const [cmsTreeNodes, setCmsTreeNodes] = useState<FamilyTreeNode[]>(() => {
+    try {
+      const saved = localStorage.getItem(CMS_TREE_NODES_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return DEFAULT_FAMILY_TREE_NODES;
   });
 
   // Corporate & Official Email Request Form State
@@ -391,6 +407,19 @@ export default function App() {
           }
         }
 
+        if (
+          Array.isArray(db.treeNodes) &&
+          db.treeNodes.length > 0 &&
+          (isRemoteNewer || !localStorage.getItem(CMS_TREE_NODES_STORAGE_KEY))
+        ) {
+          setCmsTreeNodes(db.treeNodes);
+          try {
+            localStorage.setItem(CMS_TREE_NODES_STORAGE_KEY, JSON.stringify(db.treeNodes));
+          } catch {
+            // ignore
+          }
+        }
+
         if (remoteTimestamp && isRemoteNewer) {
           try {
             localStorage.setItem(CMS_LAST_UPDATED_STORAGE_KEY, remoteTimestamp);
@@ -447,6 +476,16 @@ export default function App() {
     touchLocalTimestamp();
     try {
       localStorage.setItem(CMS_NAMES_STORAGE_KEY, JSON.stringify(nextNames));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleUpdateTreeNodes = (nextNodes: FamilyTreeNode[]) => {
+    setCmsTreeNodes(nextNodes);
+    touchLocalTimestamp();
+    try {
+      localStorage.setItem(CMS_TREE_NODES_STORAGE_KEY, JSON.stringify(nextNodes));
     } catch {
       // ignore
     }
@@ -808,6 +847,7 @@ export default function App() {
                 onNavigate={navigateTo}
                 customNames={cmsCustomNames}
                 siteConfig={siteConfig}
+                treeNodes={cmsTreeNodes}
               />
             )}
 
@@ -851,6 +891,8 @@ export default function App() {
                 onUpdateCertificates={handleUpdateCertificates}
                 customNames={cmsCustomNames}
                 onUpdateCustomNames={handleUpdateCustomNames}
+                treeNodes={cmsTreeNodes}
+                onUpdateTreeNodes={handleUpdateTreeNodes}
                 siteConfig={siteConfig}
                 onUpdateSiteConfig={handleUpdateSiteConfig}
               />

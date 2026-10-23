@@ -8,3 +8,27 @@
 
 /admin-elsaidy
   X-Robots-Tag: noindex, nofollow, noarchive
+
+/.well-known/api-catalog.json
+  Content-Type: application/linkset+json; charset=utf-8
+  Access-Control-Allow-Origin: *
+
+/api-catalog.json
+  Content-Type: application/linkset+json; charset=utf-8
+  Access-Control-Allow-Origin: *
+
+/.well-known/ai-catalog.json
+  Content-Type: application/linkset+json; charset=utf-8
+  Access-Control-Allow-Origin: *
+
+/ai-catalog.json
+  Content-Type: application/linkset+json; charset=utf-8
+  Access-Control-Allow-Origin: *
+
+/llms.txt
+  Content-Type: text/markdown; charset=utf-8
+  Access-Control-Allow-Origin: *
+
+/llms-full.txt
+  Content-Type: text/markdown; charset=utf-8
+  Access-Control-Allow-Origin: *

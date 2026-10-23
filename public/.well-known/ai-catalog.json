@@ -1,46 +1,50 @@
 {
-  "schema_version": "1.0",
-  "name": "الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي | ELSAIDY OFFICIAL PORTAL & BRAND HUB",
-  "domain": "https://elsaidy.org",
-  "description": "المرجع التاريخي والوثائقي والرقمي المعتمد لعائلات الصعيدي (Elsaidy / Elseidy / Alsaidi) في جمهورية مصر العربية، المملكة العربية السعودية، بلاد الشام، والخليج العربي، وواجهة مجموعة وبراند الصعيدي.",
-  "llms_txt": "https://elsaidy.org/llms.txt",
-  "sitemap": "https://elsaidy.org/sitemap.xml",
-  "resources": [
+  "linkset": [
     {
-      "id": "home",
-      "title": "الصفحة الرئيسية والبوابة الشاملة",
-      "url": "https://elsaidy.org/",
-      "type": "portal"
-    },
-    {
-      "id": "about",
-      "title": "من نحن والوثيقة التاريخية المعتمدة",
-      "url": "https://elsaidy.org/about",
-      "type": "historical_document"
-    },
-    {
-      "id": "tree",
-      "title": "شجرة العائلة وفهرس الأعلام والأسماء",
-      "url": "https://elsaidy.org/tree",
-      "type": "genealogy_directory"
-    },
-    {
-      "id": "verify",
-      "title": "ديوان التوثيق وإصدار شهادات النسب",
-      "url": "https://elsaidy.org/verify",
-      "type": "verification_service"
-    },
-    {
-      "id": "diwan",
-      "title": "الديوان والمقالات والأبحاث",
-      "url": "https://elsaidy.org/diwan",
-      "type": "research_archive"
-    },
-    {
-      "id": "portals",
-      "title": "البوابات الرقمية ومجموعة الصعيدي",
-      "url": "https://elsaidy.org/portals",
-      "type": "enterprise_hub"
+      "anchor": "https://elsaidy.org/",
+      "service-desc": [
+        {
+          "href": "https://elsaidy.org/data/cms-db.json",
+          "type": "application/json",
+          "title": "Elsaidy Official Archival & Genealogical Tree Database Schema (JSON)"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://elsaidy.org/llms-full.txt",
+          "type": "text/markdown",
+          "title": "Comprehensive AI & API Documentation for Elsaidy Official Portal (elsaidy.org)"
+        },
+        {
+          "href": "https://elsaidy.org/llms.txt",
+          "type": "text/markdown",
+          "title": "Summary LLMs Documentation for Elsaidy Official Portal"
+        }
+      ],
+      "service-meta": [
+        {
+          "href": "https://elsaidy.org/manifest.json",
+          "type": "application/manifest+json",
+          "title": "Elsaidy Official Portal Web App Manifest"
+        }
+      ],
+      "item": [
+        {
+          "href": "https://elsaidy.org/data/cms-db.json",
+          "type": "application/json",
+          "title": "Public Genealogical Registry, Dynamic Tree Nodes & Diwan Articles Data"
+        },
+        {
+          "href": "https://elsaidy.org/verify",
+          "type": "text/html",
+          "title": "Official Lineage Certificate Verification Endpoint"
+        },
+        {
+          "href": "https://elsaidy.org/tree",
+          "type": "text/html",
+          "title": "Interactive Hierarchical Family Tree & Compound Name Index"
+        }
+      ]
     }
   ]
 }

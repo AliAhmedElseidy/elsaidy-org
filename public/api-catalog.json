@@ -1,0 +1,50 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://elsaidy.org/",
+      "service-desc": [
+        {
+          "href": "https://elsaidy.org/data/cms-db.json",
+          "type": "application/json",
+          "title": "Elsaidy Official Archival & Genealogical Tree Database Schema (JSON)"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://elsaidy.org/llms-full.txt",
+          "type": "text/markdown",
+          "title": "Comprehensive AI & API Documentation for Elsaidy Official Portal (elsaidy.org)"
+        },
+        {
+          "href": "https://elsaidy.org/llms.txt",
+          "type": "text/markdown",
+          "title": "Summary LLMs Documentation for Elsaidy Official Portal"
+        }
+      ],
+      "service-meta": [
+        {
+          "href": "https://elsaidy.org/manifest.json",
+          "type": "application/manifest+json",
+          "title": "Elsaidy Official Portal Web App Manifest"
+        }
+      ],
+      "item": [
+        {
+          "href": "https://elsaidy.org/data/cms-db.json",
+          "type": "application/json",
+          "title": "Public Genealogical Registry, Dynamic Tree Nodes & Diwan Articles Data"
+        },
+        {
+          "href": "https://elsaidy.org/verify",
+          "type": "text/html",
+          "title": "Official Lineage Certificate Verification Endpoint"
+        },
+        {
+          "href": "https://elsaidy.org/tree",
+          "type": "text/html",
+          "title": "Interactive Hierarchical Family Tree & Compound Name Index"
+        }
+      ]
+    }
+  ]
+}
