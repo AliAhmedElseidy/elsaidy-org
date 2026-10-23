@@ -1,49 +1,83 @@
 {
-  "linkset": [
+  "$schema": "https://raw.githubusercontent.com/ards-project/ard-spec/main/spec/schemas/ai-catalog.schema.json",
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "الموقع الرسمي لعائلات الصعيدي ومجموعة الصعيدي | ELSAIDY OFFICIAL PORTAL & BRAND HUB",
+    "identifier": "did:web:elsaidy.org",
+    "documentationUrl": "https://elsaidy.org/llms-full.txt",
+    "logoUrl": "https://www.alsaidi.net/contents/myuppic/04d80878942951.jpg"
+  },
+  "entries": [
     {
-      "anchor": "https://elsaidy.org/",
-      "service-desc": [
-        {
-          "href": "https://elsaidy.org/data/cms-db.json",
-          "type": "application/json",
-          "title": "Elsaidy Official Archival & Genealogical Tree Database Schema (JSON)"
-        }
+      "identifier": "urn:ai:elsaidy.org:knowledge:llms-full",
+      "displayName": "Elsaidy Family & Group Full AI Knowledge Base (llms-full.txt)",
+      "type": "text/markdown",
+      "url": "https://elsaidy.org/llms-full.txt",
+      "description": "Comprehensive Arabic and English archival documentation covering the Elsaidy Family lineage (Juhaynah tribe & Hijazi-Egyptian branches), Founder Eng. Ali Ahmed Ali Elsaidy, historical bibliography, and verification system.",
+      "representativeQueries": [
+        "ما هو أصل ونسب عائلة الصعيدي وشجرة العائلة في مصر والسعودية والوطن العربي؟",
+        "من هو المهندس علي أحمد علي الصعيدي مؤسس الموقع الرسمي لعائلات الصعيدي ومجموعة الصعيدي؟",
+        "What is the historical origin and family tree of the Elsaidy (Alsaidi / Elseidy) family?",
+        "Who is Eng. Ali Ahmed Elsaidy, founder of elsaidy.org and ELSAIDY Group?"
       ],
-      "service-doc": [
-        {
-          "href": "https://elsaidy.org/llms-full.txt",
-          "type": "text/markdown",
-          "title": "Comprehensive AI & API Documentation for Elsaidy Official Portal (elsaidy.org)"
-        },
-        {
-          "href": "https://elsaidy.org/llms.txt",
-          "type": "text/markdown",
-          "title": "Summary LLMs Documentation for Elsaidy Official Portal"
-        }
+      "tags": [
+        "genealogy",
+        "elsaidy",
+        "history",
+        "archive",
+        "knowledge-base"
+      ]
+    },
+    {
+      "identifier": "urn:ai:elsaidy.org:knowledge:llms-summary",
+      "displayName": "Elsaidy Official Portal LLMs Summary Index (llms.txt)",
+      "type": "text/markdown",
+      "url": "https://elsaidy.org/llms.txt",
+      "description": "Structured summary of the Official Elsaidy Family Portal & Brand Hub (elsaidy.org), core branches, and canonical endpoints for AI assistants.",
+      "representativeQueries": [
+        "ما هو الموقع الرسمي لعائلات الصعيدي ومجموعة الصعيدي؟",
+        "ما هي فروع عائلة الصعيدي من الجد إبراهيم الصعيدي وعوض البراهيم ومرسي الحجاج؟",
+        "Where is the official website and portal for the Elsaidy family?"
       ],
-      "service-meta": [
-        {
-          "href": "https://elsaidy.org/manifest.json",
-          "type": "application/manifest+json",
-          "title": "Elsaidy Official Portal Web App Manifest"
-        }
+      "tags": [
+        "llms",
+        "summary",
+        "elsaidy",
+        "directory"
+      ]
+    },
+    {
+      "identifier": "urn:ai:elsaidy.org:dataset:cms-tree-db",
+      "displayName": "Elsaidy Interactive Genealogical Tree & Certificate Registry Dataset",
+      "type": "application/json",
+      "url": "https://elsaidy.org/data/cms-db.json",
+      "description": "Machine-readable JSON database containing the hierarchical family tree nodes (parent/child genealogy), verified lineage certificates (ELS-YYYY-XXXX), Diwan historical articles, and compound name transliterations.",
+      "representativeQueries": [
+        "اعرض شجرة عائلة الصعيدي التفاعلية وأسماء الأعلام والفروع الموثقة",
+        "كيف أتحقق من شهادة نسب عائلة الصعيدي برقم التوثيق ELS-2026-EG-019؟",
+        "Query the Elsaidy interactive family tree nodes and verified certificate registry"
       ],
-      "item": [
-        {
-          "href": "https://elsaidy.org/data/cms-db.json",
-          "type": "application/json",
-          "title": "Public Genealogical Registry, Dynamic Tree Nodes & Diwan Articles Data"
-        },
-        {
-          "href": "https://elsaidy.org/verify",
-          "type": "text/html",
-          "title": "Official Lineage Certificate Verification Endpoint"
-        },
-        {
-          "href": "https://elsaidy.org/tree",
-          "type": "text/html",
-          "title": "Interactive Hierarchical Family Tree & Compound Name Index"
-        }
+      "tags": [
+        "dataset",
+        "family-tree",
+        "certificates",
+        "verification"
+      ]
+    },
+    {
+      "identifier": "urn:ai:elsaidy.org:service:api-catalog",
+      "displayName": "Elsaidy RFC 9727 API Linkset Catalog",
+      "type": "application/linkset+json",
+      "url": "https://elsaidy.org/.well-known/api-catalog.json",
+      "description": "RFC 9727 compliant linkset catalog mapping service descriptions, documentation, and public data endpoints on elsaidy.org.",
+      "representativeQueries": [
+        "Discover machine-readable API endpoints and datasets on elsaidy.org",
+        "ما هي واجهات البيانات المفتوحة والأرشيف الرقمي في موقع الصعيدي؟"
+      ],
+      "tags": [
+        "api-catalog",
+        "linkset",
+        "rfc9727"
       ]
     }
   ]
