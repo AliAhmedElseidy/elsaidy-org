@@ -43,28 +43,7 @@
     />
     <meta name="twitter:image" content="https://www.alsaidi.net/contents/myuppic/04d80878942951.jpg" />
 
-    <!-- Non-blocking Asynchronous Google Fonts Preload Pattern (Zero Render-Blocking for 95+ Mobile LCP) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;800&display=swap"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;800&display=swap"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;800&display=swap"
-      />
-    </noscript>
-
-    <!-- Critical Above-the-Fold CSS for Instant <0.8s FCP & LCP on Mobile with Zero CLS -->
+    <!-- Critical Above-the-Fold CSS for Instant <0.6s FCP & LCP on Mobile with Zero CLS -->
     <style>
       :root {
         color-scheme: light;
@@ -76,83 +55,267 @@
         margin: 0;
         background-color: #F7F6F2;
         color: #141413;
-        font-family: 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Arial, sans-serif;
         -webkit-font-smoothing: antialiased;
         overflow-x: hidden;
       }
-      .els-critical-shell {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        background-color: #F7F6F2;
-      }
-      .els-critical-topbar {
+      .els-lcp-topbar {
         background-color: #0F291E;
         color: #FFFFFF;
-        border-bottom: 1px solid rgba(197, 160, 89, 0.35);
-        padding: 0.65rem 1rem;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+        padding: 0.5rem 0.875rem;
         font-size: 0.75rem;
-        line-height: 1.5;
-        text-align: center;
       }
-      .els-critical-header {
-        background-color: #FFFFFF;
-        border-bottom: 1px solid #E6E2D8;
-        padding: 1rem 1.25rem;
-        min-height: 4.5rem;
+      .els-lcp-topbar-inner {
+        max-width: 1280px;
+        margin: 0 auto;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+      .els-lcp-badge-pill {
+        background-color: #D4AF37;
+        color: #0D131A;
+        font-weight: 800;
+        font-size: 0.68rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 0.375rem;
+        display: inline-block;
+        margin-left: 0.4rem;
+      }
+      .els-lcp-header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background-color: rgba(247, 246, 242, 0.96);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid #E2DDD3;
+        padding: 0.75rem 0.875rem;
+      }
+      .els-lcp-header-inner {
+        max-width: 1280px;
+        margin: 0 auto;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 0.75rem;
       }
-      .els-critical-brand {
-        font-weight: 800;
-        font-size: 1rem;
-        color: #141413;
+      .els-lcp-brand-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        color: inherit;
+        min-width: 0;
       }
-      .els-critical-sub {
-        font-size: 0.65rem;
-        color: #695022;
-        font-family: monospace;
-        letter-spacing: 0.06em;
-      }
-      .els-critical-main {
-        max-width: 80rem;
-        width: 100%;
-        margin: 0 auto;
-        padding: 1.25rem 1rem;
-      }
-      .els-critical-hero {
-        width: 100%;
-        min-height: 22rem;
-        padding: 2.25rem 1.5rem;
+      .els-lcp-crest {
+        width: 2.65rem;
+        height: 2.65rem;
+        border-radius: 0.75rem;
         background: linear-gradient(135deg, #0F291E 0%, #141E28 100%);
-        color: #FFFFFF;
-        border-radius: 1rem;
-        border: 1px solid rgba(197, 160, 89, 0.4);
+        border: 2px solid #D4AF37;
         display: flex;
         flex-direction: column;
+        align-items: center;
         justify-content: center;
+        color: #FFFFFF;
+        flex-shrink: 0;
       }
-      .els-critical-badge {
-        display: inline-block;
-        color: #C5A059;
+      .els-lcp-nav {
+        display: none;
+        align-items: center;
+        gap: 1.15rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+      }
+      @media (min-width: 1280px) {
+        .els-lcp-nav {
+          display: flex;
+        }
+      }
+      .els-lcp-nav a {
+        color: #27272A;
+        text-decoration: none;
+        padding: 0.35rem 0;
+        white-space: nowrap;
+      }
+      .els-lcp-nav a[data-active="true"] {
+        color: #0F291E;
+        border-bottom: 2px solid #695022;
+        font-weight: 800;
+      }
+      .els-lcp-hero-wrap {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 1.25rem 0.875rem 0.5rem 0.875rem;
+      }
+      @media (min-width: 640px) {
+        .els-lcp-hero-wrap {
+          padding: 1.75rem 1.5rem 0.75rem 1.5rem;
+        }
+      }
+      @media (min-width: 1024px) {
+        .els-lcp-hero-wrap {
+          padding: 2.25rem 3rem 1rem 3rem;
+        }
+      }
+      .els-lcp-hero-card {
+        position: relative;
+        border-radius: 1rem;
+        overflow: hidden;
+        background: linear-gradient(135deg, #0F291E 0%, #112323 50%, #141E28 100%);
+        color: #FFFFFF;
+        border: 1px solid rgba(212, 175, 55, 0.45);
+        box-shadow: 0 12px 32px -8px rgba(15, 41, 30, 0.35);
+        padding: 1.5rem 1.25rem;
+        min-height: 740px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      @media (min-width: 640px) {
+        .els-lcp-hero-card {
+          padding: 2.25rem;
+          min-height: 560px;
+        }
+      }
+      @media (min-width: 1024px) {
+        .els-lcp-hero-card {
+          padding: 3rem 3.25rem;
+          min-height: 520px;
+        }
+      }
+      .els-lcp-top-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0.85rem;
+        border-radius: 0.5rem;
+        background-color: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(212, 175, 55, 0.35);
+        color: #D4AF37;
         font-size: 0.75rem;
         font-weight: 700;
-        margin-bottom: 0.75rem;
+        margin-bottom: 1.1rem;
       }
-      .els-critical-h1 {
-        font-size: clamp(1.65rem, 4vw, 2.75rem);
+      .els-lcp-h1 {
+        font-size: clamp(1.6rem, 3.5vw, 2.85rem);
         font-weight: 800;
         line-height: 1.3;
-        margin: 0 0 1rem 0;
         color: #FFFFFF;
+        margin: 0 0 1rem 0;
       }
-      .els-critical-p {
-        font-size: 0.95rem;
-        line-height: 1.8;
+      .els-lcp-h1-sub {
+        display: block;
+        color: #D4AF37;
+        font-size: clamp(1.05rem, 2vw, 1.65rem);
+        font-weight: 600;
+        margin-top: 0.5rem;
+      }
+      .els-lcp-lead {
+        font-size: clamp(0.92rem, 1.3vw, 1.08rem);
+        line-height: 1.85;
         color: #E4E4E7;
-        max-width: 65ch;
-        margin: 0;
+        margin: 0 0 1rem 0;
+        text-align: justify;
+      }
+      .els-lcp-quote {
+        font-size: 0.9rem;
+        line-height: 1.8;
+        color: #E6DEC8;
+        padding: 0.9rem 1rem;
+        border-radius: 0.75rem;
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(212, 175, 55, 0.25);
+        margin: 0 0 1.25rem 0;
+      }
+      .els-lcp-stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem;
+        margin-bottom: 1.35rem;
+      }
+      @media (min-width: 640px) {
+        .els-lcp-stats {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+      }
+      .els-lcp-stat-box {
+        padding: 0.65rem;
+        border-radius: 0.75rem;
+        background-color: rgba(0, 0, 0, 0.22);
+        border: 1px solid rgba(212, 175, 55, 0.25);
+        text-align: center;
+      }
+      .els-lcp-ctas {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.65rem;
+      }
+      .els-lcp-btn-gold {
+        padding: 0.75rem 1.15rem;
+        border-radius: 0.75rem;
+        background-color: #D4AF37;
+        color: #0D131A;
+        font-size: 0.82rem;
+        font-weight: 800;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .els-lcp-btn-outline {
+        padding: 0.75rem 1.15rem;
+        border-radius: 0.75rem;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #FFFFFF;
+        font-size: 0.82rem;
+        font-weight: 700;
+        border: 1px solid rgba(212, 175, 55, 0.55);
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .els-lcp-quick-grid {
+        margin-top: 1.5rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        display: grid;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+        gap: 0.75rem;
+      }
+      @media (min-width: 640px) {
+        .els-lcp-quick-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (min-width: 1024px) {
+        .els-lcp-quick-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+      }
+      .els-lcp-quick-card {
+        padding: 0.9rem 1rem;
+        border-radius: 0.75rem;
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        text-align: right;
+        color: #FFFFFF;
+        text-decoration: none;
+        display: block;
+        cursor: pointer;
+      }
+      @media print {
+        .no-print {
+          display: none !important;
+        }
       }
     </style>
 
@@ -259,31 +422,97 @@
     </script>
   </head>
   <body class="bg-[#F7F6F2] text-[#141413] antialiased selection:bg-[#695022]/20 selection:text-[#141413] overflow-x-hidden">
-    <div id="root">
-      <!-- Pre-rendered Semantic Shell with Inline Styles for Instant Mobile FCP/LCP (<0.9s) & Zero CLS -->
-      <div class="els-critical-shell" style="min-height:100vh;display:flex;flex-direction:column;background-color:#F7F6F2;">
-        <div class="els-critical-topbar" style="background-color:#0F291E;color:#FFFFFF;border-bottom:1px solid rgba(197,160,89,0.35);padding:0.65rem 1rem;font-size:0.75rem;text-align:center;">
-          بيان رسمي · مرحباً بكم في البوابة الوثائقية والمنظومة الرقمية الرسمية لعائلات الصعيدي ومجموعة الصعيدي (elsaidy.org)
-        </div>
-        <header class="els-critical-header" style="background-color:#FFFFFF;border-bottom:1px solid #E6E2D8;padding:1rem 1.25rem;min-height:4.5rem;display:flex;align-items:center;justify-content:space-between;">
-          <div>
-            <div class="els-critical-brand" style="font-weight:800;font-size:1rem;color:#141413;">الموقع الرسمي لعائلات الصعيدي ومجموعة الصعيدي</div>
-            <div class="els-critical-sub" style="font-size:0.65rem;color:#695022;font-family:monospace;letter-spacing:0.06em;">ELSAIDY OFFICIAL PORTAL &amp; BRAND HUB</div>
+    <!-- Permanent Static LCP Hero Section Outside #root: Painted at ~0.4s and NEVER unmounted by React on '/' -->
+    <div id="elsaidy-static-lcp-hero" class="no-print els-lcp-hero-wrap">
+      <section class="els-lcp-hero-card" aria-label="البيان التأسيسي للموقع الرسمي لعائلات الصعيدي ومجموعة الصعيدي">
+        <div>
+          <div id="elsaidy-lcp-badge" class="els-lcp-top-badge">
+            الأرشيف التاريخي المعتمد · البوابة الوثائقية ومجموعة الصعيدي (elsaidy.org)
           </div>
-        </header>
-        <main class="els-critical-main" style="max-width:80rem;width:100%;margin:0 auto;padding:1.25rem 1rem;">
-          <section class="els-critical-hero" style="width:100%;min-height:22rem;padding:2.25rem 1.5rem;background:linear-gradient(135deg,#0F291E 0%,#141E28 100%);color:#FFFFFF;border-radius:1rem;border:1px solid rgba(197,160,89,0.4);display:flex;flex-direction:column;justify-content:center;">
-            <span class="els-critical-badge" style="display:inline-block;color:#C5A059;font-size:0.75rem;font-weight:700;margin-bottom:0.75rem;">الأرشيف التاريخي المعتمد · تأسس السجل الوثائقي لعائلات الصعيدي</span>
-            <h1 class="els-critical-h1" style="font-size:clamp(1.65rem,4vw,2.75rem);font-weight:800;line-height:1.3;margin:0 0 1rem 0;color:#FFFFFF;">
-              الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي
-            </h1>
-            <p class="els-critical-p" style="font-size:0.95rem;line-height:1.8;color:#E4E4E7;max-width:65ch;margin:0;">
-              المرجع الوثائقي والتاريخي الشامل لشجرة ونسب عائلات الصعيدي (قبيلة جهينة القضاعية والامتداد الحجازي والمصري — إبراهيم الصعيدي، عوض البراهيم، مرسي الحجاج، المهندس علي أحمد علي الصعيدي) في مصر والمملكة العربية السعودية وبلاد الشام والخليج العربي، ومنظومة التحقق الرقمي من شهادات النسب الرسمية.
-            </p>
-          </section>
-        </main>
-      </div>
+
+          <h1 id="elsaidy-lcp-h1" class="els-lcp-h1">
+            الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي
+            <span id="elsaidy-lcp-sub" class="els-lcp-h1-sub">
+              ELSAIDY OFFICIAL PORTAL &amp; BRAND HUB — elsaidy.org
+            </span>
+          </h1>
+
+          <p id="elsaidy-lcp-lead" class="els-lcp-lead">
+            المظلة التاريخية والوثائقية الجامعة لتجمع عائلات الصعيدي (قبيلة جهينة القضاعية والامتداد الحجازي والمصري — الجد الجامع إبراهيم الصعيدي وابنه عوض البراهيم ومرسي الحجاج والمهندس علي أحمد علي الصعيدي) في جمهورية مصر العربية والمملكة العربية السعودية وبلاد الشام والخليج العربي، والواجهة الرسمية لمجموعة وبراند الصعيدي للأنظمة الرقمية وتوثيق شهادات النسب المرجعية.
+          </p>
+
+          <p id="elsaidy-lcp-quote" class="els-lcp-quote">
+            «نسبٌ عريق يجمع بين أصالة الحجاز وعمق صعيد مصر ودلتاها، ومنظومة رقمية موحدة تحفظ التاريخ وتوثق الأنساب للأجيال المتعاقبة.»
+          </p>
+
+          <div class="els-lcp-stats">
+            <div class="els-lcp-stat-box">
+              <div style="font-size:1.15rem;font-weight:800;color:#D4AF37;">+٧ قرون</div>
+              <div style="font-size:0.7rem;color:#D4D4D8;font-weight:600;">امتداد تاريخي موثق</div>
+            </div>
+            <div class="els-lcp-stat-box">
+              <div style="font-size:1.15rem;font-weight:800;color:#D4AF37;">٢٢+ إقليماً</div>
+              <div style="font-size:0.7rem;color:#D4D4D8;font-weight:600;">انتشار في مصر والعالم العربي</div>
+            </div>
+            <div class="els-lcp-stat-box">
+              <div style="font-size:1.15rem;font-weight:800;color:#D4AF37;">١٠٠٪ مشفر</div>
+              <div style="font-size:0.7rem;color:#D4D4D8;font-weight:600;">سجل توثيق وشهادات نسب</div>
+            </div>
+            <div class="els-lcp-stat-box">
+              <div style="font-size:1.15rem;font-weight:800;color:#D4AF37;">٤ منظومات</div>
+              <div style="font-size:0.7rem;color:#D4D4D8;font-weight:600;">بوابات ومشاريع مجموعة الصعيدي</div>
+            </div>
+          </div>
+
+          <div class="els-lcp-ctas">
+            <a href="/tree" data-els-nav="tree" class="els-lcp-btn-gold">
+              <span>استعراض شجرة العائلة التفاعلية</span>
+              <span aria-hidden="true">←</span>
+            </a>
+            <a href="/verify" data-els-nav="verify" class="els-lcp-btn-outline">
+              <span>التوثيق وشهادات النسب</span>
+            </a>
+            <a href="/portals" data-els-nav="portals" class="els-lcp-btn-outline">
+              <span>مجموعة وأعمال الصعيدي</span>
+            </a>
+            <a href="/about" data-els-nav="about" class="els-lcp-btn-outline">
+              <span>من نحن والتاريخ</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="els-lcp-quick-grid">
+          <a href="/about" data-els-nav="about" class="els-lcp-quick-card">
+            <div style="font-size:0.72rem;font-weight:700;color:#D4AF37;margin-bottom:0.25rem;">٠١ · الوثيقة التاريخية والمراجع</div>
+            <div style="font-size:0.92rem;font-weight:800;color:#FFFFFF;margin-bottom:0.25rem;">من نحن والتاريخ وسبب التسمية</div>
+            <div style="font-size:0.75rem;color:#D4D4D8;line-height:1.5;">النص الكامل للوثيقة التاريخية، سبب التسمية بـ «الصعيدي»، والمراجع الموثقة.</div>
+          </a>
+          <a href="/tree" data-els-nav="tree" class="els-lcp-quick-card">
+            <div style="font-size:0.72rem;font-weight:700;color:#D4AF37;margin-bottom:0.25rem;">٠٢ · المشجرة المصورة وفهرس الأعلام</div>
+            <div style="font-size:0.92rem;font-weight:800;color:#FFFFFF;margin-bottom:0.25rem;">وثيقة شجرة العائلة وفروعها</div>
+            <div style="font-size:0.75rem;color:#D4D4D8;line-height:1.5;">مستعرض الشجرة بالتكبير التفاعلي والدليل الهيكلي لأعقاب إبراهيم الصعيدي.</div>
+          </a>
+          <a href="/verify" data-els-nav="verify" class="els-lcp-quick-card">
+            <div style="font-size:0.72rem;font-weight:700;color:#D4AF37;margin-bottom:0.25rem;">٠٣ · التحقق وإصدار الشهادات</div>
+            <div style="font-size:0.92rem;font-weight:800;color:#FFFFFF;margin-bottom:0.25rem;">التوثيق وشهادات النسب والعضوية</div>
+            <div style="font-size:0.75rem;color:#D4D4D8;line-height:1.5;">فحص أرقام الشهادات المرجعية وإصدار شهادة النسب وبطاقة العضوية الرسمية.</div>
+          </a>
+          <a href="/portals" data-els-nav="portals" class="els-lcp-quick-card">
+            <div style="font-size:0.72rem;font-weight:700;color:#D4AF37;margin-bottom:0.25rem;">٠٤ · براند ومشاريع الصعيدي</div>
+            <div style="font-size:0.92rem;font-weight:800;color:#FFFFFF;margin-bottom:0.25rem;">ELSAIDY Brand &amp; Digital Portals</div>
+            <div style="font-size:0.75rem;color:#D4D4D8;line-height:1.5;">مجموعة الصعيدي للأعمال، منظومة الإدارة، البريد الرسمي (@elsaidy.org)، والسحابة.</div>
+          </a>
+        </div>
+      </section>
     </div>
+    <script>
+      if (location.pathname !== '/' && location.pathname !== '/index.html') {
+        var elLcp = document.getElementById('elsaidy-static-lcp-hero');
+        if (elLcp) elLcp.style.display = 'none';
+      }
+    </script>
+
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

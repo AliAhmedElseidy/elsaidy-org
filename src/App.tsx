@@ -293,144 +293,181 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Sync remote /data/cms-db.json with timestamp comparison (Fixes BUG-001 stale cache)
+  // Sync static LCP Hero section visibility & SPA navigation clicks outside #root
   useEffect(() => {
-    recordPortalVisit();
+    const lcpHero = document.getElementById('elsaidy-static-lcp-hero');
+    if (!lcpHero) return;
+    lcpHero.style.display = currentRoute === 'home' ? '' : 'none';
 
-    fetch('/data/cms-db.json', { cache: 'no-cache' })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((db) => {
-        if (!db || typeof db !== 'object') return;
+    const handleLcpClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement | null)?.closest('[data-els-nav]') as HTMLElement | null;
+      if (!target) return;
+      const navTarget = target.getAttribute('data-els-nav') as PageRoute | null;
+      if (
+        navTarget &&
+        ['home', 'about', 'tree', 'verify', 'diwan', 'portals', 'admin-elsaidy'].includes(navTarget)
+      ) {
+        e.preventDefault();
+        setCurrentRoute(navTarget);
+        const targetPath = navTarget === 'home' ? '/' : `/${navTarget}`;
+        try {
+          window.history.pushState({}, '', targetPath);
+        } catch {
+          // ignore
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
 
-        const remoteTimestamp = typeof db.lastUpdated === 'string' ? db.lastUpdated : '';
-        const localTimestamp = localStorage.getItem(CMS_LAST_UPDATED_STORAGE_KEY) || '';
-        const isRemoteNewer =
-          !localTimestamp || (remoteTimestamp && remoteTimestamp >= localTimestamp);
+    lcpHero.addEventListener('click', handleLcpClick);
+    return () => lcpHero.removeEventListener('click', handleLcpClick);
+  }, [currentRoute]);
 
-        if (typeof db.visitorCount === 'number' && db.visitorCount > 148923) {
-          setTotalVisits((prev) => {
-            const highest = Math.max(prev, db.visitorCount);
+  // Sync remote /data/cms-db.json after initial paint without blocking main thread or resetting LCP
+  useEffect(() => {
+    const syncTimer = window.setTimeout(() => {
+      fetch('/data/cms-db.json', { cache: 'no-cache' })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((db) => {
+          if (!db || typeof db !== 'object') return;
+
+          const remoteTimestamp = typeof db.lastUpdated === 'string' ? db.lastUpdated : '';
+          const localTimestamp = localStorage.getItem(CMS_LAST_UPDATED_STORAGE_KEY) || '';
+          const isRemoteStrictlyNewer =
+            Boolean(remoteTimestamp) && (!localTimestamp || remoteTimestamp > localTimestamp);
+
+          if (typeof db.visitorCount === 'number' && db.visitorCount > 148923) {
+            setTotalVisits((prev) => {
+              const highest = Math.max(prev, db.visitorCount);
+              if (highest === prev) return prev;
+              try {
+                localStorage.setItem(VISITOR_STORAGE_KEY, String(highest));
+              } catch {
+                // ignore
+              }
+              return highest;
+            });
+          }
+
+          if (db.siteConfig && typeof db.siteConfig === 'object' && isRemoteStrictlyNewer) {
+            const mergedConfig: SiteConfig = {
+              branding: { ...DEFAULT_SITE_CONFIG.branding, ...(db.siteConfig.branding || {}) },
+              announcementBar: {
+                ...DEFAULT_SITE_CONFIG.announcementBar,
+                ...(db.siteConfig.announcementBar || {}),
+              },
+              heroSection: {
+                ...DEFAULT_SITE_CONFIG.heroSection,
+                ...(db.siteConfig.heroSection || {}),
+              },
+              familyTreeConfig: {
+                ...DEFAULT_SITE_CONFIG.familyTreeConfig,
+                ...(db.siteConfig.familyTreeConfig || {}),
+              },
+              digitalPortals:
+                Array.isArray(db.siteConfig.digitalPortals) &&
+                db.siteConfig.digitalPortals.length > 0
+                  ? db.siteConfig.digitalPortals
+                  : DEFAULT_SITE_CONFIG.digitalPortals,
+              contactAndFooter: {
+                ...DEFAULT_SITE_CONFIG.contactAndFooter,
+                ...(db.siteConfig.contactAndFooter || {}),
+              },
+            };
+            setSiteConfig((prev) =>
+              JSON.stringify(prev) === JSON.stringify(mergedConfig) ? prev : mergedConfig
+            );
             try {
-              localStorage.setItem(VISITOR_STORAGE_KEY, String(highest));
+              localStorage.setItem(CMS_SITE_CONFIG_STORAGE_KEY, JSON.stringify(mergedConfig));
             } catch {
               // ignore
             }
-            return highest;
-          });
-        }
-
-        if (
-          db.siteConfig &&
-          typeof db.siteConfig === 'object' &&
-          (isRemoteNewer || !localStorage.getItem(CMS_SITE_CONFIG_STORAGE_KEY))
-        ) {
-          const mergedConfig: SiteConfig = {
-            branding: { ...DEFAULT_SITE_CONFIG.branding, ...(db.siteConfig.branding || {}) },
-            announcementBar: {
-              ...DEFAULT_SITE_CONFIG.announcementBar,
-              ...(db.siteConfig.announcementBar || {}),
-            },
-            heroSection: {
-              ...DEFAULT_SITE_CONFIG.heroSection,
-              ...(db.siteConfig.heroSection || {}),
-            },
-            familyTreeConfig: {
-              ...DEFAULT_SITE_CONFIG.familyTreeConfig,
-              ...(db.siteConfig.familyTreeConfig || {}),
-            },
-            digitalPortals:
-              Array.isArray(db.siteConfig.digitalPortals) &&
-              db.siteConfig.digitalPortals.length > 0
-                ? db.siteConfig.digitalPortals
-                : DEFAULT_SITE_CONFIG.digitalPortals,
-            contactAndFooter: {
-              ...DEFAULT_SITE_CONFIG.contactAndFooter,
-              ...(db.siteConfig.contactAndFooter || {}),
-            },
-          };
-          setSiteConfig(mergedConfig);
-          try {
-            localStorage.setItem(CMS_SITE_CONFIG_STORAGE_KEY, JSON.stringify(mergedConfig));
-          } catch {
-            // ignore
           }
-        }
 
-        if (
-          Array.isArray(db.articles) &&
-          db.articles.length > 0 &&
-          (isRemoteNewer || !localStorage.getItem(CMS_ARTICLES_STORAGE_KEY))
-        ) {
-          setCmsArticles(db.articles);
-          try {
-            localStorage.setItem(CMS_ARTICLES_STORAGE_KEY, JSON.stringify(db.articles));
-          } catch {
-            // ignore
+          if (
+            Array.isArray(db.articles) &&
+            db.articles.length > 0 &&
+            isRemoteStrictlyNewer
+          ) {
+            setCmsArticles((prev) =>
+              JSON.stringify(prev) === JSON.stringify(db.articles) ? prev : db.articles
+            );
+            try {
+              localStorage.setItem(CMS_ARTICLES_STORAGE_KEY, JSON.stringify(db.articles));
+            } catch {
+              // ignore
+            }
           }
-        }
 
-        if (Array.isArray(db.certificates) && db.certificates.length > 0) {
-          // Merge remote certificates with local certificates so no issued certificate is ever lost
-          setCmsCertificates((prevLocal) => {
-            const bySerial = new Map<string, IssuedCertificateRecord>();
-            for (const c of DEFAULT_VERIFIED_CERTIFICATES) {
-              bySerial.set(c.serialNumber, c);
-            }
-            for (const c of prevLocal) {
-              bySerial.set(c.serialNumber, c);
-            }
-            for (const c of db.certificates as IssuedCertificateRecord[]) {
-              if (c && c.serialNumber) {
+          if (Array.isArray(db.certificates) && db.certificates.length > 0) {
+            setCmsCertificates((prevLocal) => {
+              const bySerial = new Map<string, IssuedCertificateRecord>();
+              for (const c of DEFAULT_VERIFIED_CERTIFICATES) {
                 bySerial.set(c.serialNumber, c);
               }
-            }
-            const merged = Array.from(bySerial.values());
+              for (const c of prevLocal) {
+                bySerial.set(c.serialNumber, c);
+              }
+              for (const c of db.certificates as IssuedCertificateRecord[]) {
+                if (c && c.serialNumber) {
+                  bySerial.set(c.serialNumber, c);
+                }
+              }
+              const merged = Array.from(bySerial.values());
+              if (merged.length === prevLocal.length) return prevLocal;
+              try {
+                localStorage.setItem(CMS_CERTS_STORAGE_KEY, JSON.stringify(merged));
+              } catch {
+                // ignore
+              }
+              return merged;
+            });
+          }
+
+          if (
+            Array.isArray(db.customNames) &&
+            db.customNames.length > 0 &&
+            isRemoteStrictlyNewer
+          ) {
+            setCmsCustomNames((prev) =>
+              JSON.stringify(prev) === JSON.stringify(db.customNames) ? prev : db.customNames
+            );
             try {
-              localStorage.setItem(CMS_CERTS_STORAGE_KEY, JSON.stringify(merged));
+              localStorage.setItem(CMS_NAMES_STORAGE_KEY, JSON.stringify(db.customNames));
             } catch {
               // ignore
             }
-            return merged;
-          });
-        }
-
-        if (
-          Array.isArray(db.customNames) &&
-          db.customNames.length > 0 &&
-          (isRemoteNewer || !localStorage.getItem(CMS_NAMES_STORAGE_KEY))
-        ) {
-          setCmsCustomNames(db.customNames);
-          try {
-            localStorage.setItem(CMS_NAMES_STORAGE_KEY, JSON.stringify(db.customNames));
-          } catch {
-            // ignore
           }
-        }
 
-        if (
-          Array.isArray(db.treeNodes) &&
-          db.treeNodes.length > 0 &&
-          (isRemoteNewer || !localStorage.getItem(CMS_TREE_NODES_STORAGE_KEY))
-        ) {
-          setCmsTreeNodes(db.treeNodes);
-          try {
-            localStorage.setItem(CMS_TREE_NODES_STORAGE_KEY, JSON.stringify(db.treeNodes));
-          } catch {
-            // ignore
+          if (
+            Array.isArray(db.treeNodes) &&
+            db.treeNodes.length > 0 &&
+            isRemoteStrictlyNewer
+          ) {
+            setCmsTreeNodes((prev) =>
+              JSON.stringify(prev) === JSON.stringify(db.treeNodes) ? prev : db.treeNodes
+            );
+            try {
+              localStorage.setItem(CMS_TREE_NODES_STORAGE_KEY, JSON.stringify(db.treeNodes));
+            } catch {
+              // ignore
+            }
           }
-        }
 
-        if (remoteTimestamp && isRemoteNewer) {
-          try {
-            localStorage.setItem(CMS_LAST_UPDATED_STORAGE_KEY, remoteTimestamp);
-          } catch {
-            // ignore
+          if (remoteTimestamp && isRemoteStrictlyNewer) {
+            try {
+              localStorage.setItem(CMS_LAST_UPDATED_STORAGE_KEY, remoteTimestamp);
+            } catch {
+              // ignore
+            }
           }
-        }
-      })
-      .catch(() => {
-        // ignore fetch errors
-      });
+        })
+        .catch(() => {
+          // ignore fetch errors
+        });
+    }, 2500);
+
+    return () => window.clearTimeout(syncTimer);
   }, []);
 
   const touchLocalTimestamp = () => {

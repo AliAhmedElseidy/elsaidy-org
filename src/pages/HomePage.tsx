@@ -63,201 +63,53 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   return (
     <div className="space-y-12 sm:space-y-16 lg:space-y-24 py-6 sm:py-8 lg:py-12">
-      {/* 1. Regal Luxury Hero Section with Emerald/Navy Gradient & 4% Geometric SVG Pattern */}
-      <section className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#0F291E] via-[#112323] to-[#141E28] text-white border border-[#D4AF37]/40 shadow-xl">
-        {/* Subtle 4% Opacity Arabic Geometric SVG Watermark Pattern */}
-        <svg
-          className="absolute inset-0 w-full h-full opacity-[0.04] pointer-events-none"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-        >
-          <defs>
-            <pattern id="arabesque-grid" width="80" height="80" patternUnits="userSpaceOnUse">
-              <path
-                d="M40 0 L80 40 L40 80 L0 40 Z M20 20 L60 20 L60 60 L20 60 Z"
-                fill="none"
-                stroke="#D4AF37"
-                strokeWidth="1.5"
-              />
-              <circle cx="40" cy="40" r="12" fill="none" stroke="#D4AF37" strokeWidth="1.2" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#arabesque-grid)" />
-        </svg>
-
-        <div className="relative z-10 p-5 sm:p-8 lg:p-14">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
-            {/* Right Column: Grand Institutional & Corporate Brand Statement */}
-            <div className="lg:col-span-7 flex flex-col justify-between">
-              <div>
-                <div className="inline-flex flex-wrap items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white/5 border border-[#D4AF37]/30 text-xs font-bold text-[#D4AF37] mb-5">
-                  <span>{hero.topBadge}</span>
-                </div>
-
-                <h1
-                  className="font-bold text-white tracking-tight leading-[1.28] mb-5"
-                  style={{ fontSize: 'clamp(1.65rem, 3.6vw, 3.15rem)', textWrap: 'balance' }}
-                >
-                  {hero.mainHeading}
-                  <span className="block text-[#D4AF37] font-display text-xl sm:text-2xl lg:text-3xl mt-2.5 font-normal">
-                    {hero.subHeading}
-                  </span>
-                </h1>
-
-                <p className="text-sm sm:text-base lg:text-lg text-zinc-200 leading-[1.9] mb-5 text-justify">
-                  {hero.leadParagraph}
-                </p>
-
-                <p className="font-display text-sm sm:text-base lg:text-lg text-[#E6DEC8] leading-[1.85] p-4 rounded-xl bg-white/5 border border-[#D4AF37]/25 mb-6">
-                  {hero.quoteText}
-                </p>
-
-                {/* Dynamic 4 Executive Hero Statistics Counters */}
-                {hero.stats && hero.stats.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-7">
-                    {hero.stats.map((st, sIdx) => (
-                      <div
-                        key={sIdx}
-                        className="p-3 rounded-xl bg-black/20 border border-[#D4AF37]/25 text-center"
-                      >
-                        <div className="text-lg sm:text-xl font-extrabold text-[#D4AF37] leading-tight">
-                          {st.value}
-                        </div>
-                        <div className="text-[11px] text-zinc-300 font-semibold mt-0.5">
-                          {st.label}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Primary Call-To-Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => onNavigate('tree')}
-                  className="px-5 py-3.5 rounded-xl bg-[#D4AF37] text-[#0D131A] text-xs sm:text-sm font-extrabold hover:bg-[#e0bd42] shadow-md transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <GitBranch className="w-4 h-4" />
-                  <span>{hero.primaryBtnText}</span>
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => onNavigate('verify')}
-                  className="px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-[#D4AF37]/60 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <Award className="w-4 h-4 text-[#D4AF37]" />
-                  <span>{hero.secondaryBtnText}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => onNavigate('portals')}
-                  className="px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/25 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <Building2 className="w-4 h-4 text-[#D4AF37]" />
-                  <span>مجموعة وأعمال الصعيدي</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={onOpenCorporateInquiry}
-                  className="px-3 py-2 text-xs font-bold text-[#D4AF37] hover:text-white underline underline-offset-8 transition-colors cursor-pointer"
-                >
-                  طلب بريد رسمي (@elsaidy.org) ←
-                </button>
-              </div>
+      {/* 1. Interactive Pan-Arab Atlas & Genealogy Plate (Complements the Static LCP Hero Masthead) */}
+      <section className="rounded-2xl bg-white border border-[#E6E2D8] shadow-sm p-5 sm:p-8 lg:p-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+          <div className="lg:col-span-5 space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#0F291E]/10 text-[#0F291E] text-xs font-extrabold">
+              <Globe2 className="w-4 h-4 text-[#695022]" />
+              <span>الأطلس الوثائقي التفاعلي · {hero.topBadge}</span>
             </div>
-
-            {/* Left Column: Interactive Pan-Arab Atlas & Genealogy Plate */}
-            <div className="lg:col-span-5 flex text-[#141413]">
-              <HeritageAndInfraVisual
-                activeBranchId={activeBranchId}
-                onSelectBranch={onSelectBranch}
-              />
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#141413] leading-snug">
+              خريطة انتشار وفروع عائلات الصعيدي والمنظومة الرقمية
+            </h2>
+            <p className="text-sm text-zinc-700 leading-relaxed text-justify">
+              استعرض التوزيع الجغرافي الموثق لفروع عائلات الصعيدي (إبراهيم الصعيدي، عوض البراهيم، مرسي الحجاج، والامتداد الحجازي والمصري) عبر أقاليم الجمهورية والعالم العربي، مع إمكانية الوصول المباشر إلى سجل التوثيق والمشجرة التفاعلية.
+            </p>
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => onNavigate('tree')}
+                className="px-4 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-extrabold hover:bg-[#141E28] transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <GitBranch className="w-4 h-4 text-[#D4AF37]" />
+                <span>{hero.primaryBtnText}</span>
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onNavigate('verify')}
+                className="px-4 py-2.5 rounded-xl bg-[#F7F6F2] hover:bg-[#EFECE6] text-[#141413] border border-[#D4AF37]/60 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <Award className="w-4 h-4 text-[#695022]" />
+                <span>{hero.secondaryBtnText}</span>
+              </button>
+              <button
+                type="button"
+                onClick={onOpenCorporateInquiry}
+                className="px-3 py-2 text-xs font-bold text-[#695022] hover:text-[#0F291E] underline underline-offset-8 transition-colors cursor-pointer"
+              >
+                طلب بريد رسمي (@elsaidy.org) ←
+              </button>
             </div>
           </div>
 
-          {/* Executive Quick-Access Cards Inside Hero Bottom */}
-          <div className="mt-10 pt-8 border-t border-white/15 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <button
-              type="button"
-              onClick={() => onNavigate('about')}
-              className="p-5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-right transition-all flex items-start justify-between gap-4 cursor-pointer group"
-            >
-              <div>
-                <div className="text-xs font-bold text-[#D4AF37] mb-1">
-                  ٠١ · الوثيقة التاريخية والمراجع
-                </div>
-                <div className="text-base font-bold text-white mb-1">
-                  من نحن والتاريخ وسبب التسمية
-                </div>
-                <p className="text-xs text-zinc-300 leading-relaxed">
-                  النص الكامل للوثيقة التاريخية، سبب التسمية بـ «الصعيدي»، والمراجع الموثقة.
-                </p>
-              </div>
-              <FileText className="w-5 h-5 text-[#D4AF37] shrink-0 mt-1 group-hover:-translate-x-1 transition-transform" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onNavigate('tree')}
-              className="p-5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-right transition-all flex items-start justify-between gap-4 cursor-pointer group"
-            >
-              <div>
-                <div className="text-xs font-bold text-[#D4AF37] mb-1">
-                  ٠٢ · المشجرة المصورة وفهرس الأعلام
-                </div>
-                <div className="text-base font-bold text-white mb-1">
-                  وثيقة شجرة العائلة وفروعها
-                </div>
-                <p className="text-xs text-zinc-300 leading-relaxed">
-                  مستعرض الشجرة بالتكبير التفاعلي والدليل الهيكلي لأعقاب إبراهيم الصعيدي.
-                </p>
-              </div>
-              <GitBranch className="w-5 h-5 text-[#D4AF37] shrink-0 mt-1 group-hover:-translate-x-1 transition-transform" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onNavigate('verify')}
-              className="p-5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-right transition-all flex items-start justify-between gap-4 cursor-pointer group"
-            >
-              <div>
-                <div className="text-xs font-bold text-[#D4AF37] mb-1">
-                  ٠٣ · التحقق وإصدار الشهادات
-                </div>
-                <div className="text-base font-bold text-white mb-1">
-                  التوثيق وشهادات النسب والعضوية
-                </div>
-                <p className="text-xs text-zinc-300 leading-relaxed">
-                  فحص أرقام الشهادات المرجعية وإصدار شهادة النسب وبطاقة العضوية الرسمية.
-                </p>
-              </div>
-              <Award className="w-5 h-5 text-[#D4AF37] shrink-0 mt-1 group-hover:-translate-x-1 transition-transform" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onNavigate('portals')}
-              className="p-5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-right transition-all flex items-start justify-between gap-4 cursor-pointer group"
-            >
-              <div>
-                <div className="text-xs font-bold text-[#D4AF37] mb-1">
-                  ٠٤ · براند ومشاريع الصعيدي
-                </div>
-                <div className="text-base font-bold text-white mb-1">
-                  ELSAIDY Brand & Digital Portals
-                </div>
-                <p className="text-xs text-zinc-300 leading-relaxed">
-                  مجموعة الصعيدي للأعمال، منظومة الإدارة، البريد الرسمي (@elsaidy.org)، والسحابة.
-                </p>
-              </div>
-              <Shield className="w-5 h-5 text-[#D4AF37] shrink-0 mt-1 group-hover:-translate-x-1 transition-transform" />
-            </button>
+          <div className="lg:col-span-7 flex text-[#141413]">
+            <HeritageAndInfraVisual
+              activeBranchId={activeBranchId}
+              onSelectBranch={onSelectBranch}
+            />
           </div>
         </div>
       </section>
