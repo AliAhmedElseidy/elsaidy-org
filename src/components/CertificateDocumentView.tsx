@@ -1,63 +1,64 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import QRCode from 'qrcode';
 import { OFFICIAL_FAMILY_TREE_IMAGE_URL } from '../data/familyData';
 
 export const DeterministicQrSvg: React.FC<{ value: string; size?: number }> = ({
   value,
   size = 96,
 }) => {
-  const grid = 21;
-  const hashChar = (index: number) => {
-    let h = 2166136261;
-    const str = `${value}:${index}`;
-    for (let i = 0; i < str.length; i++) {
-      h ^= str.charCodeAt(i);
-      h = Math.imul(h, 16777619);
-    }
-    return Math.abs(h);
-  };
+  const qrData = useMemo(() => {
+    try {
+      const qr = QRCode.create(value || 'https://elsaidy.org/verify', {
+        errorCorrectionLevel: 'M',
+      });
+      const matrixSize = qr.modules.size;
+      const quietZone = 2;
+      const totalSize = matrixSize + quietZone * 2;
+      const modules: { r: number; c: number }[] = [];
 
-  const isFinderPattern = (r: number, c: number) => {
-    const inTopLeft = r < 7 && c < 7;
-    const inTopRight = r < 7 && c >= grid - 7;
-    const inBottomLeft = r >= grid - 7 && c < 7;
-    return inTopLeft || inTopRight || inBottomLeft;
-  };
-
-  const renderFinderBox = (startR: number, startC: number, key: string) => (
-    <g key={key}>
-      <rect x={startC} y={startR} width={7} height={7} fill="#0F291E" />
-      <rect x={startC + 1} y={startR + 1} width={5} height={5} fill="#FFFFFF" />
-      <rect x={startC + 2} y={startR + 2} width={3} height={3} fill="#0F291E" />
-    </g>
-  );
-
-  const cells: React.ReactNode[] = [];
-  for (let r = 0; r < grid; r++) {
-    for (let c = 0; c < grid; c++) {
-      if (isFinderPattern(r, c)) continue;
-      const bit = hashChar(r * grid + c) % 10 < 5;
-      if (bit) {
-        cells.push(
-          <rect key={`${r}-${c}`} x={c} y={r} width={1} height={1} fill="#0F291E" />
-        );
+      for (let r = 0; r < matrixSize; r++) {
+        for (let c = 0; c < matrixSize; c++) {
+          if (qr.modules.get(r, c)) {
+            modules.push({ r: r + quietZone, c: c + quietZone });
+          }
+        }
       }
+
+      return { totalSize, modules };
+    } catch {
+      return null;
     }
+  }, [value]);
+
+  if (!qrData) {
+    const fallbackUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&format=svg&color=0F291E&bgcolor=FFFFFF&qzone=1&data=${encodeURIComponent(
+      value || 'https://elsaidy.org/verify'
+    )}`;
+    return (
+      <img
+        src={fallbackUrl}
+        width={size}
+        height={size}
+        alt={`QR Code for ${value}`}
+        className="border border-[#695022]/40 bg-white p-1 rounded"
+      />
+    );
   }
 
   return (
     <svg
       width={size}
       height={size}
-      viewBox={`0 0 ${grid} ${grid}`}
+      viewBox={`0 0 ${qrData.totalSize} ${qrData.totalSize}`}
       shapeRendering="crispEdges"
-      className="border border-[#695022]/40 bg-white p-1.5 rounded"
+      className="border border-[#695022]/40 bg-white p-1 rounded"
+      role="img"
       aria-label={`QR Code for ${value}`}
     >
-      <rect width={grid} height={grid} fill="#FFFFFF" />
-      {renderFinderBox(0, 0, 'tl')}
-      {renderFinderBox(0, grid - 7, 'tr')}
-      {renderFinderBox(grid - 7, 0, 'bl')}
-      {cells}
+      <rect width={qrData.totalSize} height={qrData.totalSize} fill="#FFFFFF" />
+      {qrData.modules.map(({ r, c }) => (
+        <rect key={`${r}-${c}`} x={c} y={r} width={1} height={1} fill="#0F291E" />
+      ))}
     </svg>
   );
 };
