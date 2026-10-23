@@ -1238,6 +1238,24 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
     currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة'
   },
   {
+    serialNumber: 'ELS-2026-EG-02',
+    arabicName: 'علي أحمد علي الصعيدي',
+    englishName: 'Ali Ahmed Ali Elsaidy',
+    familyTitle: 'الصعيدي',
+    country: 'جمهورية مصر العربية',
+    countryCode: 'EG',
+    regionBranch: 'محافظة الغربية - مدينة طنطا / صعيد مصر / القاهرة',
+    lineageNarrative:
+      'ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).',
+    documentType: 'a4-certificate',
+    issueDateGregorian: '2026-10-23',
+    issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
+    status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
+    memberReferenceId: 'REG-EG-GH-0014',
+    ancestralRoot: 'الجد السابع إبراهيم الصعيدي الجهني — فرع الغربية وطنطا وصعيد مصر',
+    currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة'
+  },
+  {
     serialNumber: 'ELS-2026-EG-002',
     arabicName: 'مرسي الحجاج (مرسي حجاج الصعيدي)',
     englishName: 'Morsi Hagag Elsaidy',
