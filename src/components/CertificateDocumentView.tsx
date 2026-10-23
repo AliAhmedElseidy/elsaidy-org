@@ -168,6 +168,10 @@ export interface CertificateRenderProps {
   issueDateGregorian: string;
   issueDateHijri: string;
   includeFamilyTreeStamp?: boolean;
+  customLogoUrl?: string;
+  customSealImageUrl?: string;
+  customTreeImageUrl?: string;
+  siteTitle?: string;
 }
 
 export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
@@ -181,25 +185,40 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
   issueDateGregorian,
   issueDateHijri,
   includeFamilyTreeStamp = true,
+  customLogoUrl,
+  customSealImageUrl,
+  customTreeImageUrl,
+  siteTitle,
 }) => {
+  const effectiveTreeUrl = customTreeImageUrl || OFFICIAL_FAMILY_TREE_IMAGE_URL;
+
   if (documentType === 'a4-certificate') {
     return (
-      <div className="print-certificate-canvas relative bg-[#FCFBF7] text-[#141413] border-4 border-double border-[#695022] rounded-xl p-6 sm:p-10 shadow-2xl overflow-hidden">
+      <div className="print-certificate-canvas relative bg-[#FCFBF7] text-[#141413] border-4 border-double border-[#695022] rounded-xl p-5 sm:p-10 shadow-2xl overflow-hidden">
         <div className="pointer-events-none absolute inset-3 border border-[#695022]/40 rounded-lg" />
         <div className="pointer-events-none absolute inset-5 border border-[#0F291E]/20 rounded" />
 
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.04] select-none">
-          <span className="font-serif text-[80px] sm:text-[130px] font-bold text-[#0F291E] -rotate-12">
+          <span className="font-serif text-[72px] sm:text-[130px] font-bold text-[#0F291E] -rotate-12">
             آل الصعيدي
           </span>
         </div>
 
         <div className="relative z-10 text-center border-b-2 border-[#695022]/30 pb-6 mb-6">
           <div className="flex flex-wrap items-center justify-between gap-4 text-xs font-bold text-[#4A4946] mb-3">
-            <div className="text-right">
-              <div>الأمانة العامة لتجمع عائلات الصعيدي</div>
-              <div className="text-[#695022]" dir="ltr">
-                ELSAIDY OFFICIAL ARCHIVE &amp; REGISTRY
+            <div className="flex items-center gap-2.5 text-right">
+              {customLogoUrl ? (
+                <img
+                  src={customLogoUrl}
+                  alt="شعار البوابة"
+                  className="w-10 h-10 object-contain rounded-lg border border-[#695022]/40 bg-white p-0.5"
+                />
+              ) : null}
+              <div>
+                <div>{siteTitle || 'الأمانة العامة لتجمع عائلات الصعيدي'}</div>
+                <div className="text-[#695022]" dir="ltr">
+                  ELSAIDY OFFICIAL ARCHIVE &amp; REGISTRY
+                </div>
               </div>
             </div>
 
@@ -234,7 +253,7 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
             ) بأن السيد / العلم الموثق:
           </p>
 
-          <div className="py-4 px-6 bg-[#F4F1E8] border-y-2 border-[#695022]/50 rounded-lg inline-block min-w-[280px] sm:min-w-[420px]">
+          <div className="py-4 px-5 sm:px-6 bg-[#F4F1E8] border-y-2 border-[#695022]/50 rounded-lg inline-block max-w-full sm:min-w-[420px]">
             <div className="font-serif text-2xl sm:text-4xl font-bold text-[#0F291E] mb-1">
               {arabicName || 'الاسم الكامل لصاحب الشهادة'}
             </div>
@@ -303,14 +322,22 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
           </div>
 
           <div className="flex flex-col items-center justify-center">
-            <RoyalOfficialSealSvg size={122} />
+            {customSealImageUrl ? (
+              <img
+                src={customSealImageUrl}
+                alt="الختم الرسمي المعتمد"
+                className="w-28 h-28 object-contain"
+              />
+            ) : (
+              <RoyalOfficialSealSvg size={122} />
+            )}
           </div>
 
           <div className="flex flex-col items-center sm:items-end text-center sm:text-left">
             {includeFamilyTreeStamp && (
               <div className="mb-2 flex items-center gap-2 bg-[#F4F1E8] border border-[#695022]/30 rounded-lg px-2.5 py-1.5">
                 <img
-                  src={OFFICIAL_FAMILY_TREE_IMAGE_URL}
+                  src={effectiveTreeUrl}
                   alt="ختم المشجرة"
                   width="36"
                   height="26"
@@ -339,16 +366,25 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
 
   return (
     <div className="print-certificate-canvas max-w-2xl mx-auto">
-      <div className="relative bg-gradient-to-br from-[#0F291E] via-[#133527] to-[#0A141D] text-white rounded-2xl p-6 sm:p-8 border-2 border-[#D4AF37]/60 shadow-2xl overflow-hidden">
+      <div className="relative bg-gradient-to-br from-[#0F291E] via-[#133527] to-[#0A141D] text-white rounded-2xl p-5 sm:p-8 border-2 border-[#D4AF37]/60 shadow-2xl overflow-hidden">
         <div className="pointer-events-none absolute -left-12 -bottom-12 w-56 h-56 rounded-full bg-[#D4AF37]/10 blur-2xl" />
-        <div className="relative z-10 flex items-center justify-between border-b border-white/15 pb-4 mb-5">
-          <div>
-            <div className="text-[11px] font-bold tracking-widest text-[#D4AF37] uppercase">
-              ELSAIDY FAMILY OFFICIAL VIP ID
+        <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-b border-white/15 pb-4 mb-5">
+          <div className="flex items-center gap-3">
+            {customLogoUrl ? (
+              <img
+                src={customLogoUrl}
+                alt="شعار البوابة"
+                className="w-10 h-10 object-contain rounded-lg border border-[#D4AF37]/50 bg-white/10 p-0.5"
+              />
+            ) : null}
+            <div>
+              <div className="text-[11px] font-bold tracking-widest text-[#D4AF37] uppercase">
+                ELSAIDY FAMILY OFFICIAL VIP ID
+              </div>
+              <h3 className="font-serif text-lg sm:text-2xl font-bold text-white mt-0.5">
+                بطاقة العضوية والنسب الرسمية — عائلة الصعيدي
+              </h3>
             </div>
-            <h3 className="font-serif text-xl sm:text-2xl font-bold text-white mt-0.5">
-              بطاقة العضوية والنسب الرسمية — عائلة الصعيدي
-            </h3>
           </div>
           <div className="px-3 py-1 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#D4AF37] text-xs font-mono font-bold">
             {serialNumber}
@@ -367,7 +403,7 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
               <div className="bg-white/5 border border-white/10 rounded-lg p-2.5">
                 <span className="text-[10px] text-[#D4AF37] font-bold block">
                   الدولة / الإقليم:

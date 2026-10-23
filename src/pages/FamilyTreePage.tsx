@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import {
   OFFICIAL_FAMILY_TREE_IMAGE_URL,
   COMPOUND_NAMES_INDEX,
-  PageRoute
+  PageRoute,
+  SiteConfig,
+  DEFAULT_SITE_CONFIG,
 } from '../data/familyData';
 import {
   ZoomIn,
@@ -18,12 +20,21 @@ import {
 interface FamilyTreePageProps {
   onNavigate: (route: PageRoute) => void;
   customNames?: string[];
+  siteConfig?: SiteConfig;
 }
 
 export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
   onNavigate,
   customNames = [],
+  siteConfig = DEFAULT_SITE_CONFIG,
 }) => {
+  const activeTreeImageUrl =
+    siteConfig.familyTreeConfig?.treeImageUrl || OFFICIAL_FAMILY_TREE_IMAGE_URL;
+  const activeDocumentCode =
+    siteConfig.familyTreeConfig?.documentCode || 'ARCH-TREE-01';
+  const activeDocumentTitle =
+    siteConfig.familyTreeConfig?.documentTitle ||
+    'وثيقة شجرة عائلة الصعيدي الرسمية';
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
   const [lightboxZoom, setLightboxZoom] = useState<number>(1.35);
@@ -585,7 +596,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
                 {Math.round(lightboxZoom * 100)}%
               </button>
               <a
-                href={OFFICIAL_FAMILY_TREE_IMAGE_URL}
+                href={activeTreeImageUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3.5 py-1.5 rounded-lg bg-[#0F291E] text-white text-xs font-bold flex items-center gap-1"
@@ -610,7 +621,7 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={OFFICIAL_FAMILY_TREE_IMAGE_URL}
+              src={activeTreeImageUrl}
               alt="وثيقة شجرة عائلة الصعيدي بالحجم الكامل"
               referrerPolicy="no-referrer"
               style={{

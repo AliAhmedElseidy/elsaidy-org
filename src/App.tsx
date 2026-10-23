@@ -8,10 +8,12 @@ import {
   GEOGRAPHICAL_PRESENCE,
   DIWAN_ARTICLES,
   DEFAULT_VERIFIED_CERTIFICATES,
+  DEFAULT_SITE_CONFIG,
   PageRoute,
   WhiteLabeledPortal,
   DiwanArticle,
   IssuedCertificateRecord,
+  SiteConfig,
 } from './data/familyData';
 import { HomePage } from './pages/HomePage';
 import { AboutPage } from './pages/AboutPage';
@@ -33,12 +35,21 @@ import {
   Globe2,
   ShieldCheck,
   Activity,
+  Home,
+  BookOpen,
+  GitBranch,
+  Award,
+  FileText,
+  Building2,
+  Megaphone,
+  ChevronLeft,
 } from 'lucide-react';
 
 const VISITOR_STORAGE_KEY = 'elsaidy_official_portal_visits_v3';
 const CMS_ARTICLES_STORAGE_KEY = 'elsaidy_cms_articles_v1';
 const CMS_CERTS_STORAGE_KEY = 'elsaidy_cms_certificates_v1';
 const CMS_NAMES_STORAGE_KEY = 'elsaidy_cms_custom_names_v1';
+const CMS_SITE_CONFIG_STORAGE_KEY = 'elsaidy_cms_site_config_v1';
 
 const DEFAULT_CUSTOM_NAMES = [
   'علي أحمد علي الصعيدي (Ali Ahmed Ali Elsaidy)',
@@ -90,6 +101,41 @@ export default function App() {
 
   // Secret 5-click trigger counter for Footer copyright seal
   const secretClickCountRef = useRef<number>(0);
+
+  // Global Site Customizer Configuration State
+  const [siteConfig, setSiteConfig] = useState<SiteConfig>(() => {
+    try {
+      const saved = localStorage.getItem(CMS_SITE_CONFIG_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          return {
+            branding: { ...DEFAULT_SITE_CONFIG.branding, ...(parsed.branding || {}) },
+            announcementBar: {
+              ...DEFAULT_SITE_CONFIG.announcementBar,
+              ...(parsed.announcementBar || {}),
+            },
+            heroSection: { ...DEFAULT_SITE_CONFIG.heroSection, ...(parsed.heroSection || {}) },
+            familyTreeConfig: {
+              ...DEFAULT_SITE_CONFIG.familyTreeConfig,
+              ...(parsed.familyTreeConfig || {}),
+            },
+            digitalPortals:
+              Array.isArray(parsed.digitalPortals) && parsed.digitalPortals.length > 0
+                ? parsed.digitalPortals
+                : DEFAULT_SITE_CONFIG.digitalPortals,
+            contactAndFooter: {
+              ...DEFAULT_SITE_CONFIG.contactAndFooter,
+              ...(parsed.contactAndFooter || {}),
+            },
+          };
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return DEFAULT_SITE_CONFIG;
+  });
 
   // Shared CMS State (Articles, Certificates, Custom SEO Names)
   const [cmsArticles, setCmsArticles] = useState<DiwanArticle[]>(() => {
@@ -161,6 +207,18 @@ export default function App() {
     setTimeout(() => setIsCounterPulsing(false), 900);
   };
 
+  // Dynamically update <link rel="icon"> when siteConfig.branding.faviconUrl changes
+  useEffect(() => {
+    if (!siteConfig.branding.faviconUrl) return;
+    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.href = siteConfig.branding.faviconUrl;
+  }, [siteConfig.branding.faviconUrl]);
+
   useEffect(() => {
     const handlePopState = () => {
       setCurrentRoute(getInitialRoute());
@@ -198,6 +256,36 @@ export default function App() {
             return highest;
           });
         }
+        if (
+          db.siteConfig &&
+          typeof db.siteConfig === 'object' &&
+          !localStorage.getItem(CMS_SITE_CONFIG_STORAGE_KEY)
+        ) {
+          setSiteConfig({
+            branding: { ...DEFAULT_SITE_CONFIG.branding, ...(db.siteConfig.branding || {}) },
+            announcementBar: {
+              ...DEFAULT_SITE_CONFIG.announcementBar,
+              ...(db.siteConfig.announcementBar || {}),
+            },
+            heroSection: {
+              ...DEFAULT_SITE_CONFIG.heroSection,
+              ...(db.siteConfig.heroSection || {}),
+            },
+            familyTreeConfig: {
+              ...DEFAULT_SITE_CONFIG.familyTreeConfig,
+              ...(db.siteConfig.familyTreeConfig || {}),
+            },
+            digitalPortals:
+              Array.isArray(db.siteConfig.digitalPortals) &&
+              db.siteConfig.digitalPortals.length > 0
+                ? db.siteConfig.digitalPortals
+                : DEFAULT_SITE_CONFIG.digitalPortals,
+            contactAndFooter: {
+              ...DEFAULT_SITE_CONFIG.contactAndFooter,
+              ...(db.siteConfig.contactAndFooter || {}),
+            },
+          });
+        }
         if (Array.isArray(db.articles) && db.articles.length > 0 && !localStorage.getItem(CMS_ARTICLES_STORAGE_KEY)) {
           setCmsArticles(db.articles);
         }
@@ -230,6 +318,15 @@ export default function App() {
       clearInterval(activeReadersInterval);
     };
   }, []);
+
+  const handleUpdateSiteConfig = (nextConfig: SiteConfig) => {
+    setSiteConfig(nextConfig);
+    try {
+      localStorage.setItem(CMS_SITE_CONFIG_STORAGE_KEY, JSON.stringify(nextConfig));
+    } catch {
+      // ignore
+    }
+  };
 
   const handleUpdateArticles = (nextArticles: DiwanArticle[]) => {
     setCmsArticles(nextArticles);
@@ -336,55 +433,150 @@ export default function App() {
     );
   };
 
-  const navItems: { id: PageRoute; label: string; path: string }[] = [
-    { id: 'home', label: 'الرئيسية', path: '/' },
-    { id: 'about', label: 'من نحن والتاريخ', path: '/about' },
-    { id: 'tree', label: 'شجرة وفروع العائلة', path: '/tree' },
-    { id: 'verify', label: 'التوثيق وشهادات النسب', path: '/verify' },
-    { id: 'diwan', label: 'الديوان والمقالات', path: '/diwan' },
-    { id: 'portals', label: 'الأنظمة الرقمية ومشاريع الصعيدي', path: '/portals' },
+  const navItems: {
+    id: PageRoute;
+    label: string;
+    mobileLabel: string;
+    path: string;
+    icon: React.FC<{ className?: string }>;
+  }[] = [
+    { id: 'home', label: 'الرئيسية', mobileLabel: 'الرئيسية', path: '/', icon: Home },
+    {
+      id: 'about',
+      label: 'من نحن والتاريخ',
+      mobileLabel: 'التاريخ',
+      path: '/about',
+      icon: BookOpen,
+    },
+    {
+      id: 'tree',
+      label: 'شجرة وفروع العائلة',
+      mobileLabel: 'الشجرة',
+      path: '/tree',
+      icon: GitBranch,
+    },
+    {
+      id: 'verify',
+      label: 'التوثيق وشهادات النسب',
+      mobileLabel: 'التوثيق',
+      path: '/verify',
+      icon: Award,
+    },
+    {
+      id: 'diwan',
+      label: 'الديوان والمقالات',
+      mobileLabel: 'الديوان',
+      path: '/diwan',
+      icon: FileText,
+    },
+    {
+      id: 'portals',
+      label: 'الأنظمة الرقمية ومشاريع الصعيدي',
+      mobileLabel: 'البوابات',
+      path: '/portals',
+      icon: Building2,
+    },
   ];
+
+  const handleAnnouncementLinkClick = () => {
+    const link = siteConfig.announcementBar.linkUrl?.trim() || '/verify';
+    if (link.startsWith('/')) {
+      const cleaned = link.replace(/^\/+/, '') as PageRoute;
+      if (['home', 'about', 'tree', 'verify', 'diwan', 'portals'].includes(cleaned)) {
+        navigateTo(cleaned);
+      } else {
+        navigateTo('verify');
+      }
+    } else if (link.startsWith('http')) {
+      window.location.href = link;
+    } else {
+      navigateTo('verify');
+    }
+  };
 
   return (
     <div
       dir="rtl"
-      className="min-h-screen flex flex-col justify-between bg-[#F7F6F2] text-[#141413] selection:bg-[#695022]/20 selection:text-[#141413] overflow-x-hidden"
+      className="min-h-screen flex flex-col justify-between bg-[#F7F6F2] text-[#141413] selection:bg-[#695022]/20 selection:text-[#141413] overflow-x-hidden pb-20 md:pb-0"
     >
       {/* Dynamic SEO & JSON-LD Structured Data Engine */}
       <SEOManager currentPage={currentRoute} customNames={cmsCustomNames} />
 
       <div>
-        {/* Regal Sticky Header with Official Geometric Crest/Monogram */}
+        {/* Dynamic Top Announcement Ticker Bar (Controlled from /admin-elsaidy) */}
+        {siteConfig.announcementBar.enabled && (
+          <div
+            className="no-print text-white border-b border-[#D4AF37]/30 px-3 sm:px-6 lg:px-12 py-2"
+            style={{ backgroundColor: siteConfig.branding.primaryColor || '#0F291E' }}
+          >
+            <div className="max-w-[1280px] mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="px-2 py-0.5 rounded-md bg-[#D4AF37] text-[#0D131A] text-[10px] sm:text-[11px] font-extrabold shrink-0 flex items-center gap-1">
+                  <Megaphone className="w-3 h-3" />
+                  <span>{siteConfig.announcementBar.badgeText}</span>
+                </span>
+                <span className="text-zinc-100 font-semibold truncate sm:whitespace-normal">
+                  {siteConfig.announcementBar.message}
+                </span>
+              </div>
+
+              {siteConfig.announcementBar.linkText && (
+                <button
+                  type="button"
+                  onClick={handleAnnouncementLinkClick}
+                  className="text-[11px] font-extrabold text-[#D4AF37] hover:text-white flex items-center gap-1 shrink-0 cursor-pointer"
+                >
+                  <span>{siteConfig.announcementBar.linkText}</span>
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Regal Sticky Header with Dynamic Logo or Official Geometric Crest/Monogram */}
         <header
           id="top"
-          className="no-print sticky top-0 z-50 backdrop-blur-md bg-[#F7F6F2]/95 border-b border-[#E2DDD3] px-4 sm:px-6 lg:px-12 py-3.5 shadow-xs"
+          className="no-print sticky top-0 z-50 backdrop-blur-md bg-[#F7F6F2]/95 border-b border-[#E2DDD3] px-3.5 sm:px-6 lg:px-12 py-3 shadow-xs"
         >
-          <div className="max-w-[1280px] mx-auto flex items-center justify-between gap-4">
-            {/* Zone 1: Geometric Crest/Monogram + Official Wordmark */}
+          <div className="max-w-[1280px] mx-auto flex items-center justify-between gap-3">
+            {/* Zone 1: Dynamic Custom Logo OR Geometric Crest/Monogram + Official Wordmark */}
             <a
               href="/"
               onClick={(e) => {
                 e.preventDefault();
                 navigateTo('home');
               }}
-              className="flex items-center gap-3.5 shrink-0 group"
+              className="flex items-center gap-3 min-w-0 group"
             >
-              {/* Official Geometric Crest / Monogram for ELSAIDY | الصعيدي */}
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] border-2 border-[#D4AF37] flex flex-col items-center justify-center text-white shadow-sm shrink-0">
-                <span className="font-mono text-[9px] font-bold tracking-widest text-[#D4AF37] leading-none">
-                  ELSAIDY
-                </span>
-                <span className="font-display text-xs font-bold text-white leading-tight mt-0.5">
-                  الصعيدي
-                </span>
-              </div>
-
-              <div>
-                <div className="text-base sm:text-lg lg:text-xl font-extrabold text-[#141413] tracking-tight leading-snug group-hover:text-[#0F291E] transition-colors">
-                  الموقع الرسمي لعائلات الصعيدي ومجموعة الصعيدي
+              {siteConfig.branding.logoUrl ? (
+                <img
+                  src={siteConfig.branding.logoUrl}
+                  alt={siteConfig.branding.siteTitle}
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain bg-white border-2 border-[#D4AF37] p-0.5 shadow-sm shrink-0"
+                />
+              ) : (
+                <div
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] border-2 border-[#D4AF37] flex flex-col items-center justify-center text-white shadow-sm shrink-0"
+                  style={{
+                    backgroundColor: siteConfig.branding.primaryColor || '#0F291E',
+                  }}
+                >
+                  <span className="font-mono text-[8px] sm:text-[9px] font-bold tracking-widest text-[#D4AF37] leading-none">
+                    ELSAIDY
+                  </span>
+                  <span className="font-display text-xs font-bold text-white leading-tight mt-0.5">
+                    الصعيدي
+                  </span>
                 </div>
-                <div className="text-[11px] font-bold text-[#695022] hidden sm:block">
-                  ELSAIDY OFFICIAL PORTAL & BRAND HUB · elsaidy.org
+              )}
+
+              <div className="min-w-0">
+                <div className="text-sm sm:text-base lg:text-xl font-extrabold text-[#141413] tracking-tight leading-snug group-hover:text-[#0F291E] transition-colors truncate">
+                  {siteConfig.branding.siteTitle}
+                </div>
+                <div className="text-[10px] sm:text-[11px] font-bold text-[#695022] truncate">
+                  {siteConfig.branding.siteSubtitle} · elsaidy.org
                 </div>
               </div>
             </a>
@@ -414,12 +606,12 @@ export default function App() {
             </nav>
 
             {/* Zone 3: Share Official Link & Brand Portal Action */}
-            <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={handleSharePortalLink}
                 title="مشاركة البوابة / نسخ الرابط الرسمي (elsaidy.org)"
-                className="px-3 py-2 rounded-xl bg-white border border-[#E6E2D8] text-xs font-bold text-[#141413] hover:border-[#695022] transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white border border-[#E6E2D8] text-xs font-bold text-[#141413] hover:border-[#695022] transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
                 <Share2 className="w-3.5 h-3.5 text-[#695022]" />
                 <span className="hidden md:inline">مشاركة البوابة</span>
@@ -431,17 +623,19 @@ export default function App() {
                   setInquiryStatus('');
                   setIsCorporateModalOpen(true);
                 }}
-                className="px-4 py-2 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-all flex items-center gap-1.5 cursor-pointer shadow-sm whitespace-nowrap shrink-0"
+                style={{ backgroundColor: siteConfig.branding.primaryColor || '#0F291E' }}
+                className="px-3 sm:px-4 py-2 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-all flex items-center gap-1.5 cursor-pointer shadow-sm whitespace-nowrap shrink-0"
               >
                 <Mail className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>بريد وأعمال الصعيدي</span>
+                <span className="hidden sm:inline">بريد وأعمال الصعيدي</span>
+                <span className="sm:hidden">بريد رسمي</span>
               </button>
             </div>
           </div>
         </header>
 
         {/* Institutional Operational & Pan-Arab Ribbon */}
-        <div className="no-print bg-white border-b border-[#E6E2D8] px-4 sm:px-6 lg:px-12 py-2">
+        <div className="no-print bg-white border-b border-[#E6E2D8] px-4 sm:px-6 lg:px-12 py-2 hidden sm:block">
           <div className="max-w-[1280px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-700">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-bold text-[#0F291E]">
@@ -453,13 +647,13 @@ export default function App() {
             <div className="flex items-center gap-2 font-mono text-[11px] text-[#695022] font-bold">
               <span>elsaidy.org</span>
               <span aria-hidden="true">·</span>
-              <span>ELSAIDY BRAND HUB</span>
+              <span>{siteConfig.branding.siteSubtitle}</span>
             </div>
           </div>
         </div>
 
-        {/* Responsive Mobile / Tablet Navigation Bar */}
-        <div className="no-print xl:hidden bg-[#F7F6F2] border-b border-[#E2DDD3] px-4 sm:px-6 py-2.5">
+        {/* Tablet Navigation Bar (Visible on md/lg tablets; Mobile uses the Bottom Dock) */}
+        <div className="no-print hidden md:block xl:hidden bg-[#F7F6F2] border-b border-[#E2DDD3] px-4 sm:px-6 py-2.5">
           <div className="flex items-center gap-2 overflow-x-auto text-xs pb-0.5">
             {navItems.map((item) => (
               <button
@@ -479,7 +673,7 @@ export default function App() {
         </div>
 
         {/* Main Standalone Page Container */}
-        <main className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12">
+        <main className="max-w-[1280px] mx-auto px-3.5 sm:px-6 lg:px-12">
           {currentRoute === 'home' && (
             <HomePage
               activeBranchId={activeBranchId}
@@ -491,6 +685,8 @@ export default function App() {
                 setInquiryStatus('');
                 setIsCorporateModalOpen(true);
               }}
+              siteConfig={siteConfig}
+              articles={cmsArticles}
             />
           )}
 
@@ -506,6 +702,7 @@ export default function App() {
             <FamilyTreePage
               onNavigate={navigateTo}
               customNames={cmsCustomNames}
+              siteConfig={siteConfig}
             />
           )}
 
@@ -513,6 +710,7 @@ export default function App() {
             <VerifyPage
               onNavigate={navigateTo}
               issuedCertificates={cmsCertificates}
+              siteConfig={siteConfig}
             />
           )}
 
@@ -533,6 +731,7 @@ export default function App() {
                 setInquiryStatus('');
                 setIsCorporateModalOpen(true);
               }}
+              portals={siteConfig.digitalPortals}
             />
           )}
 
@@ -547,35 +746,46 @@ export default function App() {
               onUpdateCertificates={handleUpdateCertificates}
               customNames={cmsCustomNames}
               onUpdateCustomNames={handleUpdateCustomNames}
+              siteConfig={siteConfig}
+              onUpdateSiteConfig={handleUpdateSiteConfig}
             />
           )}
         </main>
       </div>
 
       {/* Luxury Dark Institutional Footer (#0D131A with #D4AF37 Gold Accents & Live Telemetry Counter) */}
-      <footer className="no-print bg-[#0D131A] text-zinc-200 border-t-4 border-[#695022] mt-16">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12 py-12 lg:py-16">
+      <footer className="no-print bg-[#0D131A] text-zinc-200 border-t-4 border-[#695022] mt-12 sm:mt-16">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-12 lg:py-16">
           {/* Top Footer Row: Identity, Pan-Arab Scope & Quick Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pb-12 border-b border-white/10">
             <div className="lg:col-span-7 space-y-4">
               <div className="flex items-center gap-3.5">
-                <div
-                  onClick={handleSecretCopyrightClick}
-                  className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] border-2 border-[#D4AF37] flex flex-col items-center justify-center text-white shrink-0 select-none"
-                >
-                  <span className="font-mono text-[9px] font-bold tracking-widest text-[#D4AF37] leading-none">
-                    ELSAIDY
-                  </span>
-                  <span className="font-display text-xs font-bold text-white leading-tight mt-0.5">
-                    الصعيدي
-                  </span>
-                </div>
+                {siteConfig.branding.logoUrl ? (
+                  <img
+                    src={siteConfig.branding.logoUrl}
+                    alt={siteConfig.branding.siteTitle}
+                    onClick={handleSecretCopyrightClick}
+                    className="w-12 h-12 rounded-xl object-contain bg-white border-2 border-[#D4AF37] p-0.5 shrink-0 select-none"
+                  />
+                ) : (
+                  <div
+                    onClick={handleSecretCopyrightClick}
+                    className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] border-2 border-[#D4AF37] flex flex-col items-center justify-center text-white shrink-0 select-none"
+                  >
+                    <span className="font-mono text-[9px] font-bold tracking-widest text-[#D4AF37] leading-none">
+                      ELSAIDY
+                    </span>
+                    <span className="font-display text-xs font-bold text-white leading-tight mt-0.5">
+                      الصعيدي
+                    </span>
+                  </div>
+                )}
                 <div>
                   <div className="text-lg sm:text-xl font-extrabold text-white">
-                    الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي
+                    {siteConfig.branding.siteTitle}
                   </div>
                   <div className="text-xs font-mono text-[#D4AF37]">
-                    ELSAIDY OFFICIAL PORTAL &amp; BRAND HUB — elsaidy.org
+                    {siteConfig.branding.siteSubtitle} — elsaidy.org
                   </div>
                 </div>
               </div>
@@ -590,6 +800,17 @@ export default function App() {
                 ٤. دول الخليج العربي (الإمارات - عجمان وأبوظبي ودبي، سلطنة عُمان - الباطنة
                 والخابورة، الكويت، قطر، والبحرين) · ٥. المغرب العربي والسودان.
               </p>
+
+              <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-300 pt-1">
+                <span>
+                  البريد الرسمي:{' '}
+                  <strong className="font-mono text-[#D4AF37]">
+                    {siteConfig.contactAndFooter.officialEmail}
+                  </strong>
+                </span>
+                <span aria-hidden="true">·</span>
+                <span>{siteConfig.contactAndFooter.whatsappOrPhone}</span>
+              </div>
             </div>
 
             <div className="lg:col-span-5 flex flex-col justify-between gap-6">
@@ -739,13 +960,11 @@ export default function App() {
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-300">
             <div
               onClick={handleSecretCopyrightClick}
-              className="select-none cursor-default"
+              className="select-none cursor-default text-center sm:text-right"
             >
-              © {new Date().getFullYear()} الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة
-              الصعيدي — <span className="font-mono text-[#D4AF37]">elsaidy.org</span>. جميع الحقوق
-              محفوظة للأمانة العامة ومجموعة الصعيدي.
+              © {new Date().getFullYear()} {siteConfig.contactAndFooter.copyrightText}
             </div>
-            <div className="text-[11px] text-zinc-400">
+            <div className="text-[11px] text-zinc-400 text-center sm:text-left">
               ELSAIDY Enterprise &amp; Brand Solutions · Core Management · @elsaidy.org Official Mail ·
               Knowledge Cloud
             </div>
@@ -753,22 +972,55 @@ export default function App() {
         </div>
       </footer>
 
+      {/* Sleek Mobile Bottom Navigation Dock (md:hidden) */}
+      <nav
+        aria-label="التنقل السريع للهاتف"
+        className="no-print md:hidden fixed bottom-0 inset-x-0 z-40 bg-[#0D131A]/95 backdrop-blur-md border-t border-[#C5A059]/30 px-1.5 py-1.5 shadow-[0_-4px_20px_rgba(0,0,0,0.35)]"
+      >
+        <div className="grid grid-cols-6 gap-1 max-w-md mx-auto">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentRoute === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => navigateTo(item.id)}
+                className={`py-1.5 px-1 rounded-xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#D4AF37]/15 text-[#D4AF37] font-extrabold'
+                    : 'text-zinc-300 hover:text-white'
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? 'text-[#D4AF37]' : 'text-zinc-400'}`} />
+                <span className="text-[10px] leading-none tracking-tight whitespace-nowrap">
+                  {item.mobileLabel}
+                </span>
+                {isActive && (
+                  <span className="w-4 h-0.5 rounded-full bg-[#D4AF37] mt-0.5" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
       {/* Floating "العودة للأعلى" (Back to Top) Button at Bottom-Left */}
       {showBackToTop && (
         <button
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           aria-label="العودة للأعلى"
-          className="no-print fixed left-6 bottom-6 z-40 px-4 py-3 rounded-xl bg-[#0F291E] text-white border-2 border-[#D4AF37] shadow-xl hover:bg-[#141E28] hover:-translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer text-xs font-extrabold"
+          className="no-print fixed left-4 sm:left-6 bottom-20 md:bottom-6 z-40 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-[#0F291E] text-white border-2 border-[#D4AF37] shadow-xl hover:bg-[#141E28] hover:-translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer text-xs font-extrabold"
         >
           <ArrowUp className="w-4 h-4 text-[#D4AF37]" />
-          <span>العودة للأعلى</span>
+          <span className="hidden sm:inline">العودة للأعلى</span>
         </button>
       )}
 
       {/* Sleek Toast Notification when Official Portal Link is Copied */}
       {shareToastMessage && (
-        <div className="no-print fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-xl bg-[#0D131A] text-white border-2 border-[#D4AF37] shadow-2xl flex items-center gap-2.5 text-xs font-bold">
+        <div className="no-print fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-50 px-5 py-3.5 rounded-xl bg-[#0D131A] text-white border-2 border-[#D4AF37] shadow-2xl flex items-center gap-2.5 text-xs font-bold">
           <Check className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{shareToastMessage}</span>
         </div>

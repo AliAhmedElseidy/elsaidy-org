@@ -15,17 +15,21 @@ import {
   PageRoute,
   DEFAULT_VERIFIED_CERTIFICATES,
   IssuedCertificateRecord,
+  SiteConfig,
+  DEFAULT_SITE_CONFIG,
 } from '../data/familyData';
 import { CertificateDocumentView } from '../components/CertificateDocumentView';
 
 interface VerifyPageProps {
   onNavigate: (page: PageRoute) => void;
   issuedCertificates?: IssuedCertificateRecord[];
+  siteConfig?: SiteConfig;
 }
 
 export const VerifyPage: React.FC<VerifyPageProps> = ({
   onNavigate,
   issuedCertificates = [],
+  siteConfig = DEFAULT_SITE_CONFIG,
 }) => {
   const [searchSerial, setSearchSerial] = useState<string>('ELS-2026-EG-001');
   const [queriedSerial, setQueriedSerial] = useState<string>('ELS-2026-EG-001');
@@ -341,6 +345,10 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
               issueDateGregorian={verifiedRecord.issueDateGregorian}
               issueDateHijri={verifiedRecord.issueDateHijri}
               includeFamilyTreeStamp={true}
+              customLogoUrl={siteConfig.branding.logoUrl}
+              customSealImageUrl={siteConfig.branding.sealImageUrl}
+              customTreeImageUrl={siteConfig.familyTreeConfig.treeImageUrl}
+              siteTitle={siteConfig.branding.siteTitle}
             />
           </section>
         )}

@@ -1229,4 +1229,117 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
   }
 ];
 
+export interface HeroStatItem {
+  value: string;
+  label: string;
+  subLabel: string;
+}
+
+export interface SiteConfig {
+  branding: {
+    siteTitle: string;
+    siteSubtitle: string;
+    logoUrl: string;
+    faviconUrl: string;
+    sealImageUrl: string;
+    primaryColor: string;
+    accentGold: string;
+  };
+  announcementBar: {
+    enabled: boolean;
+    badgeText: string;
+    message: string;
+    linkText: string;
+    linkUrl: string;
+  };
+  heroSection: {
+    topBadge: string;
+    mainHeading: string;
+    subHeading: string;
+    leadParagraph: string;
+    quoteText: string;
+    primaryBtnText: string;
+    secondaryBtnText: string;
+    stats: HeroStatItem[];
+  };
+  familyTreeConfig: {
+    treeImageUrl: string;
+    documentCode: string;
+    documentTitle: string;
+  };
+  digitalPortals: WhiteLabeledPortal[];
+  contactAndFooter: {
+    officialEmail: string;
+    whatsappOrPhone: string;
+    copyrightText: string;
+  };
+}
+
+export const DEFAULT_SITE_CONFIG: SiteConfig = {
+  branding: {
+    siteTitle: 'الموقع الرسمي لعائلات الصعيدي ومجموعة الصعيدي',
+    siteSubtitle: 'ELSAIDY OFFICIAL PORTAL & BRAND HUB',
+    logoUrl: '',
+    faviconUrl: '',
+    sealImageUrl: '',
+    primaryColor: '#0F291E',
+    accentGold: '#695022',
+  },
+  announcementBar: {
+    enabled: true,
+    badgeText: 'بيان رسمي',
+    message:
+      'مرحباً بكم في البوابة الوثائقية والمنظومة الرقمية الموحدة لعائلات الصعيدي في الوطن العربي',
+    linkText: 'استعرض شجرة العائلة',
+    linkUrl: '/tree',
+  },
+  heroSection: {
+    topBadge: 'بسم الله الرحمن الرحيم · ELSAIDY OFFICIAL PORTAL & BRAND HUB',
+    mainHeading: 'الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي',
+    subHeading:
+      'أصالة التاريخ الممتد من مصر والحجاز إلى الشام والخليج · وريادة البراند المؤسسي الحديث',
+    leadParagraph:
+      'مرحباً بكم في المظلة الرسمية الجامعة لعائلات الصعيدي في الوطن العربي (في جمهورية مصر العربية بصعيدها ومحافظة الغربية وطنطا والدلتا والقاهرة والإسكندرية ومدن القناة، وفي المملكة العربية السعودية بينبع النخل وتيماء وحائل والرياض وتبوك، وفي بلاد الشام والعراق، ودول الخليج العربي بالإمارات وسلطنة عُمان والكويت وقطر والبحرين، والمغرب العربي والسودان)، والواجهة المؤسسية الرسمية لمجموعة وبراند الصعيدي (ELSAIDY Group).',
+    quoteText:
+      '«ترجع العائلة في عمود نسبها الموثق إلى الجد السابع إبراهيم الصعيدي من قبيلة جهينة من ينبع النخل، وتفرعت من ابنه عوض البراهيم عبر أبنائه الثلاثة: عبد الله، وسلامة، وصالح، مع الامتداد التاريخي العريق لقبيلة جهينة وعائلات الصعيدي في الديار المصرية وسائر الأقطار العربية.»',
+    primaryBtnText: 'الأرشيف التاريخي وشجرة العائلة',
+    secondaryBtnText: 'بوابة التوثيق وشهادات النسب',
+    stats: [
+      {
+        value: '14+ دولة',
+        label: 'الانتشار العربي الموثق',
+        subLabel: 'مصر · السعودية · الشام · الخليج · المغرب',
+      },
+      {
+        value: '7+ قرون',
+        label: 'عمود النسب والتاريخ',
+        subLabel: 'ينبع النخل · صعيد مصر · الغربية وطنطا',
+      },
+      {
+        value: '5 منظومات',
+        label: 'مجموعة وبراند الصعيدي',
+        subLabel: 'الأعمال · الإدارة · البريد · الأرشيف · السحابة',
+      },
+      {
+        value: '100% موثق',
+        label: 'اعتماد الوثائق والشهادات',
+        subLabel: 'تحقق فوري عبر QR والسجل العام',
+      },
+    ],
+  },
+  familyTreeConfig: {
+    treeImageUrl: OFFICIAL_FAMILY_TREE_IMAGE_URL,
+    documentCode: 'ARCH-TREE-01',
+    documentTitle: 'الوثيقة التاريخية المعتمدة لشجرة عائلة الصعيدي',
+  },
+  digitalPortals: WHITE_LABELED_PORTALS,
+  contactAndFooter: {
+    officialEmail: 'info@elsaidy.org',
+    whatsappOrPhone: '',
+    copyrightText:
+      '© 2026 الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي — elsaidy.org',
+  },
+};
+
+
 

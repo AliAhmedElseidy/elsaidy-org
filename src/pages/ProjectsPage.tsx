@@ -16,6 +16,7 @@ interface ProjectsPageProps {
   copiedKey: string | null;
   onCopy: (text: string, key: string) => void;
   onOpenCorporateInquiry: () => void;
+  portals?: WhiteLabeledPortal[];
 }
 
 export const ProjectsPage: React.FC<ProjectsPageProps> = ({
@@ -23,7 +24,8 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
   onInspectPortal,
   copiedKey,
   onCopy,
-  onOpenCorporateInquiry
+  onOpenCorporateInquiry,
+  portals = WHITE_LABELED_PORTALS
 }) => {
   return (
     <div className="space-y-14 lg:space-y-20 py-8 lg:py-12">
@@ -99,11 +101,11 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-          {WHITE_LABELED_PORTALS.map((portal, idx) => (
+          {portals.map((portal, idx) => (
             <div
               key={portal.id}
               onClick={() => onInspectPortal(portal)}
-              className={`rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] bg-white p-7 sm:p-9 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between cursor-pointer group ${
+              className={`rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] bg-white p-6 sm:p-9 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between cursor-pointer group ${
                 idx === 0 ? 'lg:col-span-2 bg-gradient-to-br from-white to-[#F7F6F2]' : ''
               }`}
             >
@@ -129,47 +131,65 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
                   {portal.summary}
                 </p>
 
-                <div className="mb-6">
-                  <div className="text-xs font-extrabold text-[#141413] mb-3">
-                    الاختصاصات والوحدات التابعة للمنظومة:
+                {portal.departments && portal.departments.length > 0 && (
+                  <div className="mb-6">
+                    <div className="text-xs font-extrabold text-[#141413] mb-3">
+                      الاختصاصات والوحدات التابعة للمنظومة:
+                    </div>
+                    <ul className="space-y-2 text-xs sm:text-sm text-zinc-700">
+                      {portal.departments.map((dep, dIdx) => (
+                        <li key={dIdx} className="flex items-start gap-2">
+                          <span className="text-[#695022] font-extrabold">·</span>
+                          <span>{dep}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <ul className="space-y-2 text-xs sm:text-sm text-zinc-700">
-                    {portal.departments.map((dep, dIdx) => (
-                      <li key={dIdx} className="flex items-start gap-2">
-                        <span className="text-[#695022] font-extrabold">·</span>
-                        <span>{dep}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                )}
 
                 {/* Operational Specifications Box */}
-                <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] space-y-2.5 text-xs mb-6">
-                  {portal.operationalGuidelines.map((spec, sIdx) => (
-                    <div
-                      key={sIdx}
-                      className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#E6E2D8] last:border-b-0 last:pb-0"
-                    >
-                      <span className="text-zinc-600 font-medium">{spec.label}:</span>
-                      <span className="font-bold text-[#141413]">{spec.value}</span>
-                    </div>
-                  ))}
-                </div>
+                {portal.operationalGuidelines && portal.operationalGuidelines.length > 0 && (
+                  <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] space-y-2.5 text-xs mb-6">
+                    {portal.operationalGuidelines.map((spec, sIdx) => (
+                      <div
+                        key={sIdx}
+                        className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#E6E2D8] last:border-b-0 last:pb-0"
+                      >
+                        <span className="text-zinc-600 font-medium">{spec.label}:</span>
+                        <span className="font-bold text-[#141413]">{spec.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div
                 className="pt-4 border-t border-[#E6E2D8] flex flex-wrap items-center justify-between gap-3"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button
-                  type="button"
-                  onClick={() => onInspectPortal(portal)}
-                  className="px-5 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  <Lock className="w-3.5 h-3.5 text-[#C5A059]" />
-                  <span>تسجيل الدخول / التوجيه للبوابة</span>
-                  <ArrowUpLeft className="w-3.5 h-3.5 text-[#C5A059]" />
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onInspectPortal(portal)}
+                    className="px-5 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors flex items-center gap-2 cursor-pointer"
+                  >
+                    <Lock className="w-3.5 h-3.5 text-[#C5A059]" />
+                    <span>تسجيل الدخول / التوجيه للبوابة</span>
+                    <ArrowUpLeft className="w-3.5 h-3.5 text-[#C5A059]" />
+                  </button>
+
+                  {portal.url && (
+                    <a
+                      href={portal.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-2.5 rounded-xl bg-[#695022]/10 border border-[#695022]/30 text-[#695022] hover:bg-[#695022] hover:text-white transition-colors text-xs font-bold flex items-center gap-1"
+                    >
+                      <span>رابط مباشر</span>
+                      <ArrowUpLeft className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
 
                 <button
                   type="button"
@@ -217,13 +237,15 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
               <span>طلب بريد رسمي (@elsaidy.org) أو تواصل للأعمال</span>
               <ArrowUpLeft className="w-4 h-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => onInspectPortal(WHITE_LABELED_PORTALS[1])}
-              className="w-full py-3 px-5 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-bold hover:bg-white/20 transition-colors text-center cursor-pointer"
-            >
-              الدخول إلى منظومة الإدارة المركزية
-            </button>
+            {portals.length > 0 && (
+              <button
+                type="button"
+                onClick={() => onInspectPortal(portals[1] || portals[0])}
+                className="w-full py-3 px-5 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-bold hover:bg-white/20 transition-colors text-center cursor-pointer"
+              >
+                الدخول إلى منظومة الإدارة المركزية
+              </button>
+            )}
           </div>
         </div>
       </section>

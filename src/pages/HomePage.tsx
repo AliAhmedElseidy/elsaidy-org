@@ -6,10 +6,11 @@ import {
   DIWAN_ARTICLES,
   ENCYCLOPEDIC_FAQS,
   SEO_KEYWORD_CLUSTERS,
-  UPPER_EGYPT_AND_HIJAZI_HAGAG_LINEAGE_TEXT,
+  DEFAULT_SITE_CONFIG,
   PageRoute,
   WhiteLabeledPortal,
-  DiwanArticle
+  DiwanArticle,
+  SiteConfig
 } from '../data/familyData';
 import { HeritageAndInfraVisual } from '../components/HeritageAndInfraVisual';
 import {
@@ -32,6 +33,8 @@ interface HomePageProps {
   onInspectPortal: (portal: WhiteLabeledPortal) => void;
   onReadArticle: (article: DiwanArticle) => void;
   onOpenCorporateInquiry: () => void;
+  siteConfig?: SiteConfig;
+  articles?: DiwanArticle[];
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -40,7 +43,9 @@ export const HomePage: React.FC<HomePageProps> = ({
   onNavigate,
   onInspectPortal,
   onReadArticle,
-  onOpenCorporateInquiry
+  onOpenCorporateInquiry,
+  siteConfig = DEFAULT_SITE_CONFIG,
+  articles = DIWAN_ARTICLES
 }) => {
   const [regionFilter, setRegionFilter] = useState<
     'all' | 'egypt' | 'saudi' | 'levant-iraq' | 'gulf' | 'maghreb-sudan'
@@ -50,8 +55,14 @@ export const HomePage: React.FC<HomePageProps> = ({
     regionFilter === 'all' ? true : b.countryGroup === regionFilter
   );
 
+  const hero = siteConfig?.heroSection || DEFAULT_SITE_CONFIG.heroSection;
+  const activePortals =
+    siteConfig?.digitalPortals && siteConfig.digitalPortals.length > 0
+      ? siteConfig.digitalPortals
+      : WHITE_LABELED_PORTALS;
+
   return (
-    <div className="space-y-16 lg:space-y-24 py-8 lg:py-12">
+    <div className="space-y-12 sm:space-y-16 lg:space-y-24 py-6 sm:py-8 lg:py-12">
       {/* 1. Regal Luxury Hero Section with Emerald/Navy Gradient & 4% Geometric SVG Pattern */}
       <section className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#0F291E] via-[#112323] to-[#141E28] text-white border border-[#D4AF37]/40 shadow-xl">
         {/* Subtle 4% Opacity Arabic Geometric SVG Watermark Pattern */}
@@ -74,71 +85,78 @@ export const HomePage: React.FC<HomePageProps> = ({
           <rect width="100%" height="100%" fill="url(#arabesque-grid)" />
         </svg>
 
-        <div className="relative z-10 p-6 sm:p-10 lg:p-14">
+        <div className="relative z-10 p-5 sm:p-8 lg:p-14">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
             {/* Right Column: Grand Institutional & Corporate Brand Statement */}
             <div className="lg:col-span-7 flex flex-col justify-between">
               <div>
                 <div className="inline-flex flex-wrap items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white/5 border border-[#D4AF37]/30 text-xs font-bold text-[#D4AF37] mb-5">
-                  <span>بسم الله الرحمن الرحيم</span>
-                  <span aria-hidden="true">·</span>
-                  <span>ELSAIDY OFFICIAL PORTAL & BRAND HUB</span>
+                  <span>{hero.topBadge}</span>
                 </div>
 
                 <h1
                   className="font-bold text-white tracking-tight leading-[1.28] mb-5"
-                  style={{ fontSize: 'clamp(1.95rem, 3.6vw, 3.15rem)', textWrap: 'balance' }}
+                  style={{ fontSize: 'clamp(1.65rem, 3.6vw, 3.15rem)', textWrap: 'balance' }}
                 >
-                  الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي
-                  <span className="block text-[#D4AF37] font-display text-2xl sm:text-3xl mt-2 font-normal">
-                    أصالة التاريخ الممتد من مصر والحجاز إلى الشام والخليج · وريادة البراند المؤسسي الحديث
+                  {hero.mainHeading}
+                  <span className="block text-[#D4AF37] font-display text-xl sm:text-2xl lg:text-3xl mt-2.5 font-normal">
+                    {hero.subHeading}
                   </span>
                 </h1>
 
-                <p className="text-base sm:text-lg text-zinc-200 leading-[1.9] mb-5 text-justify">
-                  مرحباً بكم في المظلة الرسمية الجامعة لـ{' '}
-                  <strong className="text-[#D4AF37]">عائلات الصعيدي في الوطن العربي</strong>{' '}
-                  (في <strong>جمهورية مصر العربية</strong> بصعيدها ومحافظة الغربية وطنطا والدلتا
-                  والقاهرة والإسكندرية ومدن القناة، وفي <strong>المملكة العربية السعودية</strong>{' '}
-                  بينبع النخل وتيماء وحائل والرياض وتبوك، وفي <strong>بلاد الشام والعراق</strong>،
-                  و<strong>دول الخليج العربي</strong> بالإمارات وسلطنة عُمان والكويت وقطر والبحرين،
-                  و<strong>المغرب العربي والسودان</strong>)، والواجهة المؤسسية الرسمية لـ{' '}
-                  <strong className="text-white">مجموعة وبراند الصعيدي (ELSAIDY Group)</strong>.
+                <p className="text-sm sm:text-base lg:text-lg text-zinc-200 leading-[1.9] mb-5 text-justify">
+                  {hero.leadParagraph}
                 </p>
 
-                <p className="font-display text-base sm:text-lg text-[#E6DEC8] leading-[1.85] p-4 rounded-xl bg-white/5 border border-[#D4AF37]/25 mb-8">
-                  «ترجع العائلة في عمود نسبها الموثق إلى الجد السابع إبراهيم الصعيدي من قبيلة جهينة
-                  من ينبع النخل، وتفرعت من ابنه عوض البراهيم عبر أبنائه الثلاثة: عبد الله، وسلامة،
-                  وصالح، مع الامتداد التاريخي العريق لقبيلة جهينة وعائلات الصعيدي في الديار المصرية
-                  وسائر الأقطار العربية.»
+                <p className="font-display text-sm sm:text-base lg:text-lg text-[#E6DEC8] leading-[1.85] p-4 rounded-xl bg-white/5 border border-[#D4AF37]/25 mb-6">
+                  {hero.quoteText}
                 </p>
+
+                {/* Dynamic 4 Executive Hero Statistics Counters */}
+                {hero.stats && hero.stats.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-7">
+                    {hero.stats.map((st, sIdx) => (
+                      <div
+                        key={sIdx}
+                        className="p-3 rounded-xl bg-black/20 border border-[#D4AF37]/25 text-center"
+                      >
+                        <div className="text-lg sm:text-xl font-extrabold text-[#D4AF37] leading-tight">
+                          {st.value}
+                        </div>
+                        <div className="text-[11px] text-zinc-300 font-semibold mt-0.5">
+                          {st.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Primary Call-To-Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3.5">
+              <div className="flex flex-wrap items-center gap-3">
                 <button
                   type="button"
                   onClick={() => onNavigate('tree')}
-                  className="px-5 py-3.5 rounded-xl bg-[#D4AF37] text-[#0D131A] text-sm font-extrabold hover:bg-[#e0bd42] shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-5 py-3.5 rounded-xl bg-[#D4AF37] text-[#0D131A] text-xs sm:text-sm font-extrabold hover:bg-[#e0bd42] shadow-md transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <GitBranch className="w-4 h-4" />
-                  <span>الأرشيف التاريخي وشجرة العائلة</span>
+                  <span>{hero.primaryBtnText}</span>
                   <ChevronLeft className="w-4 h-4" />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onNavigate('verify')}
-                  className="px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-[#D4AF37]/60 text-sm font-bold transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-[#D4AF37]/60 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Award className="w-4 h-4 text-[#D4AF37]" />
-                  <span>بوابة التوثيق وشهادات النسب</span>
+                  <span>{hero.secondaryBtnText}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onNavigate('portals')}
-                  className="px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/25 text-sm font-bold transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/25 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Building2 className="w-4 h-4 text-[#D4AF37]" />
                   <span>مجموعة وأعمال الصعيدي</span>
@@ -448,7 +466,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
         {/* 5 Official ELSAIDY Brand Pillars Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          {WHITE_LABELED_PORTALS.map((portal, idx) => (
+          {activePortals.map((portal, idx) => (
             <div
               key={portal.id}
               onClick={() => onInspectPortal(portal)}
@@ -504,12 +522,12 @@ export const HomePage: React.FC<HomePageProps> = ({
               onClick={() => onNavigate('diwan')}
               className="px-4 py-2 rounded-lg bg-[#F7F6F2] border border-[#E6E2D8] text-xs font-bold text-[#0F291E] hover:border-[#695022] transition-colors cursor-pointer"
             >
-              تصفح كافة مقالات الديوان ({DIWAN_ARTICLES.length} دراسات) ←
+              تصفح كافة مقالات الديوان ({articles.length} دراسات) ←
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {DIWAN_ARTICLES.slice(0, 3).map((art) => (
+            {articles.slice(0, 3).map((art) => (
               <article
                 key={art.id}
                 onClick={() => onReadArticle(art)}
