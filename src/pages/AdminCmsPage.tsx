@@ -39,6 +39,10 @@ import {
   AdminChangeLogEntry,
   sanitizeSafeUrl,
 } from '../data/familyData';
+import type { EncyclopediaBranchSubmission } from '../data/elsaidyEncyclopedia';
+
+const ENCYCLOPEDIA_STORAGE_SUBMISSIONS_KEY =
+  'elsaidy_encyclopedia_branch_submissions_v1';
 
 const CertificateDocumentView = lazy(() =>
   import('../components/CertificateDocumentView').then((m) => ({
@@ -799,6 +803,70 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
   const handleRemoveCompoundName = (nameToRemove: string) => {
     onUpdateCustomNames(customNames.filter((n) => n !== nameToRemove));
     appendLog('إزالة اسم مركب', nameToRemove);
+  };
+
+  // --- ENCYCLOPEDIA BRANCH SUBMISSIONS REVIEW QUEUE ---
+  const [branchSubmissions, setBranchSubmissions] = useState<EncyclopediaBranchSubmission[]>(() => {
+    try {
+      const saved = localStorage.getItem(ENCYCLOPEDIA_STORAGE_SUBMISSIONS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  });
+
+  const handleApproveBranchSubmission = (sub: EncyclopediaBranchSubmission) => {
+    const updatedList = branchSubmissions.map((item) =>
+      item.id === sub.id ? { ...item, status: 'approved' as const } : item
+    );
+    setBranchSubmissions(updatedList);
+    try {
+      localStorage.setItem(ENCYCLOPEDIA_STORAGE_SUBMISSIONS_KEY, JSON.stringify(updatedList));
+    } catch {
+      // ignore
+    }
+
+    // Also add a node into the Interactive Family Tree & Custom SEO Names so it syncs to GitHub
+    const newNode: FamilyTreeNode = {
+      id: `node-enc-${Date.now()}`,
+      name: sub.branchOrHouseName || sub.fullName,
+      title:
+        sub.historicalNotes ||
+        `فرع موثق في ${sub.centerOrVillage} (${sub.countryOrGovernorate}) — مسجل بواسطة ${sub.fullName}`,
+      parentId: 'node-morsi-hagag-eg',
+      branchName: `${sub.countryOrGovernorate} — ${sub.centerOrVillage}`,
+      generation: 'فرع عائلي معتمد',
+      location: `${sub.countryOrGovernorate} · ${sub.centerOrVillage}`,
+    };
+
+    if (onUpdateTreeNodes) {
+      onUpdateTreeNodes([...treeNodes, newNode]);
+    }
+    const seoLabel = `${sub.branchOrHouseName} — ${sub.centerOrVillage} (${sub.countryOrGovernorate})`;
+    if (!customNames.includes(seoLabel)) {
+      onUpdateCustomNames([seoLabel, ...customNames]);
+    }
+
+    appendLog('اعتماد فرع جديد في الموسوعة والشجرة', seoLabel);
+    setStatusBanner({
+      type: 'success',
+      message: `تم اعتماد فرع (${sub.branchOrHouseName} — ${sub.centerOrVillage}) وإدراجه في الموسوعة والشجرة التفاعلية بنجاح!`,
+    });
+  };
+
+  const handleDeleteBranchSubmission = (id: string) => {
+    const updatedList = branchSubmissions.filter((item) => item.id !== id);
+    setBranchSubmissions(updatedList);
+    try {
+      localStorage.setItem(ENCYCLOPEDIA_STORAGE_SUBMISSIONS_KEY, JSON.stringify(updatedList));
+    } catch {
+      // ignore
+    }
+    appendLog('حذف طلب فرع من قائمة المراجعة', id);
   };
 
   const handleSaveGitHubConfig = () => {
@@ -3439,6 +3507,84 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                   </span>
                 ))}
               </div>
+            </div>
+
+            {/* Encyclopedia Branch Submissions Approval Queue */}
+            <div className="bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-8 shadow-sm space-y-4">
+              <div className="border-b border-[#E6E2D8] pb-3 flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-bold text-[#695022]">
+                    ENCYCLOPEDIA BRANCH SUBMISSIONS ({branchSubmissions.length})
+                  </div>
+                  <h3 className="text-lg font-extrabold text-[#141413]">
+                    طلبات تسجيل فروع وقرى العائلة في الموسوعة الشاملة
+                  </h3>
+                </div>
+              </div>
+
+              {branchSubmissions.length === 0 ? (
+                <p className="text-xs text-zinc-500 leading-relaxed">
+                  لا توجد طلبات تسجيل فروع جديدة قيد المراجعة حالياً. عندما يقوم أي زائر بتعبئة نموذج
+                  «سجّل فرع عائلتك في الموسوعة» في صفحة الشجرة أو التاريخ، ستظهر بياناته هنا لمراجعتها
+                  واعتمادها بضغطة زر.
+                </p>
+              ) : (
+                <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+                  {branchSubmissions.map((sub) => (
+                    <div
+                      key={sub.id}
+                      className="p-4 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] space-y-2 text-xs"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="font-extrabold text-[#0F291E] text-sm">
+                          {sub.branchOrHouseName} — {sub.centerOrVillage}
+                        </span>
+                        <span
+                          className={`font-bold px-2 py-0.5 rounded ${
+                            sub.status === 'approved'
+                              ? 'bg-[#0F291E]/10 text-[#0F291E]'
+                              : 'bg-[#695022]/15 text-[#695022]'
+                          }`}
+                        >
+                          {sub.status === 'approved' ? 'معتمد في الموسوعة' : 'قيد المراجعة'}
+                        </span>
+                      </div>
+                      <div className="text-zinc-700">
+                        <strong>المحافظة / الدولة:</strong> {sub.countryOrGovernorate} ·{' '}
+                        <strong>مقدم الطلب:</strong> {sub.fullName}
+                      </div>
+                      {sub.ancestorOrParentName && (
+                        <div className="text-zinc-600">
+                          <strong>الجد الأعلى المذكور:</strong> {sub.ancestorOrParentName}
+                        </div>
+                      )}
+                      {sub.historicalNotes && (
+                        <p className="text-zinc-600 leading-relaxed bg-white p-2.5 rounded-lg border border-[#E6E2D8]">
+                          {sub.historicalNotes}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        {sub.status !== 'approved' && (
+                          <button
+                            type="button"
+                            onClick={() => handleApproveBranchSubmission(sub)}
+                            className="px-3 py-1.5 rounded-lg bg-[#0F291E] text-white font-bold hover:bg-[#141E28] cursor-pointer"
+                          >
+                            اعتماد وإدراج في الموسوعة والشجرة
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteBranchSubmission(sub.id)}
+                          className="px-3 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 font-bold hover:bg-red-100 cursor-pointer"
+                        >
+                          حذف
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Visitor Counter Control */}

@@ -132,13 +132,22 @@ export const HomePage: React.FC<HomePageProps> = ({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => onNavigate('about')}
-            className="px-5 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors cursor-pointer self-start lg:self-end shrink-0"
-          >
-            مطالعة التاريخ التفصيلي للأقاليم ←
-          </button>
+          <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-end shrink-0">
+            <button
+              type="button"
+              onClick={() => onNavigate('tree')}
+              className="px-4 py-2.5 rounded-xl bg-[#695022] text-white text-xs font-extrabold hover:bg-[#533f1b] transition-colors cursor-pointer"
+            >
+              موسوعة وأطلس محافظات مصر والدول العربية ←
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('about')}
+              className="px-5 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-colors cursor-pointer"
+            >
+              مطالعة التاريخ التفصيلي للأقاليم ←
+            </button>
+          </div>
         </div>
 
         {/* The 5 Pan-Arab Umbrella Regions (Luxury Cards) */}

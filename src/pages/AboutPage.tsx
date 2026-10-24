@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import {
   PAN_ARAB_REGIONS,
   VERBATIM_ABOUT_PARAGRAPH_1,
@@ -12,6 +12,12 @@ import {
   PageRoute
 } from '../data/familyData';
 import { Copy, Check, ArrowRight, GitBranch, Globe2 } from 'lucide-react';
+
+const ElsaidyEncyclopediaDirectory = lazy(() =>
+  import('../components/ElsaidyEncyclopediaDirectory').then((m) => ({
+    default: m.ElsaidyEncyclopediaDirectory,
+  }))
+);
 
 interface AboutPageProps {
   onNavigate: (route: PageRoute) => void;
@@ -56,8 +62,11 @@ export const AboutPage: React.FC<AboutPageProps> = ({
             <a href="#doc-pan-arab" className="hover:text-[#695022] transition-colors">
               ٣. التجمع العربي في ٥ أقاليم
             </a>
+            <a href="#elsaidy-pan-arab-encyclopedia" className="text-[#0F291E] hover:text-[#695022] transition-colors">
+              ٤. موسوعة المحافظات والوطن العربي
+            </a>
             <a href="#doc-references" className="hover:text-[#695022] transition-colors">
-              ٤. المراجع التاريخية الموثقة
+              ٥. المراجع التاريخية الموثقة
             </a>
           </div>
         </div>
@@ -341,6 +350,17 @@ export const AboutPage: React.FC<AboutPageProps> = ({
           </div>
         </div>
       </section>
+
+      {/* Section 3.5: Pan-Arab Elsaidy Encyclopedia & Governorate Atlas (Lazy-Loaded) */}
+      <Suspense
+        fallback={
+          <div className="p-8 rounded-2xl bg-white border border-[#E6E2D8] text-xs font-bold text-zinc-600 text-center">
+            جاري تحميل موسوعة وأطلس عائلات الصعيدي الشامل في مصر والوطن العربي...
+          </div>
+        }
+      >
+        <ElsaidyEncyclopediaDirectory onNavigate={onNavigate} />
+      </Suspense>
 
       {/* Section 4: Archival Citation Box for "المراجع التاريخية الموثقة" */}
       <section id="doc-references" className="scroll-mt-24">

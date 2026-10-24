@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, Suspense, lazy } from 'react';
 import {
   OFFICIAL_FAMILY_TREE_IMAGE_URL,
   COMPOUND_NAMES_INDEX,
@@ -24,7 +24,14 @@ import {
   ShieldCheck,
   Users,
   Sparkles,
+  Globe2,
 } from 'lucide-react';
+
+const ElsaidyEncyclopediaDirectory = lazy(() =>
+  import('../components/ElsaidyEncyclopediaDirectory').then((m) => ({
+    default: m.ElsaidyEncyclopediaDirectory,
+  }))
+);
 
 interface FamilyTreePageProps {
   onNavigate: (route: PageRoute, slugOrSerial?: string) => void;
@@ -422,22 +429,32 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
           </div>
         </div>
 
-        <div className="max-w-4xl">
-          <div className="text-xs font-bold text-[#695022] mb-2">
-            سجل المشجرات الوثائقية · الموقع الرسمي لعائلات الصعيدي في الوطن العربي (elsaidy.org)
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div className="max-w-4xl">
+            <div className="text-xs font-bold text-[#695022] mb-2">
+              سجل المشجرات الوثائقية · الموقع الرسمي لعائلات الصعيدي في الوطن العربي (elsaidy.org)
+            </div>
+            <h1
+              className="font-extrabold text-[#141413] tracking-tight leading-[1.25] mb-4"
+              style={{ fontSize: 'clamp(1.85rem, 3.5vw, 2.85rem)', textWrap: 'balance' }}
+            >
+              الشجرة التفاعلية الحية ووثيقة شجرة عائلة الصعيدي وموسوعة المحافظات
+            </h1>
+            <p className="text-sm sm:text-base text-zinc-700 leading-[1.85] max-w-[75ch]">
+              تضم هذه الصفحة المشجرة الرقمية التفاعلية لعائلات الصعيدي (المرتبطة مباشرة بقاعدة
+              البيانات السحابية لتوليد سلاسل النسب والربط بين الأبناء والآباء والأجداد تلقائياً)،
+              بالإضافة إلى موسوعة وأطلس عائلات الصعيدي في جميع محافظات مصر والدول العربية والوثيقة
+              المصوّرة المعتمدة لشجرة العائلة.
+            </p>
           </div>
-          <h1
-            className="font-extrabold text-[#141413] tracking-tight leading-[1.25] mb-4"
-            style={{ fontSize: 'clamp(1.85rem, 3.5vw, 2.85rem)', textWrap: 'balance' }}
+
+          <a
+            href="#elsaidy-pan-arab-encyclopedia"
+            className="px-5 py-3 rounded-xl bg-[#0F291E] text-white text-xs font-extrabold hover:bg-[#141E28] transition-all flex items-center gap-2 self-start lg:self-end shrink-0 shadow-sm"
           >
-            الشجرة التفاعلية الحية ووثيقة شجرة عائلة الصعيدي وفهرس الأعلام
-          </h1>
-          <p className="text-sm sm:text-base text-zinc-700 leading-[1.85] max-w-[75ch]">
-            تضم هذه الصفحة المشجرة الرقمية التفاعلية لعائلات الصعيدي (المرتبطة مباشرة بقاعدة
-            البيانات السحابية لتوليد سلاسل النسب والربط بين الأبناء والآباء والأجداد تلقائياً)،
-            بالإضافة إلى الوثيقة المصوّرة المعتمدة لشجرة العائلة والفهرس الموسوعي للأعلام في مصر
-            والسعودية والشام والخليج العربي.
-          </p>
+            <Globe2 className="w-4 h-4 text-[#C5A059]" />
+            <span>موسوعة المحافظات والوطن العربي ←</span>
+          </a>
         </div>
       </section>
 
@@ -930,6 +947,17 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
           </div>
         </div>
       </section>
+
+      {/* Section 3.5: Pan-Arab Elsaidy Encyclopedia & Governorate Atlas (Lazy-Loaded) */}
+      <Suspense
+        fallback={
+          <div className="p-8 rounded-2xl bg-white border border-[#E6E2D8] text-xs font-bold text-zinc-600 text-center">
+            جاري تحميل موسوعة وأطلس عائلات الصعيدي الشامل في مصر والوطن العربي...
+          </div>
+        }
+      >
+        <ElsaidyEncyclopediaDirectory onNavigate={onNavigate} />
+      </Suspense>
 
       {/* Section 4: Encyclopedic Searchable Compound Name & Transliteration Directory */}
       <section>
