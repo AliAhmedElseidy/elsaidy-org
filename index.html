@@ -422,16 +422,29 @@
     </script>
   </head>
   <body class="bg-[#F7F6F2] text-[#141413] antialiased selection:bg-[#695022]/20 selection:text-[#141413] overflow-x-hidden">
+    <!-- Top Chrome Portal Slot: Renders Announcement Bar + Sticky Header ABOVE the Static LCP Hero -->
+    <div id="elsaidy-top-chrome-root"></div>
+
     <!-- Permanent Static LCP Hero Section Outside #root: Painted at ~0.4s and NEVER unmounted by React on '/' -->
     <div id="elsaidy-static-lcp-hero" class="no-print els-lcp-hero-wrap">
       <section class="els-lcp-hero-card" aria-label="البيان التأسيسي للموقع الرسمي لعائلات الصعيدي ومجموعة الصعيدي">
         <div>
-          <div id="elsaidy-lcp-badge" class="els-lcp-top-badge">
-            الأرشيف التاريخي المعتمد · البوابة الوثائقية ومجموعة الصعيدي (elsaidy.org)
+          <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.85rem;">
+            <div id="elsaidy-lcp-badge" class="els-lcp-top-badge" style="margin-bottom:0;">
+              الأرشيف التاريخي المعتمد · البوابة الوثائقية ومجموعة الصعيدي (elsaidy.org)
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:0.65rem;background:rgba(13,19,26,0.55);border:1px solid rgba(212,175,55,0.45);border-radius:9999px;padding:0.25rem 0.75rem;font-size:0.72rem;font-weight:700;color:#F7F6F2;">
+              <span style="display:inline-flex;align-items:center;gap:0.35rem;color:#34D399;">
+                <span style="width:0.5rem;height:0.5rem;border-radius:9999px;background:#10B981;display:inline-block;box-shadow:0 0 8px #10B981;"></span>
+                <span id="elsaidy-lcp-live-online">متصل الآن: ١٤ زائر وباحث</span>
+              </span>
+              <span style="color:rgba(212,175,55,0.5);" aria-hidden="true">|</span>
+              <span id="elsaidy-lcp-live-visits" style="color:#D4AF37;">إجمالي الزيارات: 320,556</span>
+            </div>
           </div>
 
           <h1 id="elsaidy-lcp-h1" class="els-lcp-h1">
-            الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي
+            <span id="elsaidy-lcp-h1-main">الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي</span>
             <span id="elsaidy-lcp-sub" class="els-lcp-h1-sub">
               ELSAIDY OFFICIAL PORTAL &amp; BRAND HUB — elsaidy.org
             </span>
@@ -447,30 +460,30 @@
 
           <div class="els-lcp-stats">
             <div class="els-lcp-stat-box">
-              <div style="font-size:1.15rem;font-weight:800;color:#D4AF37;">+٧ قرون</div>
-              <div style="font-size:0.7rem;color:#D4D4D8;font-weight:600;">امتداد تاريخي موثق</div>
+              <div id="elsaidy-lcp-stat-val-0" style="font-size:1.15rem;font-weight:800;color:#D4AF37;">+٧ قرون</div>
+              <div id="elsaidy-lcp-stat-lbl-0" style="font-size:0.7rem;color:#D4D4D8;font-weight:600;">امتداد تاريخي موثق</div>
             </div>
             <div class="els-lcp-stat-box">
-              <div style="font-size:1.15rem;font-weight:800;color:#D4AF37;">٢٢+ إقليماً</div>
-              <div style="font-size:0.7rem;color:#D4D4D8;font-weight:600;">انتشار في مصر والعالم العربي</div>
+              <div id="elsaidy-lcp-stat-val-1" style="font-size:1.15rem;font-weight:800;color:#D4AF37;">٢٧ محافظة + ١٤ دولة</div>
+              <div id="elsaidy-lcp-stat-lbl-1" style="font-size:0.7rem;color:#D4D4D8;font-weight:600;">انتشار في مصر والعالم العربي</div>
             </div>
             <div class="els-lcp-stat-box">
-              <div style="font-size:1.15rem;font-weight:800;color:#D4AF37;">١٠٠٪ مشفر</div>
-              <div style="font-size:0.7rem;color:#D4D4D8;font-weight:600;">سجل توثيق وشهادات نسب</div>
+              <div id="elsaidy-lcp-stat-val-2" style="font-size:1.15rem;font-weight:800;color:#D4AF37;">١٠٠٪ مشفر</div>
+              <div id="elsaidy-lcp-stat-lbl-2" style="font-size:0.7rem;color:#D4D4D8;font-weight:600;">سجل توثيق وشهادات نسب</div>
             </div>
             <div class="els-lcp-stat-box">
-              <div style="font-size:1.15rem;font-weight:800;color:#D4AF37;">٤ منظومات</div>
-              <div style="font-size:0.7rem;color:#D4D4D8;font-weight:600;">بوابات ومشاريع مجموعة الصعيدي</div>
+              <div id="elsaidy-lcp-stat-val-3" style="font-size:1.15rem;font-weight:800;color:#D4AF37;">٥ منظومات</div>
+              <div id="elsaidy-lcp-stat-lbl-3" style="font-size:0.7rem;color:#D4D4D8;font-weight:600;">بوابات ومشاريع مجموعة الصعيدي</div>
             </div>
           </div>
 
           <div class="els-lcp-ctas">
             <a href="/tree" data-els-nav="tree" class="els-lcp-btn-gold">
-              <span>استعراض شجرة العائلة التفاعلية</span>
+              <span id="elsaidy-lcp-btn-primary">استعراض شجرة العائلة التفاعلية</span>
               <span aria-hidden="true">←</span>
             </a>
             <a href="/verify" data-els-nav="verify" class="els-lcp-btn-outline">
-              <span>التوثيق وشهادات النسب</span>
+              <span id="elsaidy-lcp-btn-secondary">التوثيق وشهادات النسب</span>
             </a>
             <a href="/portals" data-els-nav="portals" class="els-lcp-btn-outline">
               <span>مجموعة وأعمال الصعيدي</span>
@@ -481,26 +494,26 @@
           </div>
         </div>
 
-        <div class="els-lcp-quick-grid">
-          <a href="/about" data-els-nav="about" class="els-lcp-quick-card">
-            <div style="font-size:0.72rem;font-weight:700;color:#D4AF37;margin-bottom:0.25rem;">٠١ · الوثيقة التاريخية والمراجع</div>
-            <div style="font-size:0.92rem;font-weight:800;color:#FFFFFF;margin-bottom:0.25rem;">من نحن والتاريخ وسبب التسمية</div>
-            <div style="font-size:0.75rem;color:#D4D4D8;line-height:1.5;">النص الكامل للوثيقة التاريخية، سبب التسمية بـ «الصعيدي»، والمراجع الموثقة.</div>
+        <div id="elsaidy-lcp-quick-grid" class="els-lcp-quick-grid">
+          <a id="elsaidy-lcp-qcard-0" href="/about" data-els-nav="about" class="els-lcp-quick-card">
+            <div id="elsaidy-lcp-qcard-kicker-0" style="font-size:0.72rem;font-weight:700;color:#D4AF37;margin-bottom:0.25rem;">٠١ · الوثيقة التاريخية والمراجع</div>
+            <div id="elsaidy-lcp-qcard-title-0" style="font-size:0.92rem;font-weight:800;color:#FFFFFF;margin-bottom:0.25rem;">من نحن والتاريخ وسبب التسمية</div>
+            <div id="elsaidy-lcp-qcard-desc-0" style="font-size:0.75rem;color:#D4D4D8;line-height:1.5;">النص الكامل للوثيقة التاريخية، سبب التسمية بـ «الصعيدي»، والمراجع الموثقة.</div>
           </a>
-          <a href="/tree" data-els-nav="tree" class="els-lcp-quick-card">
-            <div style="font-size:0.72rem;font-weight:700;color:#D4AF37;margin-bottom:0.25rem;">٠٢ · المشجرة المصورة وفهرس الأعلام</div>
-            <div style="font-size:0.92rem;font-weight:800;color:#FFFFFF;margin-bottom:0.25rem;">وثيقة شجرة العائلة وفروعها</div>
-            <div style="font-size:0.75rem;color:#D4D4D8;line-height:1.5;">مستعرض الشجرة بالتكبير التفاعلي والدليل الهيكلي لأعقاب إبراهيم الصعيدي.</div>
+          <a id="elsaidy-lcp-qcard-1" href="/tree" data-els-nav="tree" class="els-lcp-quick-card">
+            <div id="elsaidy-lcp-qcard-kicker-1" style="font-size:0.72rem;font-weight:700;color:#D4AF37;margin-bottom:0.25rem;">٠٢ · المشجرة المصورة وموسوعة الفروع</div>
+            <div id="elsaidy-lcp-qcard-title-1" style="font-size:0.92rem;font-weight:800;color:#FFFFFF;margin-bottom:0.25rem;">وثيقة شجرة العائلة وأطلس المحافظات</div>
+            <div id="elsaidy-lcp-qcard-desc-1" style="font-size:0.75rem;color:#D4D4D8;line-height:1.5;">مستعرض الشجرة التفاعلي وموسوعة فروع عائلات الصعيدي في مصر والوطن العربي.</div>
           </a>
-          <a href="/verify" data-els-nav="verify" class="els-lcp-quick-card">
-            <div style="font-size:0.72rem;font-weight:700;color:#D4AF37;margin-bottom:0.25rem;">٠٣ · التحقق وإصدار الشهادات</div>
-            <div style="font-size:0.92rem;font-weight:800;color:#FFFFFF;margin-bottom:0.25rem;">التوثيق وشهادات النسب والعضوية</div>
-            <div style="font-size:0.75rem;color:#D4D4D8;line-height:1.5;">فحص أرقام الشهادات المرجعية وإصدار شهادة النسب وبطاقة العضوية الرسمية.</div>
+          <a id="elsaidy-lcp-qcard-2" href="/verify" data-els-nav="verify" class="els-lcp-quick-card">
+            <div id="elsaidy-lcp-qcard-kicker-2" style="font-size:0.72rem;font-weight:700;color:#D4AF37;margin-bottom:0.25rem;">٠٣ · التحقق وإصدار الشهادات</div>
+            <div id="elsaidy-lcp-qcard-title-2" style="font-size:0.92rem;font-weight:800;color:#FFFFFF;margin-bottom:0.25rem;">التوثيق وشهادات النسب والعضوية</div>
+            <div id="elsaidy-lcp-qcard-desc-2" style="font-size:0.75rem;color:#D4D4D8;line-height:1.5;">فحص أرقام الشهادات المرجعية وإصدار شهادة النسب وبطاقة العضوية الرسمية.</div>
           </a>
-          <a href="/portals" data-els-nav="portals" class="els-lcp-quick-card">
-            <div style="font-size:0.72rem;font-weight:700;color:#D4AF37;margin-bottom:0.25rem;">٠٤ · براند ومشاريع الصعيدي</div>
-            <div style="font-size:0.92rem;font-weight:800;color:#FFFFFF;margin-bottom:0.25rem;">ELSAIDY Brand &amp; Digital Portals</div>
-            <div style="font-size:0.75rem;color:#D4D4D8;line-height:1.5;">مجموعة الصعيدي للأعمال، منظومة الإدارة، البريد الرسمي (@elsaidy.org)، والسحابة.</div>
+          <a id="elsaidy-lcp-qcard-3" href="/portals" data-els-nav="portals" class="els-lcp-quick-card">
+            <div id="elsaidy-lcp-qcard-kicker-3" style="font-size:0.72rem;font-weight:700;color:#D4AF37;margin-bottom:0.25rem;">٠٤ · براند ومشاريع الصعيدي</div>
+            <div id="elsaidy-lcp-qcard-title-3" style="font-size:0.92rem;font-weight:800;color:#FFFFFF;margin-bottom:0.25rem;">ELSAIDY Brand &amp; Digital Portals</div>
+            <div id="elsaidy-lcp-qcard-desc-3" style="font-size:0.75rem;color:#D4D4D8;line-height:1.5;">مجموعة الصعيدي للأعمال، منظومة الإدارة، البريد الرسمي (@elsaidy.org)، والسحابة.</div>
           </a>
         </div>
       </section>

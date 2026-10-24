@@ -1512,6 +1512,20 @@ export interface HeroStatItem {
   subLabel: string;
 }
 
+export interface HeroQuickCardItem {
+  kicker: string;
+  title: string;
+  description: string;
+  route: PageRoute;
+}
+
+export interface TelemetryConfig {
+  baseVisitorCount: number;
+  incrementPerVisit: number;
+  onlineUsersMin: number;
+  onlineUsersMax: number;
+}
+
 export interface SiteConfig {
   branding: {
     siteTitle: string;
@@ -1538,7 +1552,10 @@ export interface SiteConfig {
     primaryBtnText: string;
     secondaryBtnText: string;
     stats: HeroStatItem[];
+    showQuickCards?: boolean;
+    quickCards?: HeroQuickCardItem[];
   };
+  telemetryConfig?: TelemetryConfig;
   familyTreeConfig: {
     treeImageUrl: string;
     documentCode: string;
@@ -1571,38 +1588,71 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
     linkUrl: '/tree',
   },
   heroSection: {
-    topBadge: 'بسم الله الرحمن الرحيم · ELSAIDY OFFICIAL PORTAL & BRAND HUB',
+    topBadge: 'الأرشيف التاريخي المعتمد · البوابة الوثائقية ومجموعة الصعيدي (elsaidy.org)',
     mainHeading: 'الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي',
     subHeading:
-      'أصالة التاريخ الممتد من مصر والحجاز إلى الشام والخليج · وريادة البراند المؤسسي الحديث',
+      'ELSAIDY OFFICIAL PORTAL & BRAND HUB — elsaidy.org',
     leadParagraph:
-      'مرحباً بكم في المظلة الرسمية الجامعة لعائلات الصعيدي في الوطن العربي (في جمهورية مصر العربية بصعيدها ومحافظة الغربية وطنطا والدلتا والقاهرة والإسكندرية ومدن القناة، وفي المملكة العربية السعودية بينبع النخل وتيماء وحائل والرياض وتبوك، وفي بلاد الشام والعراق، ودول الخليج العربي بالإمارات وسلطنة عُمان والكويت وقطر والبحرين، والمغرب العربي والسودان)، والواجهة المؤسسية الرسمية لمجموعة وبراند الصعيدي (ELSAIDY Group).',
+      'المظلة التاريخية والوثائقية الجامعة لتجمع عائلات الصعيدي (قبيلة جهينة القضاعية والامتداد الحجازي والمصري — الجد الجامع إبراهيم الصعيدي وابنه عوض البراهيم ومرسي الحجاج والمهندس علي أحمد علي الصعيدي) في جمهورية مصر العربية والمملكة العربية السعودية وبلاد الشام والخليج العربي، والواجهة الرسمية لمجموعة وبراند الصعيدي للأنظمة الرقمية وتوثيق شهادات النسب المرجعية.',
     quoteText:
-      '«ترجع العائلة في عمود نسبها الموثق إلى الجد السابع إبراهيم الصعيدي من قبيلة جهينة من ينبع النخل، وتفرعت من ابنه عوض البراهيم عبر أبنائه الثلاثة: عبد الله، وسلامة، وصالح، مع الامتداد التاريخي العريق لقبيلة جهينة وعائلات الصعيدي في الديار المصرية وسائر الأقطار العربية.»',
-    primaryBtnText: 'الأرشيف التاريخي وشجرة العائلة',
-    secondaryBtnText: 'بوابة التوثيق وشهادات النسب',
+      '«نسبٌ عريق يجمع بين أصالة الحجاز وعمق صعيد مصر ودلتاها، ومنظومة رقمية موحدة تحفظ التاريخ وتوثق الأنساب للأجيال المتعاقبة.»',
+    primaryBtnText: 'استعراض شجرة العائلة التفاعلية',
+    secondaryBtnText: 'التوثيق وشهادات النسب',
     stats: [
       {
-        value: '14+ دولة',
-        label: 'الانتشار العربي الموثق',
-        subLabel: 'مصر · السعودية · الشام · الخليج · المغرب',
-      },
-      {
-        value: '7+ قرون',
-        label: 'عمود النسب والتاريخ',
+        value: '+٧ قرون',
+        label: 'امتداد تاريخي موثق',
         subLabel: 'ينبع النخل · صعيد مصر · الغربية وطنطا',
       },
       {
-        value: '5 منظومات',
-        label: 'مجموعة وبراند الصعيدي',
-        subLabel: 'الأعمال · الإدارة · البريد · الأرشيف · السحابة',
+        value: '٢٧ محافظة + ١٤ دولة',
+        label: 'انتشار في مصر والعالم العربي',
+        subLabel: 'مصر · السعودية · الشام · الخليج · المغرب',
       },
       {
-        value: '100% موثق',
-        label: 'اعتماد الوثائق والشهادات',
+        value: '١٠٠٪ مشفر',
+        label: 'سجل توثيق وشهادات نسب',
         subLabel: 'تحقق فوري عبر QR والسجل العام',
       },
+      {
+        value: '٥ منظومات',
+        label: 'بوابات ومشاريع مجموعة الصعيدي',
+        subLabel: 'الأعمال · الإدارة · البريد · الأرشيف · السحابة',
+      },
     ],
+    showQuickCards: true,
+    quickCards: [
+      {
+        kicker: '٠١ · الوثيقة التاريخية والمراجع',
+        title: 'من نحن والتاريخ وسبب التسمية',
+        description: 'النص الكامل للوثيقة التاريخية، سبب التسمية بـ «الصعيدي»، والمراجع الموثقة.',
+        route: 'about',
+      },
+      {
+        kicker: '٠٢ · المشجرة المصورة وموسوعة الفروع',
+        title: 'وثيقة شجرة العائلة وأطلس المحافظات',
+        description: 'مستعرض الشجرة التفاعلي وموسوعة فروع عائلات الصعيدي في مصر والوطن العربي.',
+        route: 'tree',
+      },
+      {
+        kicker: '٠٣ · التحقق وإصدار الشهادات',
+        title: 'التوثيق وشهادات النسب والعضوية',
+        description: 'فحص أرقام الشهادات المرجعية وإصدار شهادة النسب وبطاقة العضوية الرسمية.',
+        route: 'verify',
+      },
+      {
+        kicker: '٠٤ · براند ومشاريع الصعيدي',
+        title: 'ELSAIDY Brand & Digital Portals',
+        description: 'مجموعة الصعيدي للأعمال، منظومة الإدارة، البريد الرسمي (@elsaidy.org)، والسحابة.',
+        route: 'portals',
+      },
+    ],
+  },
+  telemetryConfig: {
+    baseVisitorCount: 320556,
+    incrementPerVisit: 2,
+    onlineUsersMin: 5,
+    onlineUsersMax: 24,
   },
   familyTreeConfig: {
     treeImageUrl: OFFICIAL_FAMILY_TREE_IMAGE_URL,
@@ -1617,6 +1667,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
       '© 2026 الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي — elsaidy.org',
   },
 };
+
 
 
 

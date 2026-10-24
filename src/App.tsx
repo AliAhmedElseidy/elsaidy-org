@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
+import { createPortal } from 'react-dom';
 import {
   GEOGRAPHICAL_PRESENCE,
   DIWAN_ARTICLES,
@@ -123,18 +124,6 @@ export default function App() {
   const [shareToastMessage, setShareToastMessage] = useState<string | null>(null);
   const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
 
-  // Portal Visit Counter & Archive Telemetry State
-  const [totalVisits, setTotalVisits] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem(VISITOR_STORAGE_KEY);
-      const parsed = saved ? parseInt(saved, 10) : 148923;
-      return !isNaN(parsed) && parsed >= 148923 ? parsed : 148923;
-    } catch {
-      return 148923;
-    }
-  });
-  const [isCounterPulsing, setIsCounterPulsing] = useState<boolean>(false);
-
   // Secret 5-click trigger counter for Footer copyright seal
   const secretClickCountRef = useRef<number>(0);
 
@@ -151,7 +140,19 @@ export default function App() {
               ...DEFAULT_SITE_CONFIG.announcementBar,
               ...(parsed.announcementBar || {}),
             },
-            heroSection: { ...DEFAULT_SITE_CONFIG.heroSection, ...(parsed.heroSection || {}) },
+            heroSection: {
+              ...DEFAULT_SITE_CONFIG.heroSection,
+              ...(parsed.heroSection || {}),
+              quickCards:
+                Array.isArray(parsed.heroSection?.quickCards) &&
+                parsed.heroSection.quickCards.length > 0
+                  ? parsed.heroSection.quickCards
+                  : DEFAULT_SITE_CONFIG.heroSection.quickCards,
+            },
+            telemetryConfig: {
+              ...DEFAULT_SITE_CONFIG.telemetryConfig!,
+              ...(parsed.telemetryConfig || {}),
+            },
             familyTreeConfig: {
               ...DEFAULT_SITE_CONFIG.familyTreeConfig,
               ...(parsed.familyTreeConfig || {}),
@@ -171,6 +172,30 @@ export default function App() {
       // ignore
     }
     return DEFAULT_SITE_CONFIG;
+  });
+
+  const telemetry = siteConfig.telemetryConfig || DEFAULT_SITE_CONFIG.telemetryConfig!;
+  const baseFloorVisits = Math.max(148923, telemetry.baseVisitorCount || 320556);
+  const stepPerVisit = Math.max(1, telemetry.incrementPerVisit ?? 2);
+  const onlineMin = Math.max(1, telemetry.onlineUsersMin ?? 5);
+  const onlineMax = Math.max(onlineMin + 1, telemetry.onlineUsersMax ?? 24);
+
+  // Portal Visit Counter & Archive Telemetry State
+  const [totalVisits, setTotalVisits] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(VISITOR_STORAGE_KEY);
+      const parsed = saved ? parseInt(saved, 10) : baseFloorVisits;
+      return !isNaN(parsed) && parsed >= baseFloorVisits ? parsed : baseFloorVisits;
+    } catch {
+      return baseFloorVisits;
+    }
+  });
+  const [isCounterPulsing, setIsCounterPulsing] = useState<boolean>(false);
+
+  // Fluctuating "Online Now" Indicator (متصل الآن)
+  const [onlineNowCount, setOnlineNowCount] = useState<number>(() => {
+    const mid = Math.round((onlineMin + onlineMax) / 2);
+    return Math.max(onlineMin, Math.min(onlineMax, mid));
   });
 
   // Shared CMS State (Articles, Certificates, Custom SEO Names, Dynamic Family Tree Nodes)
@@ -237,9 +262,10 @@ export default function App() {
   });
   const [inquiryStatus, setInquiryStatus] = useState<string>('');
 
-  const recordPortalVisit = () => {
+  const recordPortalVisit = (customDelta?: number) => {
+    const delta = typeof customDelta === 'number' ? customDelta : stepPerVisit;
     setTotalVisits((prev) => {
-      const next = Math.max(148923, prev) + 1;
+      const next = Math.max(baseFloorVisits, prev) + delta;
       try {
         localStorage.setItem(VISITOR_STORAGE_KEY, String(next));
       } catch {
@@ -248,8 +274,34 @@ export default function App() {
       return next;
     });
     setIsCounterPulsing(true);
-    setTimeout(() => setIsCounterPulsing(false), 700);
+    setTimeout(() => setIsCounterPulsing(false), 750);
   };
+
+  // Auto-increment visitor counter by +incrementPerVisit on initial page load/reload + periodic live ticks
+  const hasRecordedInitialVisitRef = useRef<boolean>(false);
+  useEffect(() => {
+    if (!hasRecordedInitialVisitRef.current) {
+      hasRecordedInitialVisitRef.current = true;
+      recordPortalVisit(stepPerVisit);
+    }
+
+    const periodicVisitTimer = window.setInterval(() => {
+      recordPortalVisit(1);
+    }, 26000);
+
+    return () => window.clearInterval(periodicVisitTimer);
+  }, [stepPerVisit, baseFloorVisits]);
+
+  // Fluctuate "Online Now" (متصل الآن) every 7.5 seconds between onlineUsersMin and onlineUsersMax
+  useEffect(() => {
+    setOnlineNowCount((prev) => Math.max(onlineMin, Math.min(onlineMax, prev)));
+    const onlineInterval = window.setInterval(() => {
+      const range = Math.max(1, onlineMax - onlineMin + 1);
+      const nextRandom = onlineMin + Math.floor(Math.random() * range);
+      setOnlineNowCount(nextRandom);
+    }, 7500);
+    return () => window.clearInterval(onlineInterval);
+  }, [onlineMin, onlineMax]);
 
   // Dynamically update <link rel="icon"> when siteConfig.branding.faviconUrl changes
   useEffect(() => {
@@ -309,6 +361,7 @@ export default function App() {
       ) {
         e.preventDefault();
         setCurrentRoute(navTarget);
+        recordPortalVisit();
         const targetPath = navTarget === 'home' ? '/' : `/${navTarget}`;
         try {
           window.history.pushState({}, '', targetPath);
@@ -322,6 +375,62 @@ export default function App() {
     lcpHero.addEventListener('click', handleLcpClick);
     return () => lcpHero.removeEventListener('click', handleLcpClick);
   }, [currentRoute]);
+
+  // In-Place DOM Binding for #elsaidy-static-lcp-hero (100% CMS Controlled from Tab 3 without unmounting LCP node)
+  useEffect(() => {
+    const hero = siteConfig.heroSection || DEFAULT_SITE_CONFIG.heroSection;
+    const setNodeText = (id: string, text: string | undefined) => {
+      if (typeof text !== 'string') return;
+      const el = document.getElementById(id);
+      if (el && el.textContent !== text) {
+        el.textContent = text;
+      }
+    };
+
+    setNodeText('elsaidy-lcp-badge', hero.topBadge);
+    setNodeText('elsaidy-lcp-h1-main', hero.mainHeading);
+    setNodeText('elsaidy-lcp-sub', hero.subHeading);
+    setNodeText('elsaidy-lcp-lead', hero.leadParagraph);
+    setNodeText('elsaidy-lcp-quote', hero.quoteText);
+    setNodeText('elsaidy-lcp-btn-primary', hero.primaryBtnText);
+    setNodeText('elsaidy-lcp-btn-secondary', hero.secondaryBtnText);
+
+    if (Array.isArray(hero.stats)) {
+      hero.stats.slice(0, 4).forEach((st, idx) => {
+        setNodeText(`elsaidy-lcp-stat-val-${idx}`, st.value);
+        setNodeText(`elsaidy-lcp-stat-lbl-${idx}`, st.label);
+      });
+    }
+
+    const quickGrid = document.getElementById('elsaidy-lcp-quick-grid');
+    if (quickGrid) {
+      quickGrid.style.display = hero.showQuickCards === false ? 'none' : '';
+    }
+
+    const qCards = hero.quickCards || DEFAULT_SITE_CONFIG.heroSection.quickCards || [];
+    qCards.slice(0, 4).forEach((card, idx) => {
+      setNodeText(`elsaidy-lcp-qcard-kicker-${idx}`, card.kicker);
+      setNodeText(`elsaidy-lcp-qcard-title-${idx}`, card.title);
+      setNodeText(`elsaidy-lcp-qcard-desc-${idx}`, card.description);
+      const cardEl = document.getElementById(`elsaidy-lcp-qcard-${idx}`) as HTMLAnchorElement | null;
+      if (cardEl && card.route) {
+        cardEl.setAttribute('data-els-nav', card.route);
+        cardEl.setAttribute('href', card.route === 'home' ? '/' : `/${card.route}`);
+      }
+    });
+  }, [siteConfig.heroSection]);
+
+  // Sync live telemetry badges inside #elsaidy-static-lcp-hero in-place
+  useEffect(() => {
+    const onlineEl = document.getElementById('elsaidy-lcp-live-online');
+    if (onlineEl) {
+      onlineEl.textContent = `متصل الآن: ${onlineNowCount} زائر وباحث`;
+    }
+    const visitsEl = document.getElementById('elsaidy-lcp-live-visits');
+    if (visitsEl) {
+      visitsEl.textContent = `إجمالي الزيارات: ${totalVisits.toLocaleString('en-US')}`;
+    }
+  }, [onlineNowCount, totalVisits]);
 
   // Sync remote /data/cms-db.json after initial paint without blocking main thread or resetting LCP
   useEffect(() => {
@@ -359,6 +468,15 @@ export default function App() {
               heroSection: {
                 ...DEFAULT_SITE_CONFIG.heroSection,
                 ...(db.siteConfig.heroSection || {}),
+                quickCards:
+                  Array.isArray(db.siteConfig.heroSection?.quickCards) &&
+                  db.siteConfig.heroSection.quickCards.length > 0
+                    ? db.siteConfig.heroSection.quickCards
+                    : DEFAULT_SITE_CONFIG.heroSection.quickCards,
+              },
+              telemetryConfig: {
+                ...DEFAULT_SITE_CONFIG.telemetryConfig!,
+                ...(db.siteConfig.telemetryConfig || {}),
               },
               familyTreeConfig: {
                 ...DEFAULT_SITE_CONFIG.familyTreeConfig,
@@ -480,6 +598,20 @@ export default function App() {
 
   const handleUpdateSiteConfig = (nextConfig: SiteConfig) => {
     setSiteConfig(nextConfig);
+    if (
+      nextConfig.telemetryConfig?.baseVisitorCount &&
+      nextConfig.telemetryConfig.baseVisitorCount > totalVisits
+    ) {
+      setTotalVisits(nextConfig.telemetryConfig.baseVisitorCount);
+      try {
+        localStorage.setItem(
+          VISITOR_STORAGE_KEY,
+          String(nextConfig.telemetryConfig.baseVisitorCount)
+        );
+      } catch {
+        // ignore
+      }
+    }
     touchLocalTimestamp();
     try {
       localStorage.setItem(CMS_SITE_CONFIG_STORAGE_KEY, JSON.stringify(nextConfig));
@@ -530,9 +662,18 @@ export default function App() {
 
   const handleUpdateVisitorCount = (nextCount: number) => {
     setTotalVisits(nextCount);
+    const updatedConfig: SiteConfig = {
+      ...siteConfig,
+      telemetryConfig: {
+        ...(siteConfig.telemetryConfig || DEFAULT_SITE_CONFIG.telemetryConfig!),
+        baseVisitorCount: nextCount,
+      },
+    };
+    setSiteConfig(updatedConfig);
     touchLocalTimestamp();
     try {
       localStorage.setItem(VISITOR_STORAGE_KEY, String(nextCount));
+      localStorage.setItem(CMS_SITE_CONFIG_STORAGE_KEY, JSON.stringify(updatedConfig));
     } catch {
       // ignore
     }
@@ -670,6 +811,199 @@ export default function App() {
     ''
   );
 
+  const topChromeSlot =
+    typeof document !== 'undefined' ? document.getElementById('elsaidy-top-chrome-root') : null;
+
+  const topChromeContent = (
+    <div dir="rtl">
+      {/* Dynamic Top Announcement Ticker Bar (Controlled from /admin-elsaidy) */}
+      {siteConfig.announcementBar.enabled && (
+        <div
+          className="no-print text-white border-b border-[#D4AF37]/30 px-3 sm:px-6 lg:px-12 py-2"
+          style={{ backgroundColor: siteConfig.branding.primaryColor || '#0F291E' }}
+        >
+          <div className="max-w-[1280px] mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="px-2 py-0.5 rounded-md bg-[#D4AF37] text-[#0D131A] text-[10px] sm:text-[11px] font-extrabold shrink-0 flex items-center gap-1">
+                <Megaphone className="w-3 h-3" />
+                <span>{siteConfig.announcementBar.badgeText}</span>
+              </span>
+              <span className="text-zinc-100 font-semibold truncate sm:whitespace-normal">
+                {siteConfig.announcementBar.message}
+              </span>
+            </div>
+
+            {siteConfig.announcementBar.linkText && (
+              <button
+                type="button"
+                onClick={handleAnnouncementLinkClick}
+                className="text-[11px] font-extrabold text-[#D4AF37] hover:text-white flex items-center gap-1 shrink-0 cursor-pointer"
+              >
+                <span>{siteConfig.announcementBar.linkText}</span>
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Regal Sticky Header with Dynamic Logo or Official Geometric Crest/Monogram */}
+      <header
+        id="top"
+        className="no-print sticky top-0 z-50 backdrop-blur-md bg-[#F7F6F2]/95 border-b border-[#E2DDD3] px-3.5 sm:px-6 lg:px-12 py-3 shadow-xs"
+      >
+        <div className="max-w-[1280px] mx-auto flex items-center justify-between gap-3">
+          {/* Zone 1: Dynamic Custom Logo OR Geometric Crest/Monogram + Official Wordmark */}
+          <a
+            href="/"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateTo('home');
+            }}
+            className="flex items-center gap-3 min-w-0 group"
+          >
+            {siteConfig.branding.logoUrl ? (
+              <img
+                src={siteConfig.branding.logoUrl}
+                alt={siteConfig.branding.siteTitle}
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain bg-white border-2 border-[#D4AF37] p-0.5 shadow-sm shrink-0"
+              />
+            ) : (
+              <div
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] border-2 border-[#D4AF37] flex flex-col items-center justify-center text-white shadow-sm shrink-0"
+                style={{
+                  backgroundColor: siteConfig.branding.primaryColor || '#0F291E',
+                }}
+              >
+                <span className="font-mono text-[8px] sm:text-[9px] font-bold tracking-widest text-[#D4AF37] leading-none">
+                  ELSAIDY
+                </span>
+                <span className="font-display text-xs font-bold text-white leading-tight mt-0.5">
+                  الصعيدي
+                </span>
+              </div>
+            )}
+
+            <div className="min-w-0">
+              <div className="text-sm sm:text-base lg:text-xl font-extrabold text-[#141413] tracking-tight leading-snug group-hover:text-[#0F291E] transition-colors truncate">
+                {siteConfig.branding.siteTitle}
+              </div>
+              <div className="text-[10px] sm:text-[11px] font-bold text-[#695022] truncate">
+                {siteConfig.branding.siteSubtitle} · elsaidy.org
+              </div>
+            </div>
+          </a>
+
+          {/* Zone 2: Desktop Navigation Links */}
+          <nav
+            aria-label="التنقل الرئيسي"
+            className="hidden xl:flex items-center gap-5 text-sm font-bold text-zinc-800"
+          >
+            {navItems.map((item) => (
+              <a
+                key={item.id}
+                href={item.path}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo(item.id);
+                }}
+                className={`py-1.5 transition-all whitespace-nowrap shrink-0 ${
+                  currentRoute === item.id
+                    ? 'text-[#0F291E] border-b-2 border-[#695022] font-extrabold'
+                    : 'hover:text-[#695022]'
+                }`}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
+          {/* Zone 3: Live Online Badge + Share Official Link & Brand Portal Action */}
+          <div className="flex items-center gap-2 shrink-0">
+            <div
+              title="المتصلون الآن وإجمالي زيارات البوابة"
+              className="hidden md:inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#E6E2D8] text-[11px] font-bold text-[#141413] shadow-2xs"
+            >
+              <span className="inline-flex items-center gap-1.5 text-emerald-700 font-extrabold">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>متصل الآن: {onlineNowCount}</span>
+              </span>
+              <span className="text-zinc-300" aria-hidden="true">|</span>
+              <span className="font-mono text-[#695022] font-extrabold tabular-nums">
+                {totalVisits.toLocaleString('en-US')} زيارة
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSharePortalLink}
+              title="مشاركة البوابة / نسخ الرابط الرسمي (elsaidy.org)"
+              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white border border-[#E6E2D8] text-xs font-bold text-[#141413] hover:border-[#695022] transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Share2 className="w-3.5 h-3.5 text-[#695022]" />
+              <span className="hidden lg:inline">مشاركة البوابة</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setInquiryStatus('');
+                setIsCorporateModalOpen(true);
+              }}
+              style={{ backgroundColor: siteConfig.branding.primaryColor || '#0F291E' }}
+              className="px-3 sm:px-4 py-2 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-all flex items-center gap-1.5 cursor-pointer shadow-sm whitespace-nowrap shrink-0"
+            >
+              <Mail className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span className="hidden sm:inline">بريد وأعمال الصعيدي</span>
+              <span className="sm:hidden">بريد رسمي</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Institutional Operational & Pan-Arab Ribbon */}
+      <div className="no-print bg-white border-b border-[#E6E2D8] px-4 sm:px-6 lg:px-12 py-2 hidden sm:block">
+        <div className="max-w-[1280px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-700">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-bold text-[#0F291E]">
+              المظلة الرسمية لتجمع عائلات الصعيدي في الوطن العربي
+            </span>
+            <span aria-hidden="true" className="text-[#695022]">·</span>
+            <span>مصر (٢٧ محافظة) · السعودية · الشام والعراق · الخليج العربي · المغرب العربي والسودان</span>
+          </div>
+          <div className="flex items-center gap-3 font-mono text-[11px] text-[#695022] font-bold">
+            <span className="inline-flex items-center gap-1.5 text-emerald-700 font-sans font-extrabold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>متصل الآن: {onlineNowCount} زائر وباحث</span>
+            </span>
+            <span aria-hidden="true">·</span>
+            <span>elsaidy.org</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Tablet Navigation Bar (Visible on md/lg tablets; Mobile uses the Bottom Dock) */}
+      <div className="no-print hidden md:block xl:hidden bg-[#F7F6F2] border-b border-[#E2DDD3] px-4 sm:px-6 py-2.5">
+        <div className="flex items-center gap-2 overflow-x-auto text-xs pb-0.5">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => navigateTo(item.id)}
+              className={`px-3.5 py-2 rounded-xl border whitespace-nowrap shrink-0 cursor-pointer font-bold transition-all ${
+                currentRoute === item.id
+                  ? 'bg-[#0F291E] border-[#0F291E] text-white shadow-xs'
+                  : 'bg-white border-[#E6E2D8] text-[#141413]'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div
       dir="rtl"
@@ -682,176 +1016,10 @@ export default function App() {
         articles={cmsArticles}
       />
 
+      {/* Render Top Chrome into #elsaidy-top-chrome-root ABOVE #elsaidy-static-lcp-hero */}
+      {topChromeSlot ? createPortal(topChromeContent, topChromeSlot) : topChromeContent}
+
       <div>
-        {/* Dynamic Top Announcement Ticker Bar (Controlled from /admin-elsaidy) */}
-        {siteConfig.announcementBar.enabled && (
-          <div
-            className="no-print text-white border-b border-[#D4AF37]/30 px-3 sm:px-6 lg:px-12 py-2"
-            style={{ backgroundColor: siteConfig.branding.primaryColor || '#0F291E' }}
-          >
-            <div className="max-w-[1280px] mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="px-2 py-0.5 rounded-md bg-[#D4AF37] text-[#0D131A] text-[10px] sm:text-[11px] font-extrabold shrink-0 flex items-center gap-1">
-                  <Megaphone className="w-3 h-3" />
-                  <span>{siteConfig.announcementBar.badgeText}</span>
-                </span>
-                <span className="text-zinc-100 font-semibold truncate sm:whitespace-normal">
-                  {siteConfig.announcementBar.message}
-                </span>
-              </div>
-
-              {siteConfig.announcementBar.linkText && (
-                <button
-                  type="button"
-                  onClick={handleAnnouncementLinkClick}
-                  className="text-[11px] font-extrabold text-[#D4AF37] hover:text-white flex items-center gap-1 shrink-0 cursor-pointer"
-                >
-                  <span>{siteConfig.announcementBar.linkText}</span>
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Regal Sticky Header with Dynamic Logo or Official Geometric Crest/Monogram */}
-        <header
-          id="top"
-          className="no-print sticky top-0 z-50 backdrop-blur-md bg-[#F7F6F2]/95 border-b border-[#E2DDD3] px-3.5 sm:px-6 lg:px-12 py-3 shadow-xs"
-        >
-          <div className="max-w-[1280px] mx-auto flex items-center justify-between gap-3">
-            {/* Zone 1: Dynamic Custom Logo OR Geometric Crest/Monogram + Official Wordmark */}
-            <a
-              href="/"
-              onClick={(e) => {
-                e.preventDefault();
-                navigateTo('home');
-              }}
-              className="flex items-center gap-3 min-w-0 group"
-            >
-              {siteConfig.branding.logoUrl ? (
-                <img
-                  src={siteConfig.branding.logoUrl}
-                  alt={siteConfig.branding.siteTitle}
-                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain bg-white border-2 border-[#D4AF37] p-0.5 shadow-sm shrink-0"
-                />
-              ) : (
-                <div
-                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-[#0F291E] to-[#141E28] border-2 border-[#D4AF37] flex flex-col items-center justify-center text-white shadow-sm shrink-0"
-                  style={{
-                    backgroundColor: siteConfig.branding.primaryColor || '#0F291E',
-                  }}
-                >
-                  <span className="font-mono text-[8px] sm:text-[9px] font-bold tracking-widest text-[#D4AF37] leading-none">
-                    ELSAIDY
-                  </span>
-                  <span className="font-display text-xs font-bold text-white leading-tight mt-0.5">
-                    الصعيدي
-                  </span>
-                </div>
-              )}
-
-              <div className="min-w-0">
-                <div className="text-sm sm:text-base lg:text-xl font-extrabold text-[#141413] tracking-tight leading-snug group-hover:text-[#0F291E] transition-colors truncate">
-                  {siteConfig.branding.siteTitle}
-                </div>
-                <div className="text-[10px] sm:text-[11px] font-bold text-[#695022] truncate">
-                  {siteConfig.branding.siteSubtitle} · elsaidy.org
-                </div>
-              </div>
-            </a>
-
-            {/* Zone 2: Desktop Navigation Links */}
-            <nav
-              aria-label="التنقل الرئيسي"
-              className="hidden xl:flex items-center gap-5 text-sm font-bold text-zinc-800"
-            >
-              {navItems.map((item) => (
-                <a
-                  key={item.id}
-                  href={item.path}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateTo(item.id);
-                  }}
-                  className={`py-1.5 transition-all whitespace-nowrap shrink-0 ${
-                    currentRoute === item.id
-                      ? 'text-[#0F291E] border-b-2 border-[#695022] font-extrabold'
-                      : 'hover:text-[#695022]'
-                  }`}
-                >
-                  {item.label}
-                </a>
-              ))}
-            </nav>
-
-            {/* Zone 3: Share Official Link & Brand Portal Action */}
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={handleSharePortalLink}
-                title="مشاركة البوابة / نسخ الرابط الرسمي (elsaidy.org)"
-                className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white border border-[#E6E2D8] text-xs font-bold text-[#141413] hover:border-[#695022] transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-              >
-                <Share2 className="w-3.5 h-3.5 text-[#695022]" />
-                <span className="hidden md:inline">مشاركة البوابة</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setInquiryStatus('');
-                  setIsCorporateModalOpen(true);
-                }}
-                style={{ backgroundColor: siteConfig.branding.primaryColor || '#0F291E' }}
-                className="px-3 sm:px-4 py-2 rounded-xl bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] transition-all flex items-center gap-1.5 cursor-pointer shadow-sm whitespace-nowrap shrink-0"
-              >
-                <Mail className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span className="hidden sm:inline">بريد وأعمال الصعيدي</span>
-                <span className="sm:hidden">بريد رسمي</span>
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Institutional Operational & Pan-Arab Ribbon */}
-        <div className="no-print bg-white border-b border-[#E6E2D8] px-4 sm:px-6 lg:px-12 py-2 hidden sm:block">
-          <div className="max-w-[1280px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-700">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-bold text-[#0F291E]">
-                المظلة الرسمية لتجمع عائلات الصعيدي في الوطن العربي
-              </span>
-              <span aria-hidden="true" className="text-[#695022]">·</span>
-              <span>مصر · السعودية · الشام والعراق · الخليج العربي · المغرب العربي والسودان</span>
-            </div>
-            <div className="flex items-center gap-2 font-mono text-[11px] text-[#695022] font-bold">
-              <span>elsaidy.org</span>
-              <span aria-hidden="true">·</span>
-              <span>{siteConfig.branding.siteSubtitle}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Tablet Navigation Bar (Visible on md/lg tablets; Mobile uses the Bottom Dock) */}
-        <div className="no-print hidden md:block xl:hidden bg-[#F7F6F2] border-b border-[#E2DDD3] px-4 sm:px-6 py-2.5">
-          <div className="flex items-center gap-2 overflow-x-auto text-xs pb-0.5">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => navigateTo(item.id)}
-                className={`px-3.5 py-2 rounded-xl border whitespace-nowrap shrink-0 cursor-pointer font-bold transition-all ${
-                  currentRoute === item.id
-                    ? 'bg-[#0F291E] border-[#0F291E] text-white shadow-xs'
-                    : 'bg-white border-[#E6E2D8] text-[#141413]'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Main Standalone Page Container */}
         <main className="max-w-[1280px] mx-auto px-3.5 sm:px-6 lg:px-12">
           {currentRoute === 'home' && (
@@ -1070,7 +1238,7 @@ export default function App() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Badge 1: Total Portal Visits */}
+              {/* Badge 1: Total Portal Visits (+incrementPerVisit per visit) */}
               <div
                 className={`p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border transition-all duration-500 flex items-center justify-between ${
                   isCounterPulsing
@@ -1080,7 +1248,7 @@ export default function App() {
               >
                 <div>
                   <div className="text-[11px] text-zinc-300 font-semibold mb-1">
-                    إجمالي زيارات البوابة الوثائقية
+                    إجمالي زيارات البوابة الوثائقية (+{stepPerVisit} لكل زيارة)
                   </div>
                   <div className="flex items-baseline gap-2">
                     <div className="font-mono text-2xl font-extrabold text-[#D4AF37] tabular-nums">
@@ -1093,7 +1261,26 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Badge 2: Verified Lineage Documents & Studies */}
+              {/* Badge 2: Live Online Users Indicator (متصل الآن) */}
+              <div className="p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border border-emerald-500/40 flex items-center justify-between">
+                <div>
+                  <div className="text-[11px] text-zinc-300 font-semibold mb-1">
+                    المتواجدون والمتصفحون في البوابة حالياً
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
+                    <span className="font-mono text-2xl font-extrabold text-emerald-400 tabular-nums">
+                      {onlineNowCount}
+                    </span>
+                    <span className="text-xs text-white font-bold">متصل الآن (زائر وباحث)</span>
+                  </div>
+                </div>
+                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                  <Activity className="w-5 h-5" />
+                </div>
+              </div>
+
+              {/* Badge 3: Verified Lineage Documents & Studies */}
               <div className="p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border border-[#D4AF37]/35 flex items-center justify-between">
                 <div>
                   <div className="text-[11px] text-zinc-300 font-semibold mb-1">
@@ -1112,33 +1299,18 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Badge 3: Registered Arab Countries */}
+              {/* Badge 4: Registered Arab Countries & 27 Governorates */}
               <div className="p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border border-[#D4AF37]/35 flex items-center justify-between">
                 <div>
                   <div className="text-[11px] text-zinc-300 font-semibold mb-1">
-                    الأقطار والدول المسجلة
+                    الأطلس الجغرافي الشامل
                   </div>
-                  <div className="text-xl font-extrabold text-[#D4AF37]">
-                    14+ دولة عربية
+                  <div className="text-base sm:text-lg font-extrabold text-[#D4AF37]">
+                    27 محافظة مصرية + 14 دولة
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
                   <Globe2 className="w-5 h-5" />
-                </div>
-              </div>
-
-              {/* Badge 4: System & Brand Status */}
-              <div className="p-4 rounded-xl bg-gradient-to-br from-[#141E28] to-[#0D131A] border border-[#D4AF37]/35 flex items-center justify-between">
-                <div>
-                  <div className="text-[11px] text-zinc-300 font-semibold mb-1">
-                    حالة المنظومة والبراند
-                  </div>
-                  <div className="text-sm sm:text-base font-extrabold text-emerald-400">
-                    متصل ومؤرشف رسمياً (100%)
-                  </div>
-                </div>
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                  <ShieldCheck className="w-5 h-5" />
                 </div>
               </div>
             </div>

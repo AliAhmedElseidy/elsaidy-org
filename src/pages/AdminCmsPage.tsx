@@ -2018,6 +2018,116 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                 ))}
               </div>
             </div>
+
+            {/* 4 Hero Quick Navigation Cards Toggle & Editor */}
+            <div className="pt-4 border-t border-[#E6E2D8] space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs font-extrabold text-[#0F291E]">
+                  البطاقات الأربع المختصرة في البانر الرئيسي (4 Hero Quick Cards):
+                </div>
+                <label className="inline-flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={siteConfig.heroSection.showQuickCards !== false}
+                    onChange={(e) =>
+                      onUpdateSiteConfig({
+                        ...siteConfig,
+                        heroSection: {
+                          ...siteConfig.heroSection,
+                          showQuickCards: e.target.checked,
+                        },
+                      })
+                    }
+                    className="w-4 h-4 accent-[#0F291E]"
+                  />
+                  <span className="text-xs font-extrabold text-[#0F291E]">
+                    إظهار البطاقات الأربع المختصرة في البانر الرئيسي
+                  </span>
+                </label>
+              </div>
+
+              {siteConfig.heroSection.showQuickCards !== false && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {(
+                    siteConfig.heroSection.quickCards ||
+                    DEFAULT_SITE_CONFIG.heroSection.quickCards ||
+                    []
+                  ).map((card, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] space-y-2"
+                    >
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-600 mb-0.5">
+                          الشارة العلوية للبطاقة ({idx + 1}):
+                        </label>
+                        <input
+                          type="text"
+                          value={card.kicker}
+                          onChange={(e) => {
+                            const baseCards = [
+                              ...(siteConfig.heroSection.quickCards ||
+                                DEFAULT_SITE_CONFIG.heroSection.quickCards ||
+                                []),
+                            ];
+                            baseCards[idx] = { ...baseCards[idx], kicker: e.target.value };
+                            onUpdateSiteConfig({
+                              ...siteConfig,
+                              heroSection: { ...siteConfig.heroSection, quickCards: baseCards },
+                            });
+                          }}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white border border-[#E6E2D8]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-600 mb-0.5">
+                          عنوان البطاقة:
+                        </label>
+                        <input
+                          type="text"
+                          value={card.title}
+                          onChange={(e) => {
+                            const baseCards = [
+                              ...(siteConfig.heroSection.quickCards ||
+                                DEFAULT_SITE_CONFIG.heroSection.quickCards ||
+                                []),
+                            ];
+                            baseCards[idx] = { ...baseCards[idx], title: e.target.value };
+                            onUpdateSiteConfig({
+                              ...siteConfig,
+                              heroSection: { ...siteConfig.heroSection, quickCards: baseCards },
+                            });
+                          }}
+                          className="w-full px-2.5 py-1.5 text-xs font-bold rounded-lg bg-white border border-[#E6E2D8]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-600 mb-0.5">
+                          الوصف المختصر:
+                        </label>
+                        <input
+                          type="text"
+                          value={card.description}
+                          onChange={(e) => {
+                            const baseCards = [
+                              ...(siteConfig.heroSection.quickCards ||
+                                DEFAULT_SITE_CONFIG.heroSection.quickCards ||
+                                []),
+                            ];
+                            baseCards[idx] = { ...baseCards[idx], description: e.target.value };
+                            onUpdateSiteConfig({
+                              ...siteConfig,
+                              heroSection: { ...siteConfig.heroSection, quickCards: baseCards },
+                            });
+                          }}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white border border-[#E6E2D8]"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -3587,56 +3697,133 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
               )}
             </div>
 
-            {/* Visitor Counter Control */}
+            {/* Visitor Counter & Live Online Telemetry Control */}
             <div className="bg-white rounded-2xl border border-[#E6E2D8] p-6 sm:p-8 shadow-sm space-y-4">
               <div className="border-b border-[#E6E2D8] pb-3 flex items-center justify-between">
                 <div>
                   <div className="text-xs font-bold text-[#695022]">
-                    PORTAL TELEMETRY & VISITOR COUNTER
+                    PORTAL TELEMETRY & LIVE ONLINE COUNTER
                   </div>
                   <h3 className="text-lg font-extrabold text-[#141413]">
-                    إدارة عداد زيارات البوابة الوثائقية
+                    إدارة عداد زيارات البوابة الوثائقية ومؤشر المتصلين الآن
                   </h3>
                 </div>
                 <Users className="w-5 h-5 text-[#0F291E]" />
               </div>
 
-              <div className="flex flex-wrap items-center gap-3">
-                <input
-                  type="number"
-                  dir="ltr"
-                  value={manualVisitorInput}
-                  onChange={(e) => setManualVisitorInput(e.target.value)}
-                  className="w-44 px-3.5 py-2 text-sm font-mono font-extrabold rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const parsed = parseInt(manualVisitorInput, 10);
-                    if (!isNaN(parsed) && parsed >= 148923) {
-                      onUpdateVisitorCount(parsed);
-                      appendLog('تحديث عداد الزيارات', String(parsed));
-                      setStatusBanner({
-                        type: 'success',
-                        message: `تم تحديث عداد زيارات البوابة إلى ${parsed.toLocaleString('en-US')}.`,
+              <div className="space-y-3">
+                <label className="block text-xs font-bold text-[#141413]">
+                  الرقم الأساسي لإجمالي الزيارات (Base Visitor Count):
+                </label>
+                <div className="flex flex-wrap items-center gap-3">
+                  <input
+                    type="number"
+                    dir="ltr"
+                    value={manualVisitorInput}
+                    onChange={(e) => setManualVisitorInput(e.target.value)}
+                    className="w-44 px-3.5 py-2 text-sm font-mono font-extrabold rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const parsed = parseInt(manualVisitorInput, 10);
+                      if (!isNaN(parsed) && parsed >= 148923) {
+                        onUpdateVisitorCount(parsed);
+                        appendLog('تحديث عداد الزيارات الأساسي', String(parsed));
+                        setStatusBanner({
+                          type: 'success',
+                          message: `تم تحديث عداد زيارات البوابة إلى ${parsed.toLocaleString('en-US')}.`,
+                        });
+                      }
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold cursor-pointer"
+                  >
+                    تحديث الرقم الأساسي
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = visitorCount + 100;
+                      onUpdateVisitorCount(next);
+                      setManualVisitorInput(String(next));
+                    }}
+                    className="px-3.5 py-2.5 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-xs font-bold text-[#695022] cursor-pointer"
+                  >
+                    +100 زيارة
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-[#E6E2D8]">
+                <div>
+                  <label className="block text-[11px] font-bold text-[#141413] mb-1">
+                    الزيادة لكل زيارة جديدة (+N):
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={50}
+                    dir="ltr"
+                    value={siteConfig.telemetryConfig?.incrementPerVisit ?? 2}
+                    onChange={(e) => {
+                      const val = Math.max(1, parseInt(e.target.value, 10) || 2);
+                      onUpdateSiteConfig({
+                        ...siteConfig,
+                        telemetryConfig: {
+                          ...(siteConfig.telemetryConfig || DEFAULT_SITE_CONFIG.telemetryConfig!),
+                          incrementPerVisit: val,
+                        },
                       });
-                    }
-                  }}
-                  className="px-4 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-bold cursor-pointer"
-                >
-                  تحديث الرقم الأساسي
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const next = visitorCount + 100;
-                    onUpdateVisitorCount(next);
-                    setManualVisitorInput(String(next));
-                  }}
-                  className="px-3.5 py-2.5 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-xs font-bold text-[#695022] cursor-pointer"
-                >
-                  +100 زيارة
-                </button>
+                    }}
+                    className="w-full px-3 py-2 text-xs font-mono font-bold rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#141413] mb-1">
+                    الحد الأدنى للمتصلين حالياً:
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={500}
+                    dir="ltr"
+                    value={siteConfig.telemetryConfig?.onlineUsersMin ?? 5}
+                    onChange={(e) => {
+                      const val = Math.max(1, parseInt(e.target.value, 10) || 5);
+                      onUpdateSiteConfig({
+                        ...siteConfig,
+                        telemetryConfig: {
+                          ...(siteConfig.telemetryConfig || DEFAULT_SITE_CONFIG.telemetryConfig!),
+                          onlineUsersMin: val,
+                        },
+                      });
+                    }}
+                    className="w-full px-3 py-2 text-xs font-mono font-bold rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#141413] mb-1">
+                    الحد الأعلى للمتصلين حالياً:
+                  </label>
+                  <input
+                    type="number"
+                    min={2}
+                    max={1000}
+                    dir="ltr"
+                    value={siteConfig.telemetryConfig?.onlineUsersMax ?? 24}
+                    onChange={(e) => {
+                      const val = Math.max(2, parseInt(e.target.value, 10) || 24);
+                      onUpdateSiteConfig({
+                        ...siteConfig,
+                        telemetryConfig: {
+                          ...(siteConfig.telemetryConfig || DEFAULT_SITE_CONFIG.telemetryConfig!),
+                          onlineUsersMax: val,
+                        },
+                      });
+                    }}
+                    className="w-full px-3 py-2 text-xs font-mono font-bold rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                  />
+                </div>
               </div>
             </div>
           </div>
