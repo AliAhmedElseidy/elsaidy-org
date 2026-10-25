@@ -1,6 +1,6 @@
 {
-  "visitorCount": 320633,
-  "lastUpdated": "2026-10-25T04:55:45.717Z",
+  "visitorCount": 320948,
+  "lastUpdated": "2026-10-25T05:01:09.561Z",
   "siteConfig": {
     "branding": {
       "siteTitle": "الموقع الرسمي لعائلات الصعيدي ومجموعة الصعيدي",
@@ -77,10 +77,10 @@
       ]
     },
     "telemetryConfig": {
-      "baseVisitorCount": 320556,
+      "baseVisitorCount": 320945,
       "incrementPerVisit": 2,
       "onlineUsersMin": 5,
-      "onlineUsersMax": 24
+      "onlineUsersMax": 220
     },
     "familyTreeConfig": {
       "treeImageUrl": "https://www.alsaidi.net/contents/myuppic/04d80878942951.jpg",
@@ -453,8 +453,11 @@
     }
   },
   "customNames": [
+    "حجاج الصعيدي",
+    "علي الصعيدي",
+    "حجاج مرسي",
+    "مرس حجاج",
     "علي أحمد علي الصعيدي (Ali Ahmed Ali Elsaidy)",
-    "حجاج الصعيدي (Hagag Elsaidy)",
     "حجازي الصعيدي (Hijazi Elsaidy)",
     "أحمد حجازي الصعيدي (Ahmed Hijazi Elsaidy)",
     "محمد حجاج الصعيدي (Mohamed Hagag Elsaidy)",
@@ -668,6 +671,51 @@
   ],
   "certificates": [
     {
+      "serialNumber": "ELS-2026-EG-002",
+      "arabicName": "علي أحمد علي الصعيدي",
+      "englishName": "Ali Ahmed Ali Elsaidy",
+      "familyTitle": "الصعيدي",
+      "country": "جمهورية مصر العربية",
+      "countryCode": "EG",
+      "regionBranch": "محافظة الغربية - مدينة طنطا / صعيد مصر / القاهرة",
+      "lineageNarrative": "ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).",
+      "documentType": "a4-certificate",
+      "issueDateGregorian": "2026-10-23",
+      "issueDateHijri": "١١ ربيع الآخر ١٤٤٨ هـ",
+      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام",
+      "memberReferenceId": "REG-EG-GH-0002",
+      "ancestralRoot": "الجد السابع إبراهيم الصعيدي الجهني — فرع الغربية وطنطا وصعيد مصر",
+      "currentResidence": "جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة"
+    },
+    {
+      "serialNumber": "ELS-2026-SA-001",
+      "arabicName": "إبراهيم بن عبد الله بن صالح الصعيدي",
+      "englishName": "Ibrahim bin Abdullah bin Saleh Elsaidy",
+      "familyTitle": "الصعيدي",
+      "country": "المملكة العربية السعودية",
+      "countryCode": "SA",
+      "regionBranch": "منطقة حائل - حي الزبارة / ينبع النخل",
+      "lineageNarrative": "من أعقاب الجد السابع إبراهيم الصعيدي من قبيلة جهينة من ينبع النخل بالساحل الغربي لشبه الجزيرة العربية، من ذرية عوض البراهيم عبر ابنه صالح بن عوض.",
+      "documentType": "a4-certificate",
+      "issueDateGregorian": "2026-10-22",
+      "issueDateHijri": "١١ ربيع الآخر ١٤٤٨ هـ",
+      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام"
+    },
+    {
+      "serialNumber": "ELS-2026-SA-002",
+      "arabicName": "حمود بن ناصر بن عبد الله الصعيدي",
+      "englishName": "Hammoud bin Nasser bin Abdullah Elsaidy",
+      "familyTitle": "الصعيدي",
+      "country": "المملكة العربية السعودية",
+      "countryCode": "SA",
+      "regionBranch": "مدينة الرياض / منطقة حائل",
+      "lineageNarrative": "من ذرية ناصر بن عبد الله بن صالح بن عوض بن إبراهيم الصعيدي الجهني، الذي انتقل أبناؤه وأحفاده إلى مدينة الرياض بعد تولي شئون البادية في مطلع عهد الملك عبد العزيز يرحمه الله.",
+      "documentType": "a4-certificate",
+      "issueDateGregorian": "2026-10-22",
+      "issueDateHijri": "١١ ربيع الآخر ١٤٤٨ هـ",
+      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام"
+    },
+    {
       "serialNumber": "ELS-2026-EG-387",
       "arabicName": "احمد حسن عبدالسلام الصعيدي",
       "englishName": "Ahmed Hassan Abdel Salam Elsaidy",
@@ -723,51 +771,6 @@
       "ancestralRoot": "الجد السابع إبراهيم الصعيدي الجهني — عمود النسب الموثق",
       "currentResidence": "جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة",
       "archived": false
-    },
-    {
-      "serialNumber": "ELS-2026-EG-002",
-      "arabicName": "علي أحمد علي الصعيدي",
-      "englishName": "Ali Ahmed Ali Elsaidy",
-      "familyTitle": "الصعيدي",
-      "country": "جمهورية مصر العربية",
-      "countryCode": "EG",
-      "regionBranch": "محافظة الغربية - مدينة طنطا / صعيد مصر / القاهرة",
-      "lineageNarrative": "ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).",
-      "documentType": "a4-certificate",
-      "issueDateGregorian": "2026-10-23",
-      "issueDateHijri": "١١ ربيع الآخر ١٤٤٨ هـ",
-      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام",
-      "memberReferenceId": "REG-EG-GH-0002",
-      "ancestralRoot": "الجد السابع إبراهيم الصعيدي الجهني — فرع الغربية وطنطا وصعيد مصر",
-      "currentResidence": "جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة"
-    },
-    {
-      "serialNumber": "ELS-2026-SA-001",
-      "arabicName": "إبراهيم بن عبد الله بن صالح الصعيدي",
-      "englishName": "Ibrahim bin Abdullah bin Saleh Elsaidy",
-      "familyTitle": "الصعيدي",
-      "country": "المملكة العربية السعودية",
-      "countryCode": "SA",
-      "regionBranch": "منطقة حائل - حي الزبارة / ينبع النخل",
-      "lineageNarrative": "من أعقاب الجد السابع إبراهيم الصعيدي من قبيلة جهينة من ينبع النخل بالساحل الغربي لشبه الجزيرة العربية، من ذرية عوض البراهيم عبر ابنه صالح بن عوض.",
-      "documentType": "a4-certificate",
-      "issueDateGregorian": "2026-10-22",
-      "issueDateHijri": "١١ ربيع الآخر ١٤٤٨ هـ",
-      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام"
-    },
-    {
-      "serialNumber": "ELS-2026-SA-002",
-      "arabicName": "حمود بن ناصر بن عبد الله الصعيدي",
-      "englishName": "Hammoud bin Nasser bin Abdullah Elsaidy",
-      "familyTitle": "الصعيدي",
-      "country": "المملكة العربية السعودية",
-      "countryCode": "SA",
-      "regionBranch": "مدينة الرياض / منطقة حائل",
-      "lineageNarrative": "من ذرية ناصر بن عبد الله بن صالح بن عوض بن إبراهيم الصعيدي الجهني، الذي انتقل أبناؤه وأحفاده إلى مدينة الرياض بعد تولي شئون البادية في مطلع عهد الملك عبد العزيز يرحمه الله.",
-      "documentType": "a4-certificate",
-      "issueDateGregorian": "2026-10-22",
-      "issueDateHijri": "١١ ربيع الآخر ١٤٤٨ هـ",
-      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام"
     },
     {
       "serialNumber": "ELS-2026-EG-019",
