@@ -84,6 +84,7 @@ interface AdminCmsPageProps {
 }
 
 const GITHUB_REPO_COORDS_STORAGE_KEY = 'elsaidy_cms_github_repo_coords_v2';
+const AI_SCANNER_MODEL_STORAGE_KEY = 'elsaidy_ai_scanner_model_v1';
 
 interface GitHubConfig {
   token: string; // Strictly in-memory React state only; NEVER persisted to localStorage or sessionStorage (SEC-002)
@@ -99,6 +100,64 @@ const encodeUtf8ToBase64 = (str: string): string => {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
+};
+
+/**
+ * Compresses and resizes a high-resolution mobile camera ID card photo in-memory
+ * using an HTML5 Canvas (max 1280px, JPEG quality 0.82) for instant upload to Gemini Vision,
+ * then zeroes out the canvas dimensions immediately.
+ */
+const compressIdCardImageInBrowser = (
+  file: File,
+  maxDimension = 1280,
+  quality = 0.82
+): Promise<{ dataUrl: string; mimeType: string }> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('تعذر قراءة ملف الصورة من الجهاز.'));
+    reader.onload = () => {
+      const rawDataUrl = reader.result as string;
+      const img = new Image();
+      img.onerror = () => {
+        // Fallback to raw data URL if image decoding fails
+        resolve({ dataUrl: rawDataUrl, mimeType: file.type || 'image/jpeg' });
+      };
+      img.onload = () => {
+        try {
+          let width = img.naturalWidth || img.width;
+          let height = img.naturalHeight || img.height;
+          if (width > maxDimension || height > maxDimension) {
+            if (width >= height) {
+              height = Math.round((height * maxDimension) / width);
+              width = maxDimension;
+            } else {
+              width = Math.round((width * maxDimension) / height);
+              height = maxDimension;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve({ dataUrl: rawDataUrl, mimeType: file.type || 'image/jpeg' });
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          // Wipe temporary canvas buffer immediately
+          ctx.clearRect(0, 0, width, height);
+          canvas.width = 0;
+          canvas.height = 0;
+          resolve({ dataUrl: compressedDataUrl, mimeType: 'image/jpeg' });
+        } catch {
+          resolve({ dataUrl: rawDataUrl, mimeType: file.type || 'image/jpeg' });
+        }
+      };
+      img.src = rawDataUrl;
+    };
+    reader.readAsDataURL(file);
+  });
 };
 
 export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
@@ -280,6 +339,53 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
   const [isScanningIdCard, setIsScanningIdCard] = useState<boolean>(false);
   const [isScannerSettingsOpen, setIsScannerSettingsOpen] = useState<boolean>(false);
   const [editingCertSerial, setEditingCertSerial] = useState<string | null>(null);
+
+  // AI Model Selector State (persisted in localStorage)
+  const [aiScannerModelOption, setAiScannerModelOption] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem(AI_SCANNER_MODEL_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed.option === 'string') return parsed.option;
+      }
+    } catch {
+      // ignore
+    }
+    return 'gemini-2.5-flash';
+  });
+  const [customAiScannerModel, setCustomAiScannerModel] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem(AI_SCANNER_MODEL_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed.customModel === 'string') return parsed.customModel;
+      }
+    } catch {
+      // ignore
+    }
+    return '';
+  });
+
+  const resolvedAiModel =
+    aiScannerModelOption === 'custom'
+      ? customAiScannerModel.trim() || 'gemini-2.5-flash'
+      : aiScannerModelOption;
+
+  const handleUpdateAiModelSettings = (nextOption: string, nextCustomModel: string) => {
+    setAiScannerModelOption(nextOption);
+    setCustomAiScannerModel(nextCustomModel);
+    try {
+      localStorage.setItem(
+        AI_SCANNER_MODEL_STORAGE_KEY,
+        JSON.stringify({
+          option: nextOption,
+          customModel: nextCustomModel.trim(),
+        })
+      );
+    } catch {
+      // ignore
+    }
+  };
 
   // Registry Search & Filters
   const [certRegistrySearch, setCertRegistrySearch] = useState<string>('');
@@ -661,127 +767,126 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     }
   };
 
-  // Privacy-First AI Smart ID Card Scanner (Wipes image from memory immediately after extraction)
-  const handleScanIdCardImage = (file: File, inputEl?: HTMLInputElement | null) => {
+  // Privacy-First AI Smart ID Card Scanner (Client-side Canvas compression + Wipes image from memory immediately after extraction)
+  const handleScanIdCardImage = async (file: File, inputEl?: HTMLInputElement | null) => {
     setIsScanningIdCard(true);
     setStatusBanner({
       type: 'info',
-      message:
-        'جاري قراءة بطاقة الهوية بالذكاء الاصطناعي (Gemini Vision) واستخراج الاسم والبلد وبصمة التحقق بدون حفظ صورة البطاقة...',
+      message: `جاري ضغط الصورة في المتصفح وقراءة البطاقة عبر الموديل (${resolvedAiModel}) لاستخراج الاسم والبلد وبصمة التحقق الذكية بدون حفظ الصورة...`,
     });
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      let tempDataUrl: string | null = reader.result as string;
-      // Immediately clear the file input DOM element so the file reference isn't held
-      if (inputEl) {
-        inputEl.value = '';
+    // Immediately clear the file input DOM element so the file reference isn't held
+    if (inputEl) {
+      inputEl.value = '';
+    }
+
+    let tempDataUrl: string | null = null;
+    try {
+      const compressed = await compressIdCardImageInBrowser(file, 1280, 0.82);
+      tempDataUrl = compressed.dataUrl;
+
+      const res = await fetch('/api/scan-id', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageBase64: tempDataUrl,
+          mimeType: compressed.mimeType,
+          model: resolvedAiModel,
+        }),
+      });
+
+      // Wipe base64 image from local variable immediately after sending
+      tempDataUrl = null;
+
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok || !payload.extracted) {
+        throw new Error(
+          payload.error || 'تعذر قراءة البطاقة. يرجى التأكد من وضوح الصورة أو مراجعة إعدادات الموديل (⚙️).'
+        );
       }
 
-      try {
-        const res = await fetch('/api/scan-id', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            imageBase64: tempDataUrl,
-            mimeType: file.type || 'image/jpeg',
-          }),
-        });
+      const ext = payload.extracted as {
+        arabicName?: string;
+        englishName?: string;
+        countryCode?: string;
+        countryNameArabic?: string;
+        governorateOrRegion?: string;
+        centerOrVillage?: string;
+        idHash?: string;
+      };
 
-        // Wipe base64 image from local variable immediately after sending
-        tempDataUrl = null;
+      const code = ['EG', 'SA', 'LV', 'GF', 'MG'].includes(ext.countryCode || '')
+        ? (ext.countryCode as string)
+        : 'EG';
 
-        const payload = await res.json().catch(() => ({}));
-        if (!res.ok || !payload.extracted) {
-          throw new Error(
-            payload.error || 'تعذر قراءة البطاقة. يرجى التأكد من وضوح الصورة أو المحاولة مجدداً.'
-          );
-        }
+      const countryMap: Record<string, string> = {
+        EG: 'جمهورية مصر العربية',
+        SA: 'المملكة العربية السعودية',
+        LV: 'بلاد الشام والعراق',
+        GF: 'دول الخليج العربي',
+        MG: 'المغرب العربي والسودان',
+      };
 
-        const ext = payload.extracted as {
-          arabicName?: string;
-          englishName?: string;
-          countryCode?: string;
-          countryNameArabic?: string;
-          governorateOrRegion?: string;
-          centerOrVillage?: string;
-          idHash?: string;
-        };
+      const govText = (ext.governorateOrRegion || '').trim();
+      const centerText = (ext.centerOrVillage || '').trim();
+      const combinedResidence =
+        centerText && govText
+          ? `${centerText} — ${govText}`
+          : centerText || govText || certForm.currentResidence;
 
-        const code = ['EG', 'SA', 'LV', 'GF', 'MG'].includes(ext.countryCode || '')
-          ? (ext.countryCode as string)
-          : 'EG';
+      // Check if locality matches any Historical Root to auto-suggest founder
+      const combinedLocSearch = `${govText} ${centerText}`.toLowerCase();
+      const matchedRoot = activeHistoricalRoots.find((r) =>
+        r.locations.some((loc) => combinedLocSearch.includes(loc.toLowerCase()))
+      );
+      const firstFounder = matchedRoot?.founders?.[0];
 
-        const countryMap: Record<string, string> = {
-          EG: 'جمهورية مصر العربية',
-          SA: 'المملكة العربية السعودية',
-          LV: 'بلاد الشام والعراق',
-          GF: 'دول الخليج العربي',
-          MG: 'المغرب العربي والسودان',
-        };
+      const rand = Math.floor(100 + Math.random() * 899);
+      const nextSerial = editingCertSerial || `ELS-2026-${code}-${rand}`;
+      const nextRefId = `REG-${code}-${ext.idHash || rand}`;
 
-        const govText = (ext.governorateOrRegion || '').trim();
-        const centerText = (ext.centerOrVillage || '').trim();
-        const combinedResidence =
-          centerText && govText
-            ? `${centerText} — ${govText}`
-            : centerText || govText || certForm.currentResidence;
+      setCertForm((prev) => ({
+        ...prev,
+        serialNumber: nextSerial,
+        memberReferenceId: nextRefId,
+        arabicName: ext.arabicName?.trim() || prev.arabicName,
+        englishName: ext.englishName?.trim() || prev.englishName,
+        countryCode: code,
+        country: ext.countryNameArabic?.trim() || countryMap[code] || prev.country,
+        regionBranch: govText || prev.regionBranch,
+        currentResidence: combinedResidence,
+        idHash: ext.idHash?.trim() || prev.idHash,
+        ...(firstFounder
+          ? {
+              historicalRootId: matchedRoot!.id,
+              founderId: firstFounder.id,
+              founderName: firstFounder.name,
+              ancestralRoot: firstFounder.subHouseTitle,
+              lineageNarrative: firstFounder.lineageTemplate,
+            }
+          : {}),
+      }));
 
-        // Check if locality matches any Historical Root to auto-suggest founder
-        const combinedLocSearch = `${govText} ${centerText}`.toLowerCase();
-        const matchedRoot = activeHistoricalRoots.find((r) =>
-          r.locations.some((loc) => combinedLocSearch.includes(loc.toLowerCase()))
-        );
-        const firstFounder = matchedRoot?.founders?.[0];
-
-        const rand = Math.floor(100 + Math.random() * 899);
-        const nextSerial = editingCertSerial || `ELS-2026-${code}-${rand}`;
-        const nextRefId = `REG-${code}-${ext.idHash || rand}`;
-
-        setCertForm((prev) => ({
-          ...prev,
-          serialNumber: nextSerial,
-          memberReferenceId: nextRefId,
-          arabicName: ext.arabicName?.trim() || prev.arabicName,
-          englishName: ext.englishName?.trim() || prev.englishName,
-          countryCode: code,
-          country: ext.countryNameArabic?.trim() || countryMap[code] || prev.country,
-          regionBranch: govText || prev.regionBranch,
-          currentResidence: combinedResidence,
-          idHash: ext.idHash?.trim() || prev.idHash,
-          ...(firstFounder
-            ? {
-                historicalRootId: matchedRoot!.id,
-                founderId: firstFounder.id,
-                founderName: firstFounder.name,
-                ancestralRoot: firstFounder.subHouseTitle,
-                lineageNarrative: firstFounder.lineageTemplate,
-              }
-            : {}),
-        }));
-
-        appendLog(
-          'مسح ذكي لبطاقة الهوية (AI ID Scan)',
-          `تم استخراج بيانات (${ext.arabicName || 'عضو'}) وبصمة التحقق (${ext.idHash || '-'}) ومسح صورة البطاقة فوراً من الذاكرة`
-        );
-        setStatusBanner({
-          type: 'success',
-          message: `تم استخراج بيانات البطاقة بنجاح (${ext.arabicName || ''}) وتوليد بصمة التحقق الفريدة (${
-            ext.idHash || 'مكتمل'
-          }). تم مسح صورة البطاقة نهائياً من الذاكرة حفاظاً على الخصوصية.`,
-        });
-      } catch (err: unknown) {
-        tempDataUrl = null;
-        const msg = err instanceof Error ? err.message : 'خطأ أثناء قراءة البطاقة';
-        setStatusBanner({
-          type: 'error',
-          message: msg,
-        });
-      } finally {
-        setIsScanningIdCard(false);
-      }
-    };
-    reader.readAsDataURL(file);
+      appendLog(
+        `مسح ذكي لبطاقة الهوية (${resolvedAiModel})`,
+        `تم استخراج بيانات (${ext.arabicName || 'عضو'}) وبصمة التحقق (${ext.idHash || '-'}) ومسح صورة البطاقة فوراً من الذاكرة`
+      );
+      setStatusBanner({
+        type: 'success',
+        message: `تم استخراج بيانات البطاقة بنجاح عبر (${resolvedAiModel}): الاسم (${ext.arabicName || ''}) وبصمة التحقق (${
+          ext.idHash || 'مكتمل'
+        }). تم مسح الصورة نهائياً من الذاكرة.`,
+      });
+    } catch (err: unknown) {
+      tempDataUrl = null;
+      const msg = err instanceof Error ? err.message : 'خطأ أثناء قراءة البطاقة';
+      setStatusBanner({
+        type: 'error',
+        message: msg,
+      });
+    } finally {
+      setIsScanningIdCard(false);
+    }
   };
 
   const handleSaveCertificate = async () => {
@@ -958,10 +1063,16 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       (c) => c.serialNumber.toUpperCase() !== serial.toUpperCase()
     );
     onUpdateCertificates(filtered);
-    appendLog('حذف شهادة من السجل المحلي', `تم حذف الوثيقة رقم ${serial}`);
+    if (editingCertSerial && editingCertSerial.toUpperCase() === serial.toUpperCase()) {
+      setEditingCertSerial(null);
+    }
+    appendLog(
+      'حذف نهائي لشهادة من السجل العام (Full Overwrite)',
+      `تم حذف الوثيقة رقم ${serial} نهائياً دون دمج عكسي`
+    );
     setStatusBanner({
       type: 'info',
-      message: `تم حذف الوثيقة (${serial}) من السجل المخصص.`,
+      message: `تم حذف الوثيقة (${serial}) نهائياً من السجل العام. عند الضغط على «نشر التعديلات إلى GitHub» سيتم اعتماد القائمة الحالية حصرياً (Full Overwrite) ولن تعود الوثيقة المحذوفة مطلقاً.`,
     });
   };
 
@@ -1252,11 +1363,20 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
         });
 
         if (fnRes.ok) {
-          appendLog('مزامنة سحابية عبر الخادم', 'تم تحديث public/data/cms-db.json عبر /api/cms-sync');
+          try {
+            localStorage.setItem('elsaidy_cms_certificates_v2', JSON.stringify(issuedCertificates));
+            localStorage.setItem('elsaidy_cms_last_updated_v2', dbPayload.lastUpdated);
+          } catch {
+            // ignore
+          }
+          appendLog(
+            'مزامنة سحابية عبر الخادم (Full Overwrite)',
+            'تم تحديث public/data/cms-db.json عبر /api/cms-sync باعتماد القائمة الحالية حصرياً'
+          );
           setStatusBanner({
             type: 'success',
             message:
-              'تمت المزامنة السحابية الآمنة عبر خادم Cloudflare Pages (/api/cms-sync) بنجاح!',
+              'تمت المزامنة السحابية الآمنة عبر خادم Cloudflare Pages (/api/cms-sync) بنجاح (Full Overwrite بدون إرجاع أي سجلات محذوفة)!',
           });
           return;
         }
@@ -1308,11 +1428,20 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
         throw new Error(errBody.message || `HTTP ${putRes.status}`);
       }
 
-      appendLog('مزامنة سحابية مباشرة', 'تم تحديث public/data/cms-db.json في GitHub');
+      try {
+        localStorage.setItem('elsaidy_cms_certificates_v2', JSON.stringify(issuedCertificates));
+        localStorage.setItem('elsaidy_cms_last_updated_v2', dbPayload.lastUpdated);
+      } catch {
+        // ignore
+      }
+      appendLog(
+        'مزامنة سحابية مباشرة (Full Overwrite)',
+        'تم تحديث public/data/cms-db.json في GitHub باعتماد القائمة الحالية حصرياً'
+      );
       setStatusBanner({
         type: 'success',
         message:
-          'تمت المزامنة السحابية بنجاح! تم تحديث ملف (public/data/cms-db.json) شاملاً الشجرة التفاعلية والهوية واللوجو والبانر والبوابات والمقالات والشهادات في GitHub.',
+          'تمت المزامنة السحابية بنجاح (Full Overwrite)! تم تحديث ملف (public/data/cms-db.json) في GitHub باعتماد قائمة الشهادات والشجرة التفاعلية الحالية حصرياً دون إرجاع أي سجلات محذوفة.',
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'خطأ غير معروف';
@@ -4000,14 +4129,70 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
                     </div>
 
                     <div className="p-6 space-y-5 bg-[#F7F6F2]">
-                      <div className="p-4 rounded-xl bg-white border border-[#E6E2D8] space-y-1.5">
+                      <div className="p-4 rounded-xl bg-white border border-[#E6E2D8] space-y-3">
                         <div className="text-xs font-extrabold text-[#0F291E] flex items-center gap-1.5">
                           <Sparkles className="w-4 h-4 text-[#695022]" />
-                          <span>محرك الذكاء الاصطناعي للمسح الضوئي (/api/scan-id)</span>
+                          <span>اختر موديل الذكاء الاصطناعي (AI Model)</span>
                         </div>
-                        <p className="text-xs text-zinc-600 leading-relaxed">
-                          يعمل المسح الذكي لبطاقة الهوية بشكل آمن عبر الخادم الخلفي (Gemini 2.5 Flash Vision) لاستخراج الاسم والبلد وسنة الميلاد وآخر 4 أرقام من الرقم القومي، مع المسح الفوري لصورة البطاقة من الذاكرة.
+                        <p className="text-[11px] text-zinc-600 leading-relaxed">
+                          يتم ضغط صورة البطاقة تلقائياً في المتصفح (HTML5 Canvas) وإرسالها للموديل المختار لاستخراج الاسم والبلد وسنة الميلاد وبصمة التحقق الذكية (مع دعم قراءة الكود أسفل الصورة الشخصية في حال تغطية الرقم القومي)، ثم مسح الصورة فوراً من الذاكرة.
                         </p>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-[#141413] mb-1">
+                            موديل الرؤية والاستخراج (Gemini Vision Model):
+                          </label>
+                          <select
+                            value={aiScannerModelOption}
+                            onChange={(e) =>
+                              handleUpdateAiModelSettings(e.target.value, customAiScannerModel)
+                            }
+                            className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#0F291E]"
+                          >
+                            <option value="gemini-2.5-flash">
+                              gemini-2.5-flash (افتراضي - سريع ودقيق جداً)
+                            </option>
+                            <option value="gemini-2.5-flash-lite">
+                              gemini-2.5-flash-lite (اقتصادي / حصة مجانية يومية عالية)
+                            </option>
+                            <option value="gemini-3.5-flash-lite">
+                              gemini-3.5-flash-lite (إصدار حديث فائق السرعة)
+                            </option>
+                            <option value="custom">
+                              [خيار كتابة موديل مخصص Custom Model Name]
+                            </option>
+                          </select>
+                        </div>
+
+                        {aiScannerModelOption === 'custom' && (
+                          <div>
+                            <label className="block text-[11px] font-bold text-[#695022] mb-1">
+                              اسم الموديل المخصص (Custom Model Name):
+                            </label>
+                            <input
+                              type="text"
+                              dir="ltr"
+                              value={customAiScannerModel}
+                              onChange={(e) =>
+                                handleUpdateAiModelSettings('custom', e.target.value)
+                              }
+                              placeholder="مثال: gemini-2.5-pro أو gemini-3.1-flash-lite"
+                              className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-[#F7F6F2] border border-[#695022]"
+                            />
+                          </div>
+                        )}
+
+                        <div className="p-2.5 rounded-lg bg-[#0F291E]/5 border border-[#0F291E]/15">
+                          <div className="text-[10px] font-bold text-[#695022] mb-0.5">
+                            الموديل النشط حالياً في طلبات المسح الضوئي:
+                          </div>
+                          <div
+                            dir="ltr"
+                            className="text-[11px] font-mono font-bold text-[#0F291E] break-all"
+                          >
+                            models/{resolvedAiModel}:generateContent
+                          </div>
+                        </div>
                       </div>
 
                       <div className="p-4 rounded-xl bg-white border border-[#E6E2D8] space-y-3">

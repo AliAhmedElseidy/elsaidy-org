@@ -96,18 +96,11 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Merge CMS-issued certificates with default verified records (excluding archived records from public lookup)
+  // Use CMS-issued certificates exclusively as the single source of truth (excluding archived records from public lookup)
   const allCertificates = React.useMemo(() => {
     const map = new Map<string, IssuedCertificateRecord>();
-    DEFAULT_VERIFIED_CERTIFICATES.forEach((c) => {
-      if (!c.archived) {
-        map.set(c.serialNumber.toUpperCase(), c);
-      }
-    });
     issuedCertificates.forEach((c) => {
-      if (c.archived) {
-        map.delete(c.serialNumber.toUpperCase());
-      } else {
+      if (c && c.serialNumber && !c.archived) {
         map.set(c.serialNumber.toUpperCase(), c);
       }
     });

@@ -226,9 +226,9 @@ export default function App() {
   const [cmsCertificates, setCmsCertificates] = useState<IssuedCertificateRecord[]>(() => {
     try {
       const saved = localStorage.getItem(CMS_CERTS_STORAGE_KEY);
-      if (saved) {
+      if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch {
       // ignore
@@ -540,29 +540,18 @@ export default function App() {
             }
           }
 
-          if (Array.isArray(db.certificates) && db.certificates.length > 0) {
-            setCmsCertificates((prevLocal) => {
-              const bySerial = new Map<string, IssuedCertificateRecord>();
-              for (const c of DEFAULT_VERIFIED_CERTIFICATES) {
-                bySerial.set(c.serialNumber, c);
-              }
-              for (const c of prevLocal) {
-                bySerial.set(c.serialNumber, c);
-              }
-              for (const c of db.certificates as IssuedCertificateRecord[]) {
-                if (c && c.serialNumber) {
-                  bySerial.set(c.serialNumber, c);
-                }
-              }
-              const merged = Array.from(bySerial.values());
-              if (merged.length === prevLocal.length) return prevLocal;
-              try {
-                localStorage.setItem(CMS_CERTS_STORAGE_KEY, JSON.stringify(merged));
-              } catch {
-                // ignore
-              }
-              return merged;
-            });
+          if (
+            Array.isArray(db.certificates) &&
+            (isRemoteStrictlyNewer || localStorage.getItem(CMS_CERTS_STORAGE_KEY) === null)
+          ) {
+            setCmsCertificates((prev) =>
+              JSON.stringify(prev) === JSON.stringify(db.certificates) ? prev : db.certificates
+            );
+            try {
+              localStorage.setItem(CMS_CERTS_STORAGE_KEY, JSON.stringify(db.certificates));
+            } catch {
+              // ignore
+            }
           }
 
           if (
