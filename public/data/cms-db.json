@@ -1,6 +1,6 @@
 {
-  "visitorCount": 320584,
-  "lastUpdated": "2026-10-25T03:14:26.648Z",
+  "visitorCount": 320604,
+  "lastUpdated": "2026-10-25T03:33:34.816Z",
   "siteConfig": {
     "branding": {
       "siteTitle": "الموقع الرسمي لعائلات الصعيدي ومجموعة الصعيدي",
@@ -465,6 +465,25 @@
     }
   ],
   "certificates": [
+    {
+      "serialNumber": "ELS-2026-EG-387",
+      "arabicName": "احمد حسن عبدالسلام الصعيدي",
+      "englishName": "Ahmed Hassan Abdel Salam Elsaidy",
+      "familyTitle": "الصعيدي",
+      "country": "جمهورية مصر العربية",
+      "countryCode": "EG",
+      "regionBranch": "محافظة الغربية - طنطا / صعيد مصر / القاهرة",
+      "lineageNarrative": "ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).",
+      "documentType": "vip-id",
+      "issueDateGregorian": "2026-10-25",
+      "issueDateHijri": "١١ ربيع الآخر ١٤٤٨ هـ",
+      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام",
+      "personalPhotoUrl": "/uploads/cert-photo-1792899178954.jpg",
+      "memberReferenceId": "REG-EG-387",
+      "ancestralRoot": "الجد السابع أحمد الصعيدي  — عمود النسب الموثق",
+      "currentResidence": "جمهورية مصر العربية — محافظة الغربية (كفر سنباط) مركز زفتي / القاهرة",
+      "archived": false
+    },
     {
       "serialNumber": "ELS-2026-EG-213",
       "arabicName": "محمد فرج السيد احمد الصعيدي",
