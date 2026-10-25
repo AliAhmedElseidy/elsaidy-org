@@ -1407,7 +1407,283 @@ export interface IssuedCertificateRecord {
   ancestralRoot?: string;
   currentResidence?: string;
   archived?: boolean;
+  idHash?: string; // بصمة التحقق الفريدة (سنة الميلاد + آخر 4 أرقام مثل 1990-4821)
+  whatsappPhone?: string; // رقم الواتساب للتواصل (سري للأدمن فقط — لا يظهر في الشهادة المطبوعة)
+  historicalRootId?: string;
+  founderId?: string;
+  founderName?: string;
+  parsedLineageChain?: string[];
 }
+
+export interface HistoricalRootFounder {
+  id: string;
+  name: string;
+  subHouseTitle: string;
+  lineageTemplate: string;
+  defaultLocation?: string;
+}
+
+export interface HistoricalRootEntry {
+  id: string;
+  title?: string;
+  migrationTitle: string;
+  migrationStory: string;
+  locations: string[];
+  countryCode?: string;
+  founders: HistoricalRootFounder[];
+}
+
+export interface CumulativeGenerationChain {
+  id: string;
+  rootId: string;
+  founderId: string;
+  founderName: string;
+  subHouseTitle: string;
+  locationKeyword: string;
+  ancestorChain: string[];
+  lineageNarrative: string;
+  updatedAt: string;
+}
+
+export interface N8nWebhookConfig {
+  enabled: boolean;
+  webhookUrl: string;
+  sendOnSave?: boolean;
+}
+
+/**
+ * Parses an Arabic 4-part or 5-part name into an ordered array of given names:
+ * [العضو, الأب, الجد, جد الأب, ...] while stripping honorifics, connectors ("بن", "ابن"),
+ * and the trailing family surname ("الصعيدي", "الجهني", etc.).
+ */
+export const parseArabicLineageName = (rawName: string): string[] => {
+  if (!rawName) return [];
+  const honorifics = new Set([
+    'المهندس',
+    'الدكتور',
+    'الحاج',
+    'الشيخ',
+    'الأستاذ',
+    'السيد',
+    'الشريف',
+    'العميد',
+    'اللواء',
+    'المستشار',
+    'م',
+    'د',
+    'بن',
+    'ابن',
+    'آل',
+    'عائلة',
+  ]);
+  const familySurnames = new Set([
+    'الصعيدي',
+    'صعيدي',
+    'الجهني',
+    'الحجازي',
+    'حجازي',
+    'Elsaidy',
+    'Elseidy',
+    'Alsaidi',
+  ]);
+
+  const tokens = rawName
+    .replace(/[()،,.\-_/\\]/g, ' ')
+    .split(/\s+/)
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  const chain: string[] = [];
+  tokens.forEach((tok, idx) => {
+    if (honorifics.has(tok)) return;
+    if (idx === tokens.length - 1 && familySurnames.has(tok)) return;
+    if (idx >= tokens.length - 2 && tok === 'الصعيدي') return;
+    chain.push(tok);
+  });
+
+  return chain;
+};
+
+export const DEFAULT_HISTORICAL_ROOTS: HistoricalRootEntry[] = [
+  {
+    id: 'root-gharbia-brothers',
+    migrationTitle: 'هجرة الإخوة والأجداد المؤسسين من صعيد مصر والحجاز إلى محافظة الغربية ووسط الدلتا',
+    migrationStory:
+      'ينتسب إلى الذرية الموثقة لعائلات الصعيدي، وترجع جذورهم التاريخية إلى هجرة الأجداد والإخوة المؤسسين الذين قدموا من صعيد مصر وامتداد قبيلة جهينة القضاعية مطلع القرن التاسع عشر الميلادي واستقروا في حواضر وقرى محافظة الغربية (طنطا، كفر الزيات، السنطة، بسيون، قطور، زفتى، والمحلة الكبرى)، وتفرعت منهم البيوت العامرة المشهود لها بالأصالة والوجاهة والعلم.',
+    locations: [
+      'طنطا',
+      'الغربية',
+      'محافظة الغربية',
+      'كفر الزيات',
+      'السنطة',
+      'بسيون',
+      'قطور',
+      'المحلة الكبرى',
+      'زفتى',
+      'سمنود',
+    ],
+    countryCode: 'EG',
+    founders: [
+      {
+        id: 'founder-morsi-hagag',
+        name: 'الشيخ مرسي الحجاج الصعيدي (عميد البيت الكبير بطنطا والغربية)',
+        subHouseTitle: 'الجد السابع إبراهيم الصعيدي الجهني ← فرع مرسي الحجاج الصعيدي (طنطا والغربية)',
+        lineageTemplate:
+          'ينتسب إلى الذرية الموثقة للشيخ مرسي الحجاج الصعيدي، أحد أركان وأجداد عائلات الصعيدي المؤسسين في مدينة طنطا ومحافظة الغربية المتصل عمود نسبهم بالجد الجامع إبراهيم الصعيدي الجهني وامتداد العائلة العريق بين صعيد مصر وحواضر الدلتا.',
+      },
+      {
+        id: 'founder-ali-ahmed-branch',
+        name: 'الحاج علي الصعيدي (فرع الحاج علي وأبنائه بطنطا والدلتا)',
+        subHouseTitle: 'الجد السابع إبراهيم الصعيدي الجهني ← بيت الحاج علي أحمد الصعيدي (الغربية وطنطا)',
+        lineageTemplate:
+          'ينتسب إلى الذرية الموثقة لفرع الحاج علي الصعيدي وذريته المباركة في مدينة طنطا ومحافظة الغربية والقاهرة، وهو من البيوت المؤسسة لعائلات الصعيدي ذات الامتداد التاريخي الموثق في صعيد مصر والدلتا والحجاز.',
+      },
+      {
+        id: 'founder-hijazi-hagag',
+        name: 'الحاج حجازي حجاج الصعيدي (فرع كفر الزيات والسنطة وبسيون)',
+        subHouseTitle: 'الجد السابع إبراهيم الصعيدي الجهني ← فرع الحاج حجازي حجاج الصعيدي (الغربية)',
+        lineageTemplate:
+          'ينتسب إلى الذرية الموثقة لفرع الحاج حجازي حجاج الصعيدي، أحد الإخوة والأجداد المؤسسين لفروع عائلات الصعيدي في مراكز كفر الزيات والسنطة وبسيون بمحافظة الغربية، المتصلين بالأصل الصعيدي والحجازي العريق.',
+      },
+      {
+        id: 'founder-ibrahim-delta',
+        name: 'الحاج إبراهيم الصعيدي الكبير (فرع المحلة الكبرى وزفتى وقطور)',
+        subHouseTitle: 'الجد السابع إبراهيم الصعيدي الجهني ← فرع الحاج إبراهيم الصعيدي (الغربية والدلتا)',
+        lineageTemplate:
+          'ينتسب إلى الذرية الموثقة لفرع الحاج إبراهيم الصعيدي الكبير في المحلة الكبرى وزفتى وقطور بمحافظة الغربية، من الأجداد المؤسسين الذين رسخوا حضور عائلات الصعيدي في قلب الدلتا المصرية.',
+      },
+    ],
+  },
+  {
+    id: 'root-upper-egypt',
+    migrationTitle: 'الموطن التاريخي الأول في صعيد مصر (سوهاج · قنا · أسيوط · المنيا · الأقصر · أسوان)',
+    migrationStory:
+      'ينتسب إلى الجذور التاريخية الراسخة لعائلات الصعيدي في إقليم صعيد مصر الأعلى والأوسط (سوهاج، جرجا، طهطا، أخميم، قنا، قوص، نجع حمادي، أسيوط، المنيا، الفيوم، بني سويف، الأقصر، وأسوان)، والتي تمثل المنطلق التاريخي لبطون العائلة المتصلة بالنسب العربي الشريف وقبيلة جهينة القضاعية.',
+    locations: [
+      'صعيد مصر',
+      'سوهاج',
+      'جرجا',
+      'طهطا',
+      'أخميم',
+      'قنا',
+      'قوص',
+      'نجع حمادي',
+      'أسيوط',
+      'المنيا',
+      'ملوي',
+      'الأقصر',
+      'أسوان',
+      'بني سويف',
+      'الفيوم',
+    ],
+    countryCode: 'EG',
+    founders: [
+      {
+        id: 'founder-abdullah-upper',
+        name: 'الشريف عبد الله الصعيدي الكبير (عميد بطون سوهاج وجرجا وقنا)',
+        subHouseTitle: 'الجد الجامع إبراهيم الصعيدي ← فرع عبد الله الصعيدي الكبير (صعيد مصر)',
+        lineageTemplate:
+          'ينتسب إلى الذرية الموثقة لفرع الشريف عبد الله الصعيدي الكبير في سوهاج وجرجا وقنا بصعيد مصر، المتصل عمود نسبهم بالجد الجامع إبراهيم الصعيدي الجهني والأصل الحجازي العريق.',
+      },
+      {
+        id: 'founder-mahmoud-assyut',
+        name: 'الشيخ محمود الصعيدي (فرع أسيوط والمنيا وصعيد مصر الأوسط)',
+        subHouseTitle: 'الجد الجامع إبراهيم الصعيدي ← فرع الشيخ محمود الصعيدي (أسيوط والمنيا)',
+        lineageTemplate:
+          'ينتسب إلى الذرية الموثقة لفرع الشيخ محمود الصعيدي في أسيوط والمنيا وصعيد مصر الأوسط، المتصل عمود نسبهم بالجد الجامع إبراهيم الصعيدي الجهني.',
+      },
+    ],
+  },
+  {
+    id: 'root-east-west-delta-cairo',
+    migrationTitle: 'هجرة واستقرار فروع عائلات الصعيدي في القاهرة الكبرى والشرقية والدقهلية والبحيرة ومدن القناة',
+    migrationStory:
+      'ينتسب إلى الفروع التاريخية لعائلات الصعيدي التي انتقلت من صعيد مصر وحواضر الغربية واستقرت في القاهرة الكبرى والجيزة وشرق وغرب الدلتا (الشرقية، الدقهلية، المنوفية، القليوبية، كفر الشيخ، دمياط، البحيرة، والإسكندرية) ومدن القناة (الإسماعيلية، بورسعيد، السويس)، وأسست فيها بيوت علم وتجارة وقضاء.',
+    locations: [
+      'القاهرة',
+      'الجيزة',
+      'الإسكندرية',
+      'الشرقية',
+      'الزقازيق',
+      'بلبيس',
+      'الدقهلية',
+      'المنصورة',
+      'ميت غمر',
+      'المنوفية',
+      'شبين الكوم',
+      'القليوبية',
+      'بنها',
+      'البحيرة',
+      'دمنهور',
+      'كفر الشيخ',
+      'دمياط',
+      'الإسماعيلية',
+      'بورسعيد',
+      'السويس',
+    ],
+    countryCode: 'EG',
+    founders: [
+      {
+        id: 'founder-abdelmutaal-sharqia',
+        name: 'العلامة الشيخ عبد المتعال الصعيدي (فرع الدلتا والشرقية والقاهرة)',
+        subHouseTitle: 'الجد الجامع إبراهيم الصعيدي ← فرع العلماء والأزهريين (الدلتا والقاهرة)',
+        lineageTemplate:
+          'ينتسب إلى الذرية الموثقة لفرع العلماء والأزهريين من آل الصعيدي في الدلتا والشرقية والقاهرة، المتصلين بالأصل الصعيدي والجهني العريق.',
+      },
+      {
+        id: 'founder-mostafa-cairo',
+        name: 'الحاج مصطفى الصعيدي (فرع القاهرة الكبرى والجيزة والإسكندرية)',
+        subHouseTitle: 'الجد الجامع إبراهيم الصعيدي ← فرع القاهرة الكبرى والإسكندرية',
+        lineageTemplate:
+          'ينتسب إلى الذرية الموثقة لفرع الحاج مصطفى الصعيدي في القاهرة الكبرى والجيزة والإسكندرية، المتصل بعمود نسب عائلات الصعيدي في مصر والوطن العربي.',
+      },
+    ],
+  },
+  {
+    id: 'root-saudi-yanbu-hail',
+    migrationTitle: 'عمود النسب الحجازي والنجدي الموثق (ينبع النخل · تيماء · حائل · الرياض · تبوك)',
+    migrationStory:
+      'ترجع العائلة في عمود نسبها الموثق إلى الجد السابع إبراهيم الصعيدي من قبيلة جهينة من ينبع النخل بالساحل الغربي لشبه الجزيرة العربية، وتفرعت من ابنه عوض البراهيم عبر أبنائه الثلاثة: عبد الله، وسلامة، وصالح، وانتشرت حواضرهم في ينبع النخل وتيماء وحائل (حي الزبارة) والرياض وتبوك والمدينة المنورة وجدة.',
+    locations: [
+      'ينبع',
+      'ينبع النخل',
+      'حائل',
+      'منطقة حائل',
+      'حي الزبارة',
+      'تيماء',
+      'الرياض',
+      'مدينة الرياض',
+      'تبوك',
+      'جدة',
+      'المدينة المنورة',
+      'مكة المكرمة',
+    ],
+    countryCode: 'SA',
+    founders: [
+      {
+        id: 'founder-saleh-awad-sa',
+        name: 'صالح بن عوض البراهيم الصعيدي (فرع حائل والرياض)',
+        subHouseTitle: 'إبراهيم الصعيدي ← عوض البراهيم ← صالح بن عوض (حائل والرياض)',
+        lineageTemplate:
+          'من أعقاب الجد السابع إبراهيم الصعيدي من قبيلة جهينة من ينبع النخل بالساحل الغربي لشبه الجزيرة العربية، من ذرية عوض البراهيم عبر ابنه صالح بن عوض في منطقة حائل والرياض.',
+      },
+      {
+        id: 'founder-abdullah-awad-sa',
+        name: 'عبد الله بن عوض البراهيم الصعيدي (فرع تيماء وحائل وتبوك)',
+        subHouseTitle: 'إبراهيم الصعيدي ← عوض البراهيم ← عبد الله بن عوض (تيماء وحائل)',
+        lineageTemplate:
+          'من أعقاب الجد السابع إبراهيم الصعيدي من قبيلة جهينة من ينبع النخل بالساحل الغربي لشبه الجزيرة العربية، من ذرية عوض البراهيم عبر ابنه عبد الله بن عوض في محافظة تيماء وتبوك.',
+      },
+      {
+        id: 'founder-salama-awad-sa',
+        name: 'سلامة بن عوض البراهيم الصعيدي (فرع ينبع النخل وتيماء والحجاز)',
+        subHouseTitle: 'إبراهيم الصعيدي ← عوض البراهيم ← سلامة بن عوض (ينبع وتيماء)',
+        lineageTemplate:
+          'من أعقاب الجد السابع إبراهيم الصعيدي من قبيلة جهينة من ينبع النخل بالساحل الغربي لشبه الجزيرة العربية، من ذرية عوض البراهيم عبر ابنه سلامة بن عوض.',
+      },
+    ],
+  },
+];
 
 export interface AdminChangeLogEntry {
   id: string;
@@ -1448,7 +1724,12 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
     status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
     memberReferenceId: 'REG-EG-GH-0013',
     ancestralRoot: 'الجد السابع إبراهيم الصعيدي الجهني — فرع الغربية وطنطا وصعيد مصر',
-    currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة'
+    currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة',
+    idHash: '1992-0013',
+    historicalRootId: 'root-gharbia-brothers',
+    founderId: 'founder-ali-ahmed-branch',
+    founderName: 'الحاج علي الصعيدي (فرع الحاج علي وأبنائه بطنطا والدلتا)',
+    parsedLineageChain: ['علي', 'أحمد', 'علي'],
   },
   {
     serialNumber: 'ELS-2026-EG-002',
@@ -1466,7 +1747,12 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
     status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
     memberReferenceId: 'REG-EG-GH-0002',
     ancestralRoot: 'الجد السابع إبراهيم الصعيدي الجهني — فرع الغربية وطنطا وصعيد مصر',
-    currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة'
+    currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة',
+    idHash: '1992-0002',
+    historicalRootId: 'root-gharbia-brothers',
+    founderId: 'founder-ali-ahmed-branch',
+    founderName: 'الحاج علي الصعيدي (فرع الحاج علي وأبنائه بطنطا والدلتا)',
+    parsedLineageChain: ['علي', 'أحمد', 'علي'],
   },
   {
     serialNumber: 'ELS-2026-SA-001',
@@ -1484,7 +1770,12 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
     status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
     memberReferenceId: 'REG-SA-HL-0001',
     ancestralRoot: 'إبراهيم الصعيدي ← عوض البراهيم ← صالح ← عبد الله ← إبراهيم',
-    currentResidence: 'المملكة العربية السعودية — منطقة حائل (حي الزبارة)'
+    currentResidence: 'المملكة العربية السعودية — منطقة حائل (حي الزبارة)',
+    idHash: '1980-1001',
+    historicalRootId: 'root-saudi-yanbu-hail',
+    founderId: 'founder-saleh-awad-sa',
+    founderName: 'صالح بن عوض البراهيم الصعيدي (فرع حائل والرياض)',
+    parsedLineageChain: ['إبراهيم', 'عبد الله', 'صالح'],
   },
   {
     serialNumber: 'ELS-2026-SA-002',
@@ -1502,8 +1793,13 @@ export const DEFAULT_VERIFIED_CERTIFICATES: IssuedCertificateRecord[] = [
     status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
     memberReferenceId: 'REG-SA-RY-0002',
     ancestralRoot: 'إبراهيم الصعيدي ← عوض البراهيم ← صالح ← عبد الله ← ناصر ← حمود',
-    currentResidence: 'المملكة العربية السعودية — مدينة الرياض'
-  }
+    currentResidence: 'المملكة العربية السعودية — مدينة الرياض',
+    idHash: '1978-2002',
+    historicalRootId: 'root-saudi-yanbu-hail',
+    founderId: 'founder-saleh-awad-sa',
+    founderName: 'صالح بن عوض البراهيم الصعيدي (فرع حائل والرياض)',
+    parsedLineageChain: ['حمود', 'ناصر', 'عبد الله', 'صالح'],
+  },
 ];
 
 export interface HeroStatItem {
@@ -1556,6 +1852,9 @@ export interface SiteConfig {
     quickCards?: HeroQuickCardItem[];
   };
   telemetryConfig?: TelemetryConfig;
+  historicalRoots?: HistoricalRootEntry[];
+  cumulativeGenerations?: CumulativeGenerationChain[];
+  n8nWebhookConfig?: N8nWebhookConfig;
   familyTreeConfig: {
     treeImageUrl: string;
     documentCode: string;
@@ -1654,6 +1953,38 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
     onlineUsersMin: 5,
     onlineUsersMax: 24,
   },
+  historicalRoots: DEFAULT_HISTORICAL_ROOTS,
+  cumulativeGenerations: [
+    {
+      id: 'chain-init-eg-1',
+      rootId: 'root-gharbia-brothers',
+      founderId: 'founder-ali-ahmed-branch',
+      founderName: 'الحاج علي الصعيدي (فرع الحاج علي وأبنائه بطنطا والدلتا)',
+      subHouseTitle: 'الجد السابع إبراهيم الصعيدي الجهني ← بيت الحاج علي أحمد الصعيدي (الغربية وطنطا)',
+      locationKeyword: 'محافظة الغربية - مدينة طنطا',
+      ancestorChain: ['أحمد', 'علي', 'مرسي الحجاج'],
+      lineageNarrative:
+        'ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).',
+      updatedAt: '2026-10-23',
+    },
+    {
+      id: 'chain-init-sa-1',
+      rootId: 'root-saudi-yanbu-hail',
+      founderId: 'founder-saleh-awad-sa',
+      founderName: 'صالح بن عوض البراهيم الصعيدي (فرع حائل والرياض)',
+      subHouseTitle: 'إبراهيم الصعيدي ← عوض البراهيم ← صالح ← عبد الله ← إبراهيم',
+      locationKeyword: 'منطقة حائل - حي الزبارة',
+      ancestorChain: ['عبد الله', 'صالح', 'عوض البراهيم'],
+      lineageNarrative:
+        'من أعقاب الجد السابع إبراهيم الصعيدي من قبيلة جهينة من ينبع النخل بالساحل الغربي لشبه الجزيرة العربية، من ذرية عوض البراهيم عبر ابنه صالح بن عوض.',
+      updatedAt: '2026-10-22',
+    },
+  ],
+  n8nWebhookConfig: {
+    enabled: false,
+    webhookUrl: '',
+    sendOnSave: false,
+  },
   familyTreeConfig: {
     treeImageUrl: OFFICIAL_FAMILY_TREE_IMAGE_URL,
     documentCode: 'ARCH-TREE-01',
@@ -1667,6 +1998,7 @@ export const DEFAULT_SITE_CONFIG: SiteConfig = {
       '© 2026 الموقع الرسمي لعائلات الصعيدي في الوطن العربي ومجموعة الصعيدي — elsaidy.org',
   },
 };
+
 
 
 

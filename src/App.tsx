@@ -165,6 +165,17 @@ export default function App() {
               ...DEFAULT_SITE_CONFIG.contactAndFooter,
               ...(parsed.contactAndFooter || {}),
             },
+            historicalRoots:
+              Array.isArray(parsed.historicalRoots) && parsed.historicalRoots.length > 0
+                ? parsed.historicalRoots
+                : DEFAULT_SITE_CONFIG.historicalRoots,
+            cumulativeGenerations: Array.isArray(parsed.cumulativeGenerations)
+              ? parsed.cumulativeGenerations
+              : DEFAULT_SITE_CONFIG.cumulativeGenerations,
+            n8nWebhookConfig: {
+              ...DEFAULT_SITE_CONFIG.n8nWebhookConfig!,
+              ...(parsed.n8nWebhookConfig || {}),
+            },
           };
         }
       }
@@ -490,6 +501,18 @@ export default function App() {
               contactAndFooter: {
                 ...DEFAULT_SITE_CONFIG.contactAndFooter,
                 ...(db.siteConfig.contactAndFooter || {}),
+              },
+              historicalRoots:
+                Array.isArray(db.siteConfig.historicalRoots) &&
+                db.siteConfig.historicalRoots.length > 0
+                  ? db.siteConfig.historicalRoots
+                  : DEFAULT_SITE_CONFIG.historicalRoots,
+              cumulativeGenerations: Array.isArray(db.siteConfig.cumulativeGenerations)
+                ? db.siteConfig.cumulativeGenerations
+                : DEFAULT_SITE_CONFIG.cumulativeGenerations,
+              n8nWebhookConfig: {
+                ...DEFAULT_SITE_CONFIG.n8nWebhookConfig!,
+                ...(db.siteConfig.n8nWebhookConfig || {}),
               },
             };
             setSiteConfig((prev) =>

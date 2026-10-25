@@ -1,6 +1,6 @@
 {
   "name": "عائلة الصعيدي | البوابة الرسمية والبنية الرقمية — Elsaidy Family",
   "description": "البوابة الرسمية لعائلة الصعيدي (من قبيلة جهينة) في ينبع وتيماء وحائل والرياض وتبوك والشام والخليج، ومنصة الخدمات والبنية التحتية الرقمية المعتمدة.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": ["camera"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

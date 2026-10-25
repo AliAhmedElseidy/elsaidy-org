@@ -26,6 +26,14 @@ import {
   ArrowUp,
   ArrowDown,
   RotateCcw,
+  Camera,
+  Settings,
+  Search,
+  MessageCircle,
+  AlertTriangle,
+  Crown,
+  Webhook,
+  X,
 } from 'lucide-react';
 import {
   PageRoute,
@@ -35,11 +43,20 @@ import {
   WhiteLabeledPortal,
   DEFAULT_SITE_CONFIG,
   DEFAULT_FAMILY_TREE_NODES,
+  DEFAULT_HISTORICAL_ROOTS,
+  HistoricalRootEntry,
+  HistoricalRootFounder,
+  CumulativeGenerationChain,
+  parseArabicLineageName,
   FamilyTreeNode,
   AdminChangeLogEntry,
   sanitizeSafeUrl,
 } from '../data/familyData';
 import type { EncyclopediaBranchSubmission } from '../data/elsaidyEncyclopedia';
+import {
+  HistoricalRootsModal,
+  AutomatedRoyalFamilyTree,
+} from '../components/AutomatedRoyalFamilyTree';
 
 const ENCYCLOPEDIA_STORAGE_SUBMISSIONS_KEY =
   'elsaidy_encyclopedia_branch_submissions_v1';
@@ -209,7 +226,7 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     sections: [{ heading: 'المتن التوثيقي والتاريخي', body: '' }],
   });
 
-  // --- MODULE 5: CERTIFICATE STUDIO STATE (With Anti-Collision Identity Fields) ---
+  // --- MODULE 5: CERTIFICATE STUDIO STATE (With Anti-Collision, Smart ID Scanner, Historical Roots & Registry) ---
   const [certForm, setCertForm] = useState<{
     serialNumber: string;
     arabicName: string;
@@ -227,6 +244,11 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     ancestralRoot: string;
     currentResidence: string;
     includeFamilyTreeStamp: boolean;
+    idHash: string;
+    whatsappPhone: string;
+    historicalRootId: string;
+    founderId: string;
+    founderName: string;
   }>({
     serialNumber: `ELS-2026-EG-${String(issuedCertificates.length + 15).padStart(3, '0')}`,
     arabicName: 'علي أحمد علي الصعيدي',
@@ -245,7 +267,26 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     ancestralRoot: 'الجد السابع إبراهيم الصعيدي الجهني — عمود النسب الموثق',
     currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة',
     includeFamilyTreeStamp: true,
+    idHash: '1990-4821',
+    whatsappPhone: '',
+    historicalRootId: 'root-upper-egypt-delta-brothers',
+    founderId: 'founder-morsi-hagag',
+    founderName: 'الجد الأكبر مرسي الحجاج الصعيدي',
   });
+
+  // Historical Roots Modal, Automated Visual Tree toggle, Smart ID Scanner & Registry Filters
+  const [isRootsModalOpen, setIsRootsModalOpen] = useState<boolean>(false);
+  const [showVisualRoyalTree, setShowVisualRoyalTree] = useState<boolean>(true);
+  const [isScanningIdCard, setIsScanningIdCard] = useState<boolean>(false);
+  const [isScannerSettingsOpen, setIsScannerSettingsOpen] = useState<boolean>(false);
+  const [editingCertSerial, setEditingCertSerial] = useState<string | null>(null);
+
+  // Registry Search & Filters
+  const [certRegistrySearch, setCertRegistrySearch] = useState<string>('');
+  const [certRegistryFilter, setCertRegistryFilter] = useState<
+    'ALL' | 'EG' | 'SA' | 'ARCHIVED' | 'BRANCH'
+  >('ALL');
+  const [certBranchFilterValue, setCertBranchFilterValue] = useState<string>('');
 
   // --- MODULE 6: SEO NAMES & VISITOR COUNTER ---
   const [newNameInput, setNewNameInput] = useState<string>('');
@@ -565,11 +606,20 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     });
   };
 
-  // --- MODULE 5 HANDLERS: CERTIFICATES (Anti-Collision & Archive/Restore) ---
+  // --- MODULE 5 HANDLERS: CERTIFICATES (Smart ID Scanner, Historical Roots, Anti-Collision & Webhook) ---
+  const activeHistoricalRoots: HistoricalRootEntry[] =
+    siteConfig.historicalRoots && siteConfig.historicalRoots.length > 0
+      ? siteConfig.historicalRoots
+      : DEFAULT_HISTORICAL_ROOTS;
+
+  const activeCumulativeChains: CumulativeGenerationChain[] =
+    siteConfig.cumulativeGenerations || [];
+
   const handleGenerateNewSerial = (countryCode = certForm.countryCode) => {
     const rand = Math.floor(100 + Math.random() * 899);
     const nextSerial = `ELS-2026-${countryCode}-${rand}`;
     const nextRefId = `REG-${countryCode}-${rand}`;
+    setEditingCertSerial(null);
     setCertForm((prev) => ({
       ...prev,
       serialNumber: nextSerial,
@@ -577,7 +627,164 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     }));
   };
 
-  const handleSaveCertificate = () => {
+  // Load an existing certificate into the form for viewing or editing on the same serialNumber
+  const handleLoadCertificateIntoForm = (c: IssuedCertificateRecord, isEditMode = true) => {
+    setEditingCertSerial(isEditMode ? c.serialNumber : null);
+    setCertForm({
+      serialNumber: c.serialNumber,
+      arabicName: c.arabicName,
+      englishName: c.englishName,
+      familyTitle: c.familyTitle || 'الصعيدي',
+      country: c.country,
+      countryCode: c.countryCode,
+      regionBranch: c.regionBranch,
+      lineageNarrative: c.lineageNarrative,
+      documentType: c.documentType,
+      issueDateGregorian: c.issueDateGregorian,
+      issueDateHijri: c.issueDateHijri,
+      includeFamilyTreeStamp: true,
+      personalPhotoUrl: c.personalPhotoUrl || '',
+      memberReferenceId: c.memberReferenceId || '',
+      ancestralRoot: c.ancestralRoot || '',
+      currentResidence: c.currentResidence || '',
+      idHash: c.idHash || '',
+      whatsappPhone: c.whatsappPhone || '',
+      historicalRootId: c.historicalRootId || '',
+      founderId: c.founderId || '',
+      founderName: c.founderName || '',
+    });
+    if (isEditMode) {
+      setStatusBanner({
+        type: 'info',
+        message: `وضع التعديل المباشر مفعّل للوثيقة (${c.serialNumber}) الخاصة بـ (${c.arabicName}). يمكنك تعديل أي بيان ثم الضغط على «اعتماد وحفظ في السجل العام» لتحديثها على نفس الرقم المرجعي.`,
+      });
+    }
+  };
+
+  // Privacy-First AI Smart ID Card Scanner (Wipes image from memory immediately after extraction)
+  const handleScanIdCardImage = (file: File, inputEl?: HTMLInputElement | null) => {
+    setIsScanningIdCard(true);
+    setStatusBanner({
+      type: 'info',
+      message:
+        'جاري قراءة بطاقة الهوية بالذكاء الاصطناعي (Gemini Vision) واستخراج الاسم والبلد وبصمة التحقق بدون حفظ صورة البطاقة...',
+    });
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      let tempDataUrl: string | null = reader.result as string;
+      // Immediately clear the file input DOM element so the file reference isn't held
+      if (inputEl) {
+        inputEl.value = '';
+      }
+
+      try {
+        const res = await fetch('/api/scan-id', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageBase64: tempDataUrl,
+            mimeType: file.type || 'image/jpeg',
+          }),
+        });
+
+        // Wipe base64 image from local variable immediately after sending
+        tempDataUrl = null;
+
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok || !payload.extracted) {
+          throw new Error(
+            payload.error || 'تعذر قراءة البطاقة. يرجى التأكد من وضوح الصورة أو المحاولة مجدداً.'
+          );
+        }
+
+        const ext = payload.extracted as {
+          arabicName?: string;
+          englishName?: string;
+          countryCode?: string;
+          countryNameArabic?: string;
+          governorateOrRegion?: string;
+          centerOrVillage?: string;
+          idHash?: string;
+        };
+
+        const code = ['EG', 'SA', 'LV', 'GF', 'MG'].includes(ext.countryCode || '')
+          ? (ext.countryCode as string)
+          : 'EG';
+
+        const countryMap: Record<string, string> = {
+          EG: 'جمهورية مصر العربية',
+          SA: 'المملكة العربية السعودية',
+          LV: 'بلاد الشام والعراق',
+          GF: 'دول الخليج العربي',
+          MG: 'المغرب العربي والسودان',
+        };
+
+        const govText = (ext.governorateOrRegion || '').trim();
+        const centerText = (ext.centerOrVillage || '').trim();
+        const combinedResidence =
+          centerText && govText
+            ? `${centerText} — ${govText}`
+            : centerText || govText || certForm.currentResidence;
+
+        // Check if locality matches any Historical Root to auto-suggest founder
+        const combinedLocSearch = `${govText} ${centerText}`.toLowerCase();
+        const matchedRoot = activeHistoricalRoots.find((r) =>
+          r.locations.some((loc) => combinedLocSearch.includes(loc.toLowerCase()))
+        );
+        const firstFounder = matchedRoot?.founders?.[0];
+
+        const rand = Math.floor(100 + Math.random() * 899);
+        const nextSerial = editingCertSerial || `ELS-2026-${code}-${rand}`;
+        const nextRefId = `REG-${code}-${ext.idHash || rand}`;
+
+        setCertForm((prev) => ({
+          ...prev,
+          serialNumber: nextSerial,
+          memberReferenceId: nextRefId,
+          arabicName: ext.arabicName?.trim() || prev.arabicName,
+          englishName: ext.englishName?.trim() || prev.englishName,
+          countryCode: code,
+          country: ext.countryNameArabic?.trim() || countryMap[code] || prev.country,
+          regionBranch: govText || prev.regionBranch,
+          currentResidence: combinedResidence,
+          idHash: ext.idHash?.trim() || prev.idHash,
+          ...(firstFounder
+            ? {
+                historicalRootId: matchedRoot!.id,
+                founderId: firstFounder.id,
+                founderName: firstFounder.name,
+                ancestralRoot: firstFounder.subHouseTitle,
+                lineageNarrative: firstFounder.lineageTemplate,
+              }
+            : {}),
+        }));
+
+        appendLog(
+          'مسح ذكي لبطاقة الهوية (AI ID Scan)',
+          `تم استخراج بيانات (${ext.arabicName || 'عضو'}) وبصمة التحقق (${ext.idHash || '-'}) ومسح صورة البطاقة فوراً من الذاكرة`
+        );
+        setStatusBanner({
+          type: 'success',
+          message: `تم استخراج بيانات البطاقة بنجاح (${ext.arabicName || ''}) وتوليد بصمة التحقق الفريدة (${
+            ext.idHash || 'مكتمل'
+          }). تم مسح صورة البطاقة نهائياً من الذاكرة حفاظاً على الخصوصية.`,
+        });
+      } catch (err: unknown) {
+        tempDataUrl = null;
+        const msg = err instanceof Error ? err.message : 'خطأ أثناء قراءة البطاقة';
+        setStatusBanner({
+          type: 'error',
+          message: msg,
+        });
+      } finally {
+        setIsScanningIdCard(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveCertificate = async () => {
     if (!certForm.arabicName.trim() || !certForm.serialNumber.trim()) {
       setStatusBanner({
         type: 'error',
@@ -587,6 +794,8 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     }
 
     const serialUpper = certForm.serialNumber.trim().toUpperCase();
+    const parsedChain = parseArabicLineageName(certForm.arabicName.trim());
+
     const record: IssuedCertificateRecord = {
       serialNumber: serialUpper,
       arabicName: certForm.arabicName.trim(),
@@ -611,20 +820,118 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
         certForm.currentResidence.trim() ||
         `${certForm.country} — ${certForm.regionBranch.trim()}`,
       archived: false,
+      idHash: certForm.idHash.trim() || undefined,
+      whatsappPhone: certForm.whatsappPhone.trim() || undefined,
+      historicalRootId: certForm.historicalRootId || undefined,
+      founderId: certForm.founderId || undefined,
+      founderName: certForm.founderName || undefined,
+      parsedLineageChain: parsedChain,
     };
 
     const filtered = issuedCertificates.filter(
       (c) => c.serialNumber.toUpperCase() !== record.serialNumber
     );
     onUpdateCertificates([record, ...filtered]);
+
+    // Auto-Learn Generations (البناء التراكمي للأجيال): store [father, grandfather, greatGrandfather]
+    if (parsedChain.length >= 3) {
+      const ancestorChainOnly = parsedChain.slice(1); // [الأب, الجد, جد الأب]
+      const chainKey = ancestorChainOnly.join('|');
+      const existingChains = siteConfig.cumulativeGenerations || [];
+      const alreadyExists = existingChains.some(
+        (ch) => ch.ancestorChain.join('|') === chainKey
+      );
+      if (!alreadyExists) {
+        const learnedChain: CumulativeGenerationChain = {
+          id: `chain-auto-${Date.now()}`,
+          rootId: certForm.historicalRootId || activeHistoricalRoots[0]?.id || 'root-default',
+          founderId: certForm.founderId || 'founder-morsi-hagag',
+          founderName:
+            certForm.founderName ||
+            certForm.ancestralRoot.split('—')[0]?.trim() ||
+            'الجد المؤسس لفرع الصعيدي',
+          subHouseTitle: certForm.ancestralRoot.trim(),
+          locationKeyword:
+            certForm.currentResidence.trim() || certForm.regionBranch.trim(),
+          ancestorChain: ancestorChainOnly,
+          lineageNarrative: certForm.lineageNarrative.trim(),
+          updatedAt: new Date().toISOString(),
+        };
+        onUpdateSiteConfig({
+          ...siteConfig,
+          cumulativeGenerations: [learnedChain, ...existingChains],
+        });
+      }
+    }
+
+    // Optional n8n Webhook POST if enabled in settings
+    if (
+      siteConfig.n8nWebhookConfig?.enabled &&
+      siteConfig.n8nWebhookConfig?.webhookUrl?.trim()
+    ) {
+      try {
+        fetch(siteConfig.n8nWebhookConfig.webhookUrl.trim(), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'elsaidy.certificate.issued',
+            timestamp: new Date().toISOString(),
+            verificationUrl: `https://elsaidy.org/verify/${record.serialNumber}`,
+            certificate: record,
+          }),
+        }).catch(() => {});
+      } catch {
+        // non-blocking webhook dispatch
+      }
+    }
+
+    setEditingCertSerial(record.serialNumber);
     appendLog(
-      'اعتماد وحفظ شهادة نسب',
+      'اعتماد وحفظ شهادة نسب وتحديث شجرة الأجيال',
       `الوثيقة ${record.serialNumber} باسم: ${record.arabicName} (رقم القيد: ${record.memberReferenceId})`
     );
     setStatusBanner({
       type: 'success',
-      message: `تم حفظ واعتماد الوثيقة رقم (${record.serialNumber}) في السجل العام للتحقق الفوري عبر الرابط (https://elsaidy.org/verify/${record.serialNumber}).`,
+      message: `تم حفظ واعتماد الوثيقة رقم (${record.serialNumber}) وتحديث الشجرة التفاعلية وذاكرة الأجيال التراكمية بنجاح! رابط التحقق الفوري: (https://elsaidy.org/verify/${record.serialNumber}).`,
     });
+  };
+
+  // Send direct WhatsApp congratulatory message with verification link
+  const handleSendWhatsAppCertificate = (c: IssuedCertificateRecord) => {
+    const verifyUrl = `https://elsaidy.org/verify/${c.serialNumber}`;
+    const message = [
+      `السلام عليكم ورحمة الله وبركاته،`,
+      `الأستاذ / ${c.arabicName} المحترم،`,
+      ``,
+      `يسر الأمانة العامة لتوثيق أنساب عائلات الصعيدي (آل الصعيدي — ELSAIDY.ORG) تهنئتكم باعتماد وإصدار شهادة النسب الملكية وبطاقة العضوية الرسمية الخاصة بكم في السجل العام.`,
+      ``,
+      `📌 الرقم المرجعي للوثيقة: ${c.serialNumber}`,
+      ...(c.memberReferenceId ? [`🆔 كود القيد العائلي: ${c.memberReferenceId}`] : []),
+      `🏛️ الفرع / البيت الموثق: ${c.ancestralRoot || c.regionBranch}`,
+      ``,
+      `🔗 رابط التحقق الفوري والاطلاع على الوثيقة الرسمية:`,
+      verifyUrl,
+    ].join('\n');
+
+    const rawPhone = (c.whatsappPhone || '').replace(/[^0-9+]/g, '');
+    let normalizedPhone = rawPhone.replace(/^\+/, '');
+    if (normalizedPhone.startsWith('01') && normalizedPhone.length === 11) {
+      normalizedPhone = `2${normalizedPhone}`; // Egypt +20
+    } else if (normalizedPhone.startsWith('05') && normalizedPhone.length === 10) {
+      normalizedPhone = `966${normalizedPhone.slice(1)}`; // Saudi +966
+    } else if (normalizedPhone.startsWith('00')) {
+      normalizedPhone = normalizedPhone.slice(2);
+    }
+
+    const waUrl = normalizedPhone
+      ? `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`
+      : `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+    const a = document.createElement('a');
+    a.href = waUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.click();
   };
 
   const handleToggleArchiveCertificate = (serial: string) => {
@@ -2646,447 +2953,1127 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
       )}
 
       {/* ====================================================================
-          MODULE 5: CERTIFICATE & VIP ID STUDIO (WITH ANTI-COLLISION IDENTITY)
+          MODULE 5: CERTIFICATE & VIP ID STUDIO (WITH SMART ID SCANNER, HISTORICAL ROOTS, ROYAL TREE & ADVANCED REGISTRY)
       ==================================================================== */}
-      {activeTab === 'certificates' && (
-        <div className="space-y-10">
-          <div className="no-print grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            <div className="lg:col-span-7 bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-8 shadow-sm space-y-5">
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-[#E6E2D8]">
-                <div>
-                  <div className="text-xs font-bold text-[#695022]">
-                    ELSAIDY LINEAGE CERTIFICATE & VIP ID STUDIO
-                  </div>
-                  <h2 className="text-xl font-extrabold text-[#141413]">
-                    إصدار وتخصيص شهادة النسب الملكية وبطاقة العضوية
-                  </h2>
-                </div>
-                <div className="flex items-center gap-1.5 bg-[#F7F6F2] p-1 rounded-xl border border-[#E6E2D8]">
-                  <button
-                    type="button"
-                    onClick={() => setCertForm({ ...certForm, documentType: 'a4-certificate' })}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${
-                      certForm.documentType === 'a4-certificate'
-                        ? 'bg-[#0F291E] text-white'
-                        : 'text-zinc-700'
-                    }`}
-                  >
-                    شهادة نسب (A4)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCertForm({ ...certForm, documentType: 'vip-id' })}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${
-                      certForm.documentType === 'vip-id'
-                        ? 'bg-[#0F291E] text-white'
-                        : 'text-zinc-700'
-                    }`}
-                  >
-                    بطاقة عضوية (VIP ID)
-                  </button>
-                </div>
-              </div>
+      {activeTab === 'certificates' &&
+        (() => {
+          // 1. Anti-Collision Detection: check if idHash or exact arabicName matches an existing certificate
+          const cleanNameInput = certForm.arabicName.trim();
+          const cleanHashInput = certForm.idHash.trim();
+          const duplicateCert = issuedCertificates.find((c) => {
+            if (
+              editingCertSerial &&
+              c.serialNumber.toUpperCase() === editingCertSerial.toUpperCase()
+            ) {
+              return false;
+            }
+            const nameMatch =
+              cleanNameInput.length >= 6 &&
+              c.arabicName.trim() === cleanNameInput;
+            const hashMatch =
+              cleanHashInput.length >= 4 &&
+              Boolean(c.idHash) &&
+              c.idHash!.trim() === cleanHashInput;
+            return nameMatch || hashMatch;
+          });
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                    الاسم الرباعي أو الكامل بالعربية:
-                  </label>
-                  <input
-                    type="text"
-                    value={certForm.arabicName}
-                    onChange={(e) => setCertForm({ ...certForm, arabicName: e.target.value })}
-                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                    الاسم بالإنجليزية (English Name):
-                  </label>
-                  <input
-                    type="text"
-                    dir="ltr"
-                    value={certForm.englishName}
-                    onChange={(e) => setCertForm({ ...certForm, englishName: e.target.value })}
-                    className="w-full px-3.5 py-2.5 text-sm font-mono rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413]"
-                  />
-                </div>
-              </div>
+          // 2. Historical Roots & Locality Auto-Detection
+          const localityQuery = `${certForm.regionBranch} ${certForm.currentResidence}`.toLowerCase();
+          const matchedHistoricalRoots = activeHistoricalRoots.filter((root) =>
+            root.locations.some(
+              (loc) =>
+                loc.trim().length > 1 &&
+                localityQuery.includes(loc.trim().toLowerCase())
+            )
+          );
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                    القطر / الدولة:
-                  </label>
-                  <select
-                    value={certForm.countryCode}
-                    onChange={(e) => {
-                      const code = e.target.value;
-                      const map: Record<string, string> = {
-                        EG: 'جمهورية مصر العربية',
-                        SA: 'المملكة العربية السعودية',
-                        LV: 'بلاد الشام والعراق',
-                        GF: 'دول الخليج العربي',
-                        MG: 'المغرب العربي والسودان',
-                      };
-                      setCertForm({
-                        ...certForm,
-                        countryCode: code,
-                        country: map[code] || 'جمهورية مصر العربية',
-                      });
-                      handleGenerateNewSerial(code);
-                    }}
-                    className="w-full px-3 py-2.5 text-xs rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
-                  >
-                    <option value="EG">مصر (EG)</option>
-                    <option value="SA">السعودية (SA)</option>
-                    <option value="LV">الشام والعراق (LV)</option>
-                    <option value="GF">الخليج العربي (GF)</option>
-                    <option value="MG">المغرب العربي والسودان (MG)</option>
-                  </select>
-                </div>
+          // 3. Cumulative Generations Intersection Detection (Auto-Learn Generations)
+          const parsedCurrentName = parseArabicLineageName(cleanNameInput);
+          // parsedCurrentName = [العضو(0), الأب(1), الجد(2), جد الأب(3)]
+          const candidateAncestors = parsedCurrentName.slice(1).filter((p) => p.length >= 2);
 
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                    الرقم المرجعي للوثيقة (Serial Number):
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      dir="ltr"
-                      value={certForm.serialNumber}
-                      onChange={(e) => setCertForm({ ...certForm, serialNumber: e.target.value })}
-                      className="flex-1 px-3.5 py-2.5 text-sm font-mono font-bold rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleGenerateNewSerial()}
-                      className="px-3 py-2.5 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] hover:border-[#695022] text-xs font-bold cursor-pointer"
-                    >
-                      توليد رقم
-                    </button>
-                  </div>
-                </div>
-              </div>
+          const intersectedChain =
+            candidateAncestors.length >= 2
+              ? activeCumulativeChains.find((ch) => {
+                  // Check if 2nd/3rd/4th name intersects with saved ancestor chain
+                  const sharedCount = candidateAncestors.filter((anc) =>
+                    ch.ancestorChain.includes(anc)
+                  ).length;
+                  return sharedCount >= 2;
+                })
+              : undefined;
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                    اللقب / العائلة المعتمدة في الشهادة (الافتراضي: الصعيدي):
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={certForm.familyTitle}
-                      onChange={(e) => setCertForm({ ...certForm, familyTitle: e.target.value })}
-                      placeholder="الصعيدي"
-                      className="flex-1 px-3.5 py-2.5 text-sm font-bold text-[#0F291E] rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
-                    />
-                    {certForm.familyTitle !== 'الصعيدي' && (
-                      <button
-                        type="button"
-                        onClick={() => setCertForm({ ...certForm, familyTitle: 'الصعيدي' })}
-                        className="px-2.5 py-2 rounded-xl bg-[#0F291E] text-[#D4AF37] text-xs font-bold cursor-pointer shrink-0"
-                      >
-                        الصعيدي (الافتراضي)
-                      </button>
-                    )}
-                  </div>
-                </div>
+          // Also check intersection against existing issuedCertificates in the same locality
+          const intersectedExistingCert =
+            !intersectedChain && candidateAncestors.length >= 2
+              ? issuedCertificates.find((c) => {
+                  if (c.serialNumber === certForm.serialNumber) return false;
+                  const cParts =
+                    c.parsedLineageChain && c.parsedLineageChain.length >= 3
+                      ? c.parsedLineageChain.slice(1)
+                      : parseArabicLineageName(c.arabicName).slice(1);
+                  // Match grandfather or great-grandfather
+                  const grandfather = parsedCurrentName[2];
+                  const greatGrandfather = parsedCurrentName[3];
+                  return (
+                    (grandfather && cParts.includes(grandfather)) ||
+                    (greatGrandfather && cParts.includes(greatGrandfather))
+                  );
+                })
+              : undefined;
 
-                <div>
-                  <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                    المحافظة / الحاضرة / الفرع العائلي:
-                  </label>
-                  <input
-                    type="text"
-                    value={certForm.regionBranch}
-                    onChange={(e) => setCertForm({ ...certForm, regionBranch: e.target.value })}
-                    className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
-                  />
-                </div>
-              </div>
+          // 4. Registry Counts & Filtered List
+          const totalCertsCount = issuedCertificates.length;
+          const egCertsCount = issuedCertificates.filter(
+            (c) => c.countryCode === 'EG' && !c.archived
+          ).length;
+          const saCertsCount = issuedCertificates.filter(
+            (c) => c.countryCode === 'SA' && !c.archived
+          ).length;
+          const archivedCertsCount = issuedCertificates.filter((c) => c.archived).length;
 
-              {/* Anti-Collision Identity Verification Fields (Name Similarity Disambiguation) */}
-              <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#C5A059]/40 space-y-3">
-                <div className="text-xs font-extrabold text-[#0F291E]">
-                  بيانات منع تشابه الأسماء وتوثيق الهوية الفردية (Anti-Collision Identity Fields):
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-bold text-[#141413] mb-1">
-                      كود العضوية العائلي (Member Ref ID):
-                    </label>
-                    <input
-                      type="text"
-                      dir="ltr"
-                      value={certForm.memberReferenceId}
-                      onChange={(e) =>
-                        setCertForm({ ...certForm, memberReferenceId: e.target.value })
-                      }
-                      placeholder="ELS-ID-EG-1990-001"
-                      className="w-full px-3 py-2 text-xs font-mono rounded-lg bg-white border border-[#E6E2D8]"
-                    />
+          const uniqueRegistryBranches = Array.from(
+            new Set(
+              issuedCertificates
+                .map((c) => c.regionBranch || c.ancestralRoot || '')
+                .filter(Boolean)
+            )
+          );
+
+          const filteredRegistryCerts = issuedCertificates.filter((c) => {
+            if (certRegistryFilter === 'EG' && (c.countryCode !== 'EG' || c.archived)) {
+              return false;
+            }
+            if (certRegistryFilter === 'SA' && (c.countryCode !== 'SA' || c.archived)) {
+              return false;
+            }
+            if (certRegistryFilter === 'ARCHIVED' && !c.archived) {
+              return false;
+            }
+            if (
+              certRegistryFilter === 'BRANCH' &&
+              certBranchFilterValue &&
+              !(c.regionBranch || '').includes(certBranchFilterValue) &&
+              !(c.ancestralRoot || '').includes(certBranchFilterValue) &&
+              !(c.currentResidence || '').includes(certBranchFilterValue)
+            ) {
+              return false;
+            }
+
+            if (certRegistrySearch.trim()) {
+              const q = certRegistrySearch.trim().toLowerCase();
+              const match =
+                c.arabicName.toLowerCase().includes(q) ||
+                c.englishName.toLowerCase().includes(q) ||
+                c.serialNumber.toLowerCase().includes(q) ||
+                (c.memberReferenceId || '').toLowerCase().includes(q) ||
+                (c.regionBranch || '').toLowerCase().includes(q) ||
+                (c.currentResidence || '').toLowerCase().includes(q) ||
+                (c.ancestralRoot || '').toLowerCase().includes(q) ||
+                (c.idHash || '').toLowerCase().includes(q) ||
+                (c.whatsappPhone || '').toLowerCase().includes(q);
+              if (!match) return false;
+            }
+            return true;
+          });
+
+          return (
+            <div className="space-y-10">
+              {/* Top Royal Bar: Historical Roots Manager + Automated Tree Toggle */}
+              <div className="no-print bg-[#0F291E] text-white rounded-2xl border-2 border-[#D4AF37] p-4 sm:p-5 shadow-md flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37] flex items-center justify-center text-[#D4AF37] shrink-0">
+                    <Crown className="w-6 h-6" />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-[#141413] mb-1">
-                      الجد الجامع / البيت الفرعي:
-                    </label>
-                    <input
-                      type="text"
-                      value={certForm.ancestralRoot}
-                      onChange={(e) => setCertForm({ ...certForm, ancestralRoot: e.target.value })}
-                      placeholder="فرع الحاج علي الصعيدي"
-                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E2D8]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-[#141413] mb-1">
-                      محل الإقامة الحالي / المركز:
-                    </label>
-                    <input
-                      type="text"
-                      value={certForm.currentResidence}
-                      onChange={(e) =>
-                        setCertForm({ ...certForm, currentResidence: e.target.value })
-                      }
-                      placeholder="طنطا - محافظة الغربية"
-                      className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E2D8]"
-                    />
+                    <div className="text-[11px] font-mono font-bold text-[#D4AF37] tracking-wider">
+                      HISTORICAL ROOTS & CUMULATIVE GENERATIONS ENGINE
+                    </div>
+                    <h3 className="text-sm sm:text-base font-extrabold text-white">
+                      منظومة الذاكرة التاريخية للبلاد والأجداد المؤسسين وتوليد الشجرة التفاعلية
+                    </h3>
                   </div>
                 </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-[#141413] mb-1">
-                    الصورة الشخصية الرسمية لصاحب الوثيقة (اختياري — لمنع تطابق الأسماء):
-                  </label>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <input
-                      type="text"
-                      dir="ltr"
-                      value={certForm.personalPhotoUrl}
-                      onChange={(e) =>
-                        setCertForm({ ...certForm, personalPhotoUrl: e.target.value })
-                      }
-                      placeholder="https://... أو ارفع صورة شخصية"
-                      className="flex-1 min-w-[180px] px-3 py-1.5 text-xs font-mono rounded-lg bg-white border border-[#E6E2D8]"
-                    />
-                    <label className="px-3 py-1.5 rounded-lg bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] flex items-center gap-1.5 cursor-pointer">
-                      <ImageIcon className="w-3.5 h-3.5 text-[#D4AF37]" />
-                      <span>
-                        {uploadingAssetKey === 'cert-photo' ? 'جاري الرفع...' : 'رفع صورة شخصية'}
-                      </span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            uploadAssetFile(file, 'cert-photo', (url) =>
-                              setCertForm((prev) => ({ ...prev, personalPhotoUrl: url }))
-                            );
-                          }
-                        }}
-                        className="hidden"
-                      />
-                    </label>
-                    {certForm.personalPhotoUrl && (
-                      <button
-                        type="button"
-                        onClick={() => setCertForm({ ...certForm, personalPhotoUrl: '' })}
-                        className="text-xs font-bold text-red-700 hover:underline cursor-pointer"
-                      >
-                        مسح الصورة
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[#141413] mb-1.5">
-                  ديباجة عمود النسب والتوثيق التاريخي:
-                </label>
-                <textarea
-                  rows={3}
-                  value={certForm.lineageNarrative}
-                  onChange={(e) => setCertForm({ ...certForm, lineageNarrative: e.target.value })}
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
-                />
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#E6E2D8]">
-                <label className="inline-flex items-center gap-2 text-xs font-bold text-[#0F291E] cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={certForm.includeFamilyTreeStamp}
-                    onChange={(e) =>
-                      setCertForm({ ...certForm, includeFamilyTreeStamp: e.target.checked })
-                    }
-                    className="w-4 h-4 accent-[#0F291E]"
-                  />
-                  <span>إدراج ختم مصغر لوثيقة شجرة العائلة في الشهادة</span>
-                </label>
 
                 <div className="flex flex-wrap items-center gap-2.5">
                   <button
                     type="button"
-                    onClick={handleSaveCertificate}
-                    className="px-5 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-extrabold hover:bg-[#141E28] flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    onClick={() => setIsRootsModalOpen(true)}
+                    className="px-4 py-2.5 rounded-xl bg-[#D4AF37] text-[#0F291E] text-xs font-extrabold hover:bg-[#e5c247] transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
                   >
-                    <Save className="w-4 h-4 text-[#D4AF37]" />
-                    <span>اعتماد وحفظ في السجل العام</span>
+                    <span>🌳 إدارة الجذور التاريخية والبلاد والأجداد المؤسسين</span>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => window.print()}
-                    className="px-5 py-2.5 rounded-xl bg-[#695022] text-white text-xs font-extrabold hover:bg-[#533f1b] flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    onClick={() => setShowVisualRoyalTree((prev) => !prev)}
+                    className={`px-4 py-2.5 rounded-xl text-xs font-extrabold transition-colors flex items-center gap-2 cursor-pointer border ${
+                      showVisualRoyalTree
+                        ? 'bg-white text-[#0F291E] border-white'
+                        : 'bg-white/10 text-white border-white/25 hover:bg-white/20'
+                    }`}
                   >
-                    <Printer className="w-4 h-4" />
-                    <span>طباعة / تصدير PDF (صفحة A4 مستقلة)</span>
+                    <GitBranch className="w-4 h-4 text-[#695022]" />
+                    <span>🌳 شجرة عائلة الصعيدي التفاعلية (توليد تلقائي)</span>
                   </button>
                 </div>
               </div>
-            </div>
 
-            {/* Saved Certificates Registry */}
-            <div className="lg:col-span-5 bg-white rounded-2xl border border-[#E6E2D8] p-6 sm:p-8 shadow-sm space-y-4">
-              <div className="pb-4 border-b border-[#E6E2D8]">
-                <div className="text-xs font-bold text-[#695022]">
-                  السجل العام للوثائق الصادرة ({issuedCertificates.length})
-                </div>
-                <h3 className="text-lg font-extrabold text-[#141413]">
-                  الشهادات المعتمدة للتحقق الفوري (/verify/:serial)
-                </h3>
-              </div>
-
-              <div className="space-y-3 max-h-[540px] overflow-y-auto pr-1">
-                {issuedCertificates.map((c) => (
-                  <div
-                    key={c.serialNumber}
-                    className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 ${
-                      c.archived
-                        ? 'bg-zinc-100 border-zinc-300 opacity-75'
-                        : 'bg-[#F7F6F2] border-[#E6E2D8]'
-                    }`}
-                  >
-                    <div className="min-w-0">
-                      <div className="font-mono text-xs font-extrabold text-[#0F291E] flex flex-wrap items-center gap-1.5">
-                        <span>{c.serialNumber}</span>
-                        <span className="px-2 py-0.5 rounded bg-[#0F291E]/10 text-[10px] font-sans font-bold text-[#0F291E]">
-                          آل {c.familyTitle || 'الصعيدي'}
-                        </span>
-                        {c.archived && (
-                          <span className="px-2 py-0.5 rounded bg-amber-100 text-[10px] font-sans font-bold text-amber-900">
-                            مؤرشف
-                          </span>
-                        )}
+              <div className="no-print grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className="lg:col-span-7 bg-white rounded-2xl border border-[#E6E2D8] border-t-4 border-t-[#695022] p-6 sm:p-8 shadow-sm space-y-5">
+                  {/* Header & Document Type Switcher */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-[#E6E2D8]">
+                    <div>
+                      <div className="text-xs font-bold text-[#695022]">
+                        ELSAIDY LINEAGE CERTIFICATE & VIP ID STUDIO
                       </div>
-                      <div className="text-sm font-bold text-[#141413] truncate">{c.arabicName}</div>
-                      <div className="text-[10px] font-mono text-[#695022] truncate" dir="ltr">
-                        {c.memberReferenceId ? `${c.memberReferenceId} · ` : ''}
-                        elsaidy.org/verify/{c.serialNumber}
-                      </div>
+                      <h2 className="text-xl font-extrabold text-[#141413]">
+                        إصدار وتخصيص شهادة النسب الملكية وبطاقة العضوية
+                      </h2>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center gap-1.5 bg-[#F7F6F2] p-1 rounded-xl border border-[#E6E2D8]">
                       <button
                         type="button"
                         onClick={() =>
-                          setCertForm({
-                            serialNumber: c.serialNumber,
-                            arabicName: c.arabicName,
-                            englishName: c.englishName,
-                            familyTitle: c.familyTitle || 'الصعيدي',
-                            country: c.country,
-                            countryCode: c.countryCode,
-                            regionBranch: c.regionBranch,
-                            lineageNarrative: c.lineageNarrative,
-                            documentType: c.documentType,
-                            issueDateGregorian: c.issueDateGregorian,
-                            issueDateHijri: c.issueDateHijri,
-                            includeFamilyTreeStamp: true,
-                            personalPhotoUrl: c.personalPhotoUrl || '',
-                            memberReferenceId: c.memberReferenceId || '',
-                            ancestralRoot: c.ancestralRoot || '',
-                            currentResidence: c.currentResidence || '',
-                          })
+                          setCertForm({ ...certForm, documentType: 'a4-certificate' })
                         }
-                        className="px-2.5 py-1.5 rounded-lg bg-white border border-[#E6E2D8] text-xs font-bold text-[#0F291E] cursor-pointer"
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${
+                          certForm.documentType === 'a4-certificate'
+                            ? 'bg-[#0F291E] text-white'
+                            : 'text-zinc-700'
+                        }`}
                       >
-                        عرض
+                        شهادة نسب (A4)
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleToggleArchiveCertificate(c.serialNumber)}
-                        title={c.archived ? 'إلغاء الأرشفة' : 'أرشفة السجل بدلاً من الحذف'}
-                        className="px-2 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-900 cursor-pointer"
+                        onClick={() => setCertForm({ ...certForm, documentType: 'vip-id' })}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer ${
+                          certForm.documentType === 'vip-id'
+                            ? 'bg-[#0F291E] text-white'
+                            : 'text-zinc-700'
+                        }`}
                       >
-                        {c.archived ? 'استعادة' : 'أرشفة'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteCertificate(c.serialNumber)}
-                        title="حذف السجل"
-                        className="p-1.5 rounded-lg bg-red-50 border border-red-200 text-red-700 cursor-pointer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        بطاقة عضوية (VIP ID)
                       </button>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
 
-          {/* Live Printable Preview */}
-          <div className="print-certificate-wrapper bg-white rounded-2xl border border-[#E6E2D8] p-4 sm:p-8 shadow-sm">
-            <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-extrabold text-[#695022]">
-                معاينة حية للوثيقة الجاهزة للطباعة كصفحة A4 مستقلة (الرابط داخل رمز QR:{' '}
-                <span className="font-mono text-[#0F291E]" dir="ltr">
-                  https://elsaidy.org/verify/{certForm.serialNumber}
-                </span>
-                ):
-              </span>
-            </div>
-            <Suspense
-              fallback={
-                <div className="p-8 text-center text-xs font-bold text-[#0F291E] bg-[#F7F6F2] rounded-xl border border-[#E6E2D8]">
-                  جاري تجهيز معاينة الشهادة...
+                  {/* 3. AI Smart ID Scanner Bar (Privacy-First: Never stores ID card photo) */}
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-l from-[#0F291E] to-[#163829] text-white border border-[#D4AF37]/60 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                    <div className="space-y-0.5">
+                      <div className="text-[11px] font-bold text-[#D4AF37] flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>شريط المسح الذكي لبطاقة الهوية (AI Smart ID Scanner)</span>
+                      </div>
+                      <p className="text-[11px] text-zinc-200">
+                        يستخرج الاسم والمحافظة والمركز وبصمة التحقق الفريدة تلقائياً (تُمسح صورة البطاقة فوراً ولا تُحفظ أبداً).
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label
+                        className={`px-3.5 py-2 rounded-xl bg-[#D4AF37] text-[#0F291E] text-xs font-extrabold hover:bg-[#e5c247] transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs ${
+                          isScanningIdCard ? 'opacity-60 pointer-events-none' : ''
+                        }`}
+                      >
+                        <Camera className="w-3.5 h-3.5" />
+                        <span>
+                          {isScanningIdCard ? 'جاري القراءة الذكية...' : '📸 تصوير البطاقة بالكاميرا'}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleScanIdCardImage(file, e.target);
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+
+                      <label
+                        className={`px-3.5 py-2 rounded-xl bg-white/15 text-white border border-white/25 text-xs font-bold hover:bg-white/25 transition-colors flex items-center gap-1.5 cursor-pointer ${
+                          isScanningIdCard ? 'opacity-60 pointer-events-none' : ''
+                        }`}
+                      >
+                        <span>📁 رفع صورة البطاقة</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleScanIdCardImage(file, e.target);
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={() => setIsScannerSettingsOpen(true)}
+                        title="إعدادات المسح الذكي والربط التلقائي مع n8n Webhook"
+                        className="p-2 rounded-xl bg-white/10 text-[#D4AF37] border border-[#D4AF37]/40 hover:bg-white/20 cursor-pointer"
+                      >
+                        <Settings className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 4. Anti-Collision Duplicate Member Alert Banner */}
+                  {duplicateCert && (
+                    <div className="p-4 rounded-2xl bg-red-50 border-2 border-red-500 text-red-950 flex flex-wrap items-center justify-between gap-3 animate-pulse">
+                      <div className="flex items-start gap-2.5">
+                        <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                        <div className="space-y-0.5 text-xs">
+                          <div className="font-extrabold text-red-900 text-sm">
+                            ⚠️ تنبيه: هذا العضو مسجل مسبقاً برقم مرجعي [{duplicateCert.serialNumber}]
+                          </div>
+                          <p className="text-red-800 font-semibold">
+                            الاسم المسجل: «{duplicateCert.arabicName}» · الحاضرة: «{duplicateCert.regionBranch}»
+                            {duplicateCert.idHash ? ` · بصمة التحقق: (${duplicateCert.idHash})` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleLoadCertificateIntoForm(duplicateCert, true)}
+                        className="px-3.5 py-2 rounded-xl bg-red-700 text-white text-xs font-extrabold hover:bg-red-800 cursor-pointer shrink-0 shadow-xs"
+                      >
+                        عرض / تعديل شهادته الحالية
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Editing Mode Indicator */}
+                  {editingCertSerial && (
+                    <div className="p-3 rounded-xl bg-[#0F291E]/10 border border-[#0F291E]/30 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <span className="font-extrabold text-[#0F291E]">
+                        ✏️ أنت الآن تقوم بتعديل الوثيقة المعتمدة رقم ({editingCertSerial})
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleGenerateNewSerial()}
+                        className="px-3 py-1 rounded-lg bg-[#0F291E] text-[#D4AF37] font-bold cursor-pointer"
+                      >
+                        + بدء شهادة جديدة برقم جديد
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 1. Historical Roots & Auto-Learn Generations Smart Suggestions */}
+                  {(matchedHistoricalRoots.length > 0 ||
+                    intersectedChain ||
+                    intersectedExistingCert) && (
+                    <div className="p-4 rounded-2xl bg-[#F7F6F2] border-2 border-[#D4AF37] space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-xs font-extrabold text-[#0F291E] flex items-center gap-1.5">
+                          <Crown className="w-4 h-4 text-[#695022]" />
+                          <span>
+                            موسوعة الجذور التاريخية والربط الذكي للأجداد المؤسسين (Auto-Recognized)
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsRootsModalOpen(true)}
+                          className="text-[11px] font-bold text-[#695022] hover:underline cursor-pointer"
+                        >
+                          تخصيص الجذور +
+                        </button>
+                      </div>
+
+                      {/* Auto-Detected Ancestor Chain Intersection */}
+                      {intersectedChain && (
+                        <div className="p-3 rounded-xl bg-[#0F291E] text-white border border-[#D4AF37] flex flex-wrap items-center justify-between gap-2 text-xs">
+                          <div className="space-y-0.5">
+                            <div className="font-extrabold text-[#D4AF37]">
+                              🧠 تقاطع تلقائي في شجرة الأجيال التراكمية!
+                            </div>
+                            <p className="text-[11px] text-zinc-200">
+                              الاسم يتقاطع في سلسلة الأجداد ({intersectedChain.ancestorChain.join(' بن ')}) التابعة لـ{' '}
+                              <strong className="text-[#D4AF37]">{intersectedChain.founderName}</strong> ({intersectedChain.locationKeyword}).
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setCertForm((prev) => ({
+                                ...prev,
+                                historicalRootId: intersectedChain.rootId,
+                                founderId: intersectedChain.founderId,
+                                founderName: intersectedChain.founderName,
+                                ancestralRoot: intersectedChain.subHouseTitle,
+                                lineageNarrative: intersectedChain.lineageNarrative,
+                              }))
+                            }
+                            className="px-3 py-1.5 rounded-lg bg-[#D4AF37] text-[#0F291E] font-extrabold text-xs hover:bg-[#e5c247] cursor-pointer shrink-0"
+                          >
+                            ربط تلقائي بهذا الفرع والديباجة
+                          </button>
+                        </div>
+                      )}
+
+                      {!intersectedChain && intersectedExistingCert && (
+                        <div className="p-3 rounded-xl bg-[#0F291E] text-white border border-[#D4AF37] flex flex-wrap items-center justify-between gap-2 text-xs">
+                          <div className="space-y-0.5">
+                            <div className="font-extrabold text-[#D4AF37]">
+                              🧠 تم اكتشاف قرابة / جد مشترك مع عضو موثق!
+                            </div>
+                            <p className="text-[11px] text-zinc-200">
+                              يتشارك في اسم الجد مع العضو المعتمد «{intersectedExistingCert.arabicName}» ({intersectedExistingCert.ancestralRoot}).
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setCertForm((prev) => ({
+                                ...prev,
+                                ancestralRoot:
+                                  intersectedExistingCert.ancestralRoot || prev.ancestralRoot,
+                                lineageNarrative:
+                                  intersectedExistingCert.lineageNarrative || prev.lineageNarrative,
+                                historicalRootId:
+                                  intersectedExistingCert.historicalRootId || prev.historicalRootId,
+                                founderId:
+                                  intersectedExistingCert.founderId || prev.founderId,
+                                founderName:
+                                  intersectedExistingCert.founderName || prev.founderName,
+                              }))
+                            }
+                            className="px-3 py-1.5 rounded-lg bg-[#D4AF37] text-[#0F291E] font-extrabold text-xs hover:bg-[#e5c247] cursor-pointer shrink-0"
+                          >
+                            ربط بنفس الجد الجامع والديباجة
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Founding Ancestors Quick Selection Buttons for Matched Locality */}
+                      {matchedHistoricalRoots.map((root) => (
+                        <div key={root.id} className="space-y-2 pt-1">
+                          <div className="text-[11px] font-bold text-[#695022]">
+                            📍 الأصل التاريخي المرتبط بهذه الحاضرة: «{root.migrationTitle}» — اختر الجد المؤسس لتعبئة البيت والديباجة تلقائياً:
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {root.founders.map((founder: HistoricalRootFounder) => {
+                              const isSelected =
+                                certForm.founderId === founder.id ||
+                                certForm.ancestralRoot === founder.subHouseTitle;
+                              return (
+                                <button
+                                  key={founder.id}
+                                  type="button"
+                                  onClick={() =>
+                                    setCertForm((prev) => ({
+                                      ...prev,
+                                      historicalRootId: root.id,
+                                      founderId: founder.id,
+                                      founderName: founder.name,
+                                      ancestralRoot: founder.subHouseTitle,
+                                      lineageNarrative: founder.lineageTemplate,
+                                    }))
+                                  }
+                                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 border ${
+                                    isSelected
+                                      ? 'bg-[#0F291E] text-[#D4AF37] border-[#0F291E] shadow-xs'
+                                      : 'bg-white text-[#0F291E] border-[#E6E2D8] hover:border-[#695022]'
+                                  }`}
+                                >
+                                  <span>👑 {founder.name}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-[#141413] mb-1.5">
+                        الاسم الرباعي أو الكامل بالعربية:
+                      </label>
+                      <input
+                        type="text"
+                        value={certForm.arabicName}
+                        onChange={(e) => setCertForm({ ...certForm, arabicName: e.target.value })}
+                        className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#141413] mb-1.5">
+                        الاسم بالإنجليزية (English Name):
+                      </label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={certForm.englishName}
+                        onChange={(e) => setCertForm({ ...certForm, englishName: e.target.value })}
+                        className="w-full px-3.5 py-2.5 text-sm font-mono rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[#141413]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-[#141413] mb-1.5">
+                        القطر / الدولة:
+                      </label>
+                      <select
+                        value={certForm.countryCode}
+                        onChange={(e) => {
+                          const code = e.target.value;
+                          const map: Record<string, string> = {
+                            EG: 'جمهورية مصر العربية',
+                            SA: 'المملكة العربية السعودية',
+                            LV: 'بلاد الشام والعراق',
+                            GF: 'دول الخليج العربي',
+                            MG: 'المغرب العربي والسودان',
+                          };
+                          setCertForm({
+                            ...certForm,
+                            countryCode: code,
+                            country: map[code] || 'جمهورية مصر العربية',
+                          });
+                          handleGenerateNewSerial(code);
+                        }}
+                        className="w-full px-3 py-2.5 text-xs rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                      >
+                        <option value="EG">مصر (EG)</option>
+                        <option value="SA">السعودية (SA)</option>
+                        <option value="LV">الشام والعراق (LV)</option>
+                        <option value="GF">الخليج العربي (GF)</option>
+                        <option value="MG">المغرب العربي والسودان (MG)</option>
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-bold text-[#141413] mb-1.5">
+                        الرقم المرجعي للوثيقة (Serial Number):
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          dir="ltr"
+                          value={certForm.serialNumber}
+                          onChange={(e) =>
+                            setCertForm({ ...certForm, serialNumber: e.target.value })
+                          }
+                          className="flex-1 px-3.5 py-2.5 text-sm font-mono font-bold rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleGenerateNewSerial()}
+                          className="px-3 py-2.5 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] hover:border-[#695022] text-xs font-bold cursor-pointer"
+                        >
+                          توليد رقم
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-[#141413] mb-1.5">
+                        اللقب / العائلة المعتمدة في الشهادة (الافتراضي: الصعيدي):
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={certForm.familyTitle}
+                          onChange={(e) =>
+                            setCertForm({ ...certForm, familyTitle: e.target.value })
+                          }
+                          placeholder="الصعيدي"
+                          className="flex-1 px-3.5 py-2.5 text-sm font-bold text-[#0F291E] rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                        />
+                        {certForm.familyTitle !== 'الصعيدي' && (
+                          <button
+                            type="button"
+                            onClick={() => setCertForm({ ...certForm, familyTitle: 'الصعيدي' })}
+                            className="px-2.5 py-2 rounded-xl bg-[#0F291E] text-[#D4AF37] text-xs font-bold cursor-pointer shrink-0"
+                          >
+                            الصعيدي (الافتراضي)
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-[#141413] mb-1.5">
+                        المحافظة / الحاضرة / الفرع العائلي:
+                      </label>
+                      <input
+                        type="text"
+                        value={certForm.regionBranch}
+                        onChange={(e) => setCertForm({ ...certForm, regionBranch: e.target.value })}
+                        className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Anti-Collision Identity Verification Fields + ID Hash + Admin-Only WhatsApp */}
+                  <div className="p-4 rounded-xl bg-[#F7F6F2] border border-[#C5A059]/40 space-y-3">
+                    <div className="text-xs font-extrabold text-[#0F291E]">
+                      بيانات منع تشابه الأسماء وتوثيق الهوية الفردية (Anti-Collision Identity Fields):
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-[#141413] mb-1">
+                          كود العضوية العائلي (Member Ref ID):
+                        </label>
+                        <input
+                          type="text"
+                          dir="ltr"
+                          value={certForm.memberReferenceId}
+                          onChange={(e) =>
+                            setCertForm({ ...certForm, memberReferenceId: e.target.value })
+                          }
+                          placeholder="ELS-ID-EG-1990-001"
+                          className="w-full px-3 py-2 text-xs font-mono rounded-lg bg-white border border-[#E6E2D8]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-[#141413] mb-1">
+                          الجد الجامع / البيت الفرعي:
+                        </label>
+                        <input
+                          type="text"
+                          value={certForm.ancestralRoot}
+                          onChange={(e) =>
+                            setCertForm({ ...certForm, ancestralRoot: e.target.value })
+                          }
+                          placeholder="فرع الحاج علي الصعيدي"
+                          className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E2D8]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-[#141413] mb-1">
+                          محل الإقامة الحالي / المركز:
+                        </label>
+                        <input
+                          type="text"
+                          value={certForm.currentResidence}
+                          onChange={(e) =>
+                            setCertForm({ ...certForm, currentResidence: e.target.value })
+                          }
+                          placeholder="طنطا - محافظة الغربية"
+                          className="w-full px-3 py-2 text-xs rounded-lg bg-white border border-[#E6E2D8]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Unique ID Hash & Secret Admin WhatsApp Phone */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      <div>
+                        <label className="block text-[11px] font-bold text-[#0F291E] mb-1">
+                          بصمة التحقق الفريدة (ID Hash — سنة الميلاد + آخر 4 أرقام):
+                        </label>
+                        <input
+                          type="text"
+                          dir="ltr"
+                          value={certForm.idHash}
+                          onChange={(e) => setCertForm({ ...certForm, idHash: e.target.value })}
+                          placeholder="1990-4821"
+                          className="w-full px-3 py-2 text-xs font-mono font-bold rounded-lg bg-white border border-[#E6E2D8] text-[#0F291E]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-[#695022] mb-1">
+                          💬 رقم الواتساب للتواصل (سري للأدمن فقط — لا يظهر في الشهادة المطبوعة):
+                        </label>
+                        <input
+                          type="tel"
+                          dir="ltr"
+                          value={certForm.whatsappPhone}
+                          onChange={(e) =>
+                            setCertForm({ ...certForm, whatsappPhone: e.target.value })
+                          }
+                          placeholder="+2010... / +9665..."
+                          className="w-full px-3 py-2 text-xs font-mono rounded-lg bg-white border border-[#E6E2D8]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#141413] mb-1">
+                        الصورة الشخصية الرسمية لصاحب الوثيقة (اختياري — لمنع تطابق الأسماء):
+                      </label>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <input
+                          type="text"
+                          dir="ltr"
+                          value={certForm.personalPhotoUrl}
+                          onChange={(e) =>
+                            setCertForm({ ...certForm, personalPhotoUrl: e.target.value })
+                          }
+                          placeholder="https://... أو ارفع صورة شخصية"
+                          className="flex-1 min-w-[180px] px-3 py-1.5 text-xs font-mono rounded-lg bg-white border border-[#E6E2D8]"
+                        />
+                        <label className="px-3 py-1.5 rounded-lg bg-[#0F291E] text-white text-xs font-bold hover:bg-[#141E28] flex items-center gap-1.5 cursor-pointer">
+                          <ImageIcon className="w-3.5 h-3.5 text-[#D4AF37]" />
+                          <span>
+                            {uploadingAssetKey === 'cert-photo'
+                              ? 'جاري الرفع...'
+                              : 'رفع صورة شخصية'}
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                uploadAssetFile(file, 'cert-photo', (url) =>
+                                  setCertForm((prev) => ({ ...prev, personalPhotoUrl: url }))
+                                );
+                              }
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                        {certForm.personalPhotoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setCertForm({ ...certForm, personalPhotoUrl: '' })}
+                            className="text-xs font-bold text-red-700 hover:underline cursor-pointer"
+                          >
+                            مسح الصورة
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#141413] mb-1.5">
+                      ديباجة عمود النسب والتوثيق التاريخي:
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={certForm.lineageNarrative}
+                      onChange={(e) =>
+                        setCertForm({ ...certForm, lineageNarrative: e.target.value })
+                      }
+                      className="w-full px-3.5 py-2.5 text-sm rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#E6E2D8]">
+                    <label className="inline-flex items-center gap-2 text-xs font-bold text-[#0F291E] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={certForm.includeFamilyTreeStamp}
+                        onChange={(e) =>
+                          setCertForm({ ...certForm, includeFamilyTreeStamp: e.target.checked })
+                        }
+                        className="w-4 h-4 accent-[#0F291E]"
+                      />
+                      <span>إدراج ختم مصغر لوثيقة شجرة العائلة في الشهادة</span>
+                    </label>
+
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <button
+                        type="button"
+                        onClick={handleSaveCertificate}
+                        className="px-5 py-2.5 rounded-xl bg-[#0F291E] text-white text-xs font-extrabold hover:bg-[#141E28] flex items-center gap-1.5 cursor-pointer shadow-sm"
+                      >
+                        <Save className="w-4 h-4 text-[#D4AF37]" />
+                        <span>اعتماد وحفظ في السجل العام</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => window.print()}
+                        className="px-5 py-2.5 rounded-xl bg-[#695022] text-white text-xs font-extrabold hover:bg-[#533f1b] flex items-center gap-1.5 cursor-pointer shadow-sm"
+                      >
+                        <Printer className="w-4 h-4" />
+                        <span>طباعة / تصدير PDF (صفحة A4 مستقلة)</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              }
-            >
-              <CertificateDocumentView
-                record={{
-                  serialNumber: certForm.serialNumber,
-                  arabicName: certForm.arabicName,
-                  englishName: certForm.englishName,
-                  familyTitle: certForm.familyTitle || 'الصعيدي',
-                  country: certForm.country,
-                  countryCode: certForm.countryCode,
-                  regionBranch: certForm.regionBranch,
-                  lineageNarrative: certForm.lineageNarrative,
-                  documentType: certForm.documentType,
-                  issueDateGregorian: certForm.issueDateGregorian,
-                  issueDateHijri: certForm.issueDateHijri,
-                  status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
-                  personalPhotoUrl: certForm.personalPhotoUrl || undefined,
-                  memberReferenceId: certForm.memberReferenceId || undefined,
-                  ancestralRoot: certForm.ancestralRoot || undefined,
-                  currentResidence: certForm.currentResidence || undefined,
-                }}
-                familyTitle={certForm.familyTitle || 'الصعيدي'}
-                includeFamilyTreeStamp={certForm.includeFamilyTreeStamp}
-                customLogoUrl={siteConfig.branding.logoUrl}
-                customSealImageUrl={siteConfig.branding.sealImageUrl}
-                customTreeImageUrl={siteConfig.familyTreeConfig.treeImageUrl}
-                siteTitle={siteConfig.branding.siteTitle}
+
+                {/* 5. Advanced Saved Certificates Registry Management */}
+                <div className="lg:col-span-5 bg-white rounded-2xl border border-[#E6E2D8] p-6 sm:p-8 shadow-sm space-y-4">
+                  <div className="pb-3 border-b border-[#E6E2D8]">
+                    <div className="text-xs font-bold text-[#695022]">
+                      السجل العام للوثائق الصادرة ({issuedCertificates.length})
+                    </div>
+                    <h3 className="text-lg font-extrabold text-[#141413]">
+                      الشهادات المعتمدة للتحقق الفوري (/verify/:serial)
+                    </h3>
+                  </div>
+
+                  {/* Live Search Input */}
+                  <div className="relative">
+                    <Search className="w-4 h-4 text-zinc-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={certRegistrySearch}
+                      onChange={(e) => setCertRegistrySearch(e.target.value)}
+                      placeholder="بحث فوري بالاسم، الرقم المرجعي، البلد، أو الواتساب..."
+                      className="w-full pr-10 pl-3.5 py-2 text-xs rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] outline-none focus:border-[#0F291E]"
+                    />
+                  </div>
+
+                  {/* Quick Filter Buttons with Counts + Branch/Locality Filter */}
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setCertRegistryFilter('ALL')}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold cursor-pointer ${
+                          certRegistryFilter === 'ALL'
+                            ? 'bg-[#0F291E] text-[#D4AF37]'
+                            : 'bg-[#F7F6F2] text-zinc-700 border border-[#E6E2D8]'
+                        }`}
+                      >
+                        الكل ({totalCertsCount})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCertRegistryFilter('EG')}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold cursor-pointer ${
+                          certRegistryFilter === 'EG'
+                            ? 'bg-[#0F291E] text-[#D4AF37]'
+                            : 'bg-[#F7F6F2] text-zinc-700 border border-[#E6E2D8]'
+                        }`}
+                      >
+                        مصر EG ({egCertsCount})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCertRegistryFilter('SA')}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold cursor-pointer ${
+                          certRegistryFilter === 'SA'
+                            ? 'bg-[#0F291E] text-[#D4AF37]'
+                            : 'bg-[#F7F6F2] text-zinc-700 border border-[#E6E2D8]'
+                        }`}
+                      >
+                        السعودية SA ({saCertsCount})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCertRegistryFilter('ARCHIVED')}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold cursor-pointer ${
+                          certRegistryFilter === 'ARCHIVED'
+                            ? 'bg-amber-800 text-white'
+                            : 'bg-[#F7F6F2] text-zinc-700 border border-[#E6E2D8]'
+                        }`}
+                      >
+                        المؤرشفة ({archivedCertsCount})
+                      </button>
+                    </div>
+
+                    <select
+                      value={certRegistryFilter === 'BRANCH' ? certBranchFilterValue : ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (!val) {
+                          setCertRegistryFilter('ALL');
+                          setCertBranchFilterValue('');
+                        } else {
+                          setCertRegistryFilter('BRANCH');
+                          setCertBranchFilterValue(val);
+                        }
+                      }}
+                      className="w-full px-3 py-1.5 rounded-xl bg-[#F7F6F2] border border-[#E6E2D8] text-[11px] font-bold text-[#0F291E]"
+                    >
+                      <option value="">📍 فلترة حسب البلد / الفرع التاريخي...</option>
+                      {uniqueRegistryBranches.map((br) => (
+                        <option key={br} value={br}>
+                          {br}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Certificates List */}
+                  <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                    {filteredRegistryCerts.map((c) => (
+                      <div
+                        key={c.serialNumber}
+                        className={`p-3.5 rounded-xl border flex flex-col gap-2.5 ${
+                          c.archived
+                            ? 'bg-zinc-100 border-zinc-300 opacity-75'
+                            : 'bg-[#F7F6F2] border-[#E6E2D8]'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="font-mono text-xs font-extrabold text-[#0F291E] flex flex-wrap items-center gap-1.5">
+                              <span>{c.serialNumber}</span>
+                              <span className="px-2 py-0.5 rounded bg-[#0F291E]/10 text-[10px] font-sans font-bold text-[#0F291E]">
+                                آل {c.familyTitle || 'الصعيدي'}
+                              </span>
+                              {c.idHash && (
+                                <span className="px-1.5 py-0.5 rounded bg-[#695022]/15 text-[10px] font-mono font-bold text-[#695022]">
+                                  #{c.idHash}
+                                </span>
+                              )}
+                              {c.archived && (
+                                <span className="px-2 py-0.5 rounded bg-amber-100 text-[10px] font-sans font-bold text-amber-900">
+                                  مؤرشف
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-sm font-bold text-[#141413] truncate mt-0.5">
+                              {c.arabicName}
+                            </div>
+                            <div
+                              className="text-[10px] font-mono text-[#695022] truncate"
+                              dir="ltr"
+                            >
+                              {c.memberReferenceId ? `${c.memberReferenceId} · ` : ''}
+                              elsaidy.org/verify/{c.serialNumber}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-end gap-1.5 pt-2 border-t border-[#E6E2D8]/80">
+                          <button
+                            type="button"
+                            onClick={() => handleSendWhatsAppCertificate(c)}
+                            title="إرسال رسالة تهنئة عبر واتساب مع رابط التحقق الفوري"
+                            className="px-2.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer shadow-2xs"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            <span>💬 واتساب</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleLoadCertificateIntoForm(c, true)}
+                            className="px-2.5 py-1.5 rounded-lg bg-[#0F291E] text-[#D4AF37] text-[11px] font-bold hover:bg-[#141E28] cursor-pointer"
+                          >
+                            ✏️ تعديل
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleLoadCertificateIntoForm(c, false)}
+                            className="px-2.5 py-1.5 rounded-lg bg-white border border-[#E6E2D8] text-xs font-bold text-[#0F291E] cursor-pointer"
+                          >
+                            عرض
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleToggleArchiveCertificate(c.serialNumber)}
+                            title={c.archived ? 'إلغاء الأرشفة' : 'أرشفة السجل بدلاً من الحذف'}
+                            className="px-2 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-900 cursor-pointer"
+                          >
+                            {c.archived ? 'استعادة' : 'أرشفة'}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCertificate(c.serialNumber)}
+                            title="حذف السجل"
+                            className="p-1.5 rounded-lg bg-red-50 border border-red-200 text-red-700 cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Automated Visual Royal Family Tree Section */}
+              {showVisualRoyalTree && (
+                <div className="no-print">
+                  <AutomatedRoyalFamilyTree
+                    historicalRoots={activeHistoricalRoots}
+                    cumulativeGenerations={activeCumulativeChains}
+                    issuedCertificates={issuedCertificates}
+                    onSelectCertificateForEdit={(cert) =>
+                      handleLoadCertificateIntoForm(cert, true)
+                    }
+                    onAddManualChain={(newChain) => {
+                      onUpdateSiteConfig({
+                        ...siteConfig,
+                        cumulativeGenerations: [newChain, ...activeCumulativeChains],
+                      });
+                      setStatusBanner({
+                        type: 'success',
+                        message: `تمت إضافة الجد الوسيط (${newChain.ancestorChain.join(' بن ')}) وربطه بفرع (${newChain.founderName}) في الشجرة التفاعلية.`,
+                      });
+                    }}
+                    onOpenRootsModal={() => setIsRootsModalOpen(true)}
+                  />
+                </div>
+              )}
+
+              {/* Live Printable Preview (Strictly excludes secret whatsappPhone) */}
+              <div className="print-certificate-wrapper bg-white rounded-2xl border border-[#E6E2D8] p-4 sm:p-8 shadow-sm">
+                <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs font-extrabold text-[#695022]">
+                    معاينة حية للوثيقة الجاهزة للطباعة كصفحة A4 مستقلة (الرابط داخل رمز QR:{' '}
+                    <span className="font-mono text-[#0F291E]" dir="ltr">
+                      https://elsaidy.org/verify/{certForm.serialNumber}
+                    </span>
+                    ):
+                  </span>
+                </div>
+                <Suspense
+                  fallback={
+                    <div className="p-8 text-center text-xs font-bold text-[#0F291E] bg-[#F7F6F2] rounded-xl border border-[#E6E2D8]">
+                      جاري تجهيز معاينة الشهادة...
+                    </div>
+                  }
+                >
+                  <CertificateDocumentView
+                    record={{
+                      serialNumber: certForm.serialNumber,
+                      arabicName: certForm.arabicName,
+                      englishName: certForm.englishName,
+                      familyTitle: certForm.familyTitle || 'الصعيدي',
+                      country: certForm.country,
+                      countryCode: certForm.countryCode,
+                      regionBranch: certForm.regionBranch,
+                      lineageNarrative: certForm.lineageNarrative,
+                      documentType: certForm.documentType,
+                      issueDateGregorian: certForm.issueDateGregorian,
+                      issueDateHijri: certForm.issueDateHijri,
+                      status: 'وثيقة نسب معتمدة ومطابقة للسجل العام',
+                      personalPhotoUrl: certForm.personalPhotoUrl || undefined,
+                      memberReferenceId: certForm.memberReferenceId || undefined,
+                      ancestralRoot: certForm.ancestralRoot || undefined,
+                      currentResidence: certForm.currentResidence || undefined,
+                    }}
+                    familyTitle={certForm.familyTitle || 'الصعيدي'}
+                    includeFamilyTreeStamp={certForm.includeFamilyTreeStamp}
+                    customLogoUrl={siteConfig.branding.logoUrl}
+                    customSealImageUrl={siteConfig.branding.sealImageUrl}
+                    customTreeImageUrl={siteConfig.familyTreeConfig.treeImageUrl}
+                    siteTitle={siteConfig.branding.siteTitle}
+                  />
+                </Suspense>
+              </div>
+
+              {/* Historical Roots & Cumulative Generations Modal */}
+              <HistoricalRootsModal
+                isOpen={isRootsModalOpen}
+                onClose={() => setIsRootsModalOpen(false)}
+                historicalRoots={activeHistoricalRoots}
+                cumulativeGenerations={activeCumulativeChains}
+                onUpdateRoots={(updatedRoots) =>
+                  onUpdateSiteConfig({
+                    ...siteConfig,
+                    historicalRoots: updatedRoots,
+                  })
+                }
+                onUpdateGenerations={(updatedChains) =>
+                  onUpdateSiteConfig({
+                    ...siteConfig,
+                    cumulativeGenerations: updatedChains,
+                  })
+                }
               />
-            </Suspense>
-          </div>
-        </div>
-      )}
+
+              {/* 6. Smart Scanner & n8n Webhook Settings Modal */}
+              {isScannerSettingsOpen && (
+                <div
+                  className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4"
+                  role="dialog"
+                  aria-modal="true"
+                >
+                  <div className="bg-white rounded-3xl border-2 border-[#695022] max-w-lg w-full overflow-hidden shadow-2xl">
+                    <div className="bg-[#0F291E] text-white px-6 py-4 flex items-center justify-between border-b-2 border-[#D4AF37]">
+                      <div className="flex items-center gap-2.5">
+                        <Settings className="w-5 h-5 text-[#D4AF37]" />
+                        <h3 className="text-sm font-extrabold">
+                          ⚙️ إعدادات المسح الذكي والربط مع n8n Webhook
+                        </h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsScannerSettingsOpen(false)}
+                        className="p-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="p-6 space-y-5 bg-[#F7F6F2]">
+                      <div className="p-4 rounded-xl bg-white border border-[#E6E2D8] space-y-1.5">
+                        <div className="text-xs font-extrabold text-[#0F291E] flex items-center gap-1.5">
+                          <Sparkles className="w-4 h-4 text-[#695022]" />
+                          <span>محرك الذكاء الاصطناعي للمسح الضوئي (/api/scan-id)</span>
+                        </div>
+                        <p className="text-xs text-zinc-600 leading-relaxed">
+                          يعمل المسح الذكي لبطاقة الهوية بشكل آمن عبر الخادم الخلفي (Gemini 2.5 Flash Vision) لاستخراج الاسم والبلد وسنة الميلاد وآخر 4 أرقام من الرقم القومي، مع المسح الفوري لصورة البطاقة من الذاكرة.
+                        </p>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-white border border-[#E6E2D8] space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs font-extrabold text-[#0F291E] flex items-center gap-1.5">
+                            <Webhook className="w-4 h-4 text-[#695022]" />
+                            <span>الربط التلقائي مع n8n (Webhook Ready)</span>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(siteConfig.n8nWebhookConfig?.enabled)}
+                            onChange={(e) =>
+                              onUpdateSiteConfig({
+                                ...siteConfig,
+                                n8nWebhookConfig: {
+                                  enabled: e.target.checked,
+                                  webhookUrl:
+                                    siteConfig.n8nWebhookConfig?.webhookUrl || '',
+                                },
+                              })
+                            }
+                            className="w-4 h-4 accent-[#0F291E] cursor-pointer"
+                          />
+                        </div>
+                        <p className="text-[11px] text-zinc-500">
+                          عند التفعيل، يقوم النظام بإرسال بيانات الشهادة المعتمدة (JSON) تلقائياً عبر طلب POST إلى رابط n8n Webhook فور الضغط على «اعتماد وحفظ في السجل العام».
+                        </p>
+                        <div>
+                          <label className="block text-[11px] font-bold text-[#141413] mb-1">
+                            رابط n8n Webhook URL:
+                          </label>
+                          <input
+                            type="url"
+                            dir="ltr"
+                            value={siteConfig.n8nWebhookConfig?.webhookUrl || ''}
+                            onChange={(e) =>
+                              onUpdateSiteConfig({
+                                ...siteConfig,
+                                n8nWebhookConfig: {
+                                  enabled: Boolean(siteConfig.n8nWebhookConfig?.enabled),
+                                  webhookUrl: e.target.value,
+                                },
+                              })
+                            }
+                            placeholder="https://n8n.yourdomain.com/webhook/elsaidy-certificates"
+                            className="w-full px-3 py-2 text-xs font-mono rounded-xl bg-[#F7F6F2] border border-[#E6E2D8]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setIsScannerSettingsOpen(false)}
+                          className="px-5 py-2 rounded-xl bg-[#0F291E] text-white text-xs font-extrabold hover:bg-[#141E28] cursor-pointer"
+                        >
+                          حفظ وإغلاق
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
       {/* ====================================================================
           TAB 1: DYNAMIC INTERACTIVE TREE BUILDER, SEO NAMES, COUNTER & GITHUB SYNC
