@@ -128,7 +128,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({
             {/* Document Footer Metadata & Copy Action */}
             <div className="mt-10 pt-6 border-t border-[#E6E2D8] flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600">
               <div className="font-bold text-[#0F291E]">
-                الوثيقة التاريخية الرسمية لعائلة الصعيدي · قبيلة جهينة (ينبع النخل)
+                الوثيقة التاريخية الرسمية لعائلات الصعيدي · مصر (دار الوثائق القومية) والحجاز والشام
               </div>
 
               <button
@@ -194,22 +194,20 @@ export const AboutPage: React.FC<AboutPageProps> = ({
           <div className="lg:col-span-4 flex flex-col justify-between p-7 rounded-2xl bg-white border border-[#E6E2D8] border-t-4 border-t-[#695022] shadow-sm">
             <div>
               <div className="text-xs font-bold text-[#695022] mb-2">
-                تحقيق اللقب التاريخي · قبيلة جهينة ومصر والحجاز
+                تحقيق اللقب التاريخي · صعيد مصر ودار الوثائق القومية والحجاز والشام
               </div>
               <h2 className="font-display text-3xl lg:text-4xl font-bold text-[#141413] mb-4">
                 {VERBATIM_TITLE_REASON_HEADING}
               </h2>
               <p className="text-xs sm:text-sm text-zinc-700 leading-[1.85]">
-                يوثق هذا المبحث الجذور التاريخية للقب «الصعيدي» وارتباطه بنزوح بعض بطون قبيلة جهينة
-                من شمال غرب الجزيرة العربية إلى صعيد مصر للرعي في فصول الربيع، ودور قبيلة جهينة
-                الديني والسياسي منذ الفتوحات الإسلامية وتحرير مصر من الاستعمار الفرنسي.
+                يوثق هذا المبحث الجذور التاريخية للقب «الصعيدي» في مصر والوطن العربي: النسبة الجغرافية الأصيلة إلى إقليم صعيد مصر للأجداد المؤسسين في محافظة الغربية والدلتا والقاهرة الموثقة منذ عام ٥٧٢ هـ / ١١٧٧م و٩٧١ هـ / ١٥٦٤م، إلى جانب سبب التسمية في فرع قبيلة جهينة بشمال غرب الجزيرة العربية وفرع القصيم وبيوتات الشام.
               </p>
             </div>
 
             <div className="pt-6 mt-6 border-t border-[#E6E2D8] text-xs font-semibold text-zinc-700 space-y-2">
-              <div>· القبيلة الأم: قبيلة جهينة القضاعية</div>
-              <div>· المنازل الأصلية: ينبع النخل وشمال غرب الجزيرة العربية</div>
-              <div>· الحاضرة التاريخية الكبرى: صعيد مصر، الغربية وطنطا، الدلتا، والقاهرة</div>
+              <div>· الحاضرة المصرية الكبرى: صعيد مصر، الغربية (طنطا، زفتى، المحلة، سمنود)، الدلتا، والقاهرة</div>
+              <div>· الأرشيف الرسمي: دار الوثائق القومية وسجلات المحاكم الشرعية والبرلمان المصري</div>
+              <div>· الفروع العربية: الحجاز ونجد (ينبع النخل، ينبع البحر، تيماء، حائل، الرياض، القصيم) والشام</div>
             </div>
           </div>
 

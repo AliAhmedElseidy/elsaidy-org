@@ -317,20 +317,20 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
     countryCode: 'EG',
     regionBranch: 'محافظة الغربية - مدينة طنطا / صعيد مصر / القاهرة',
     lineageNarrative:
-      'ينتسب إلى الذرية الموثقة لعائلات الصعيدي (آل الصعيدي — Elsaidy / Elseidy) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية من ينبع النخل وامتدادها التاريخي العريق في الديار المصرية (صعيد مصر ومحافظة الغربية وطنطا والدلتا والقاهرة).',
+      'ينتسب إلى الذرية الموثقة لفرع الشيخ مرسي الحجاج الصعيدي وبيت الحاج علي أحمد الصعيدي في مدينة طنطا ومحافظة الغربية والقاهرة، من الأجداد المؤسسين الذين قدموا من صعيد مصر واستقروا في حاضرة الغربية بقلب الدلتا المصرية، والموثق امتدادهم التاريخي في سجلات دار الوثائق القومية المصرية.',
     documentType: 'a4-certificate',
     issueDateGregorian: new Date().toISOString().slice(0, 10),
     issueDateHijri: '١١ ربيع الآخر ١٤٤٨ هـ',
     personalPhotoUrl: '',
     memberReferenceId: `REG-EG-GH-00${issuedCertificates.length + 15}`,
-    ancestralRoot: 'الجد السابع إبراهيم الصعيدي الجهني — عمود النسب الموثق',
+    ancestralRoot: 'الأصول التاريخية بصعيد مصر ← فرع الشيخ مرسي الحجاج والحاج علي أحمد الصعيدي (طنطا والغربية)',
     currentResidence: 'جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة',
     includeFamilyTreeStamp: true,
     idHash: '1990-4821',
     whatsappPhone: '',
     historicalRootId: 'root-upper-egypt-delta-brothers',
     founderId: 'founder-morsi-hagag',
-    founderName: 'الجد الأكبر مرسي الحجاج الصعيدي',
+    founderName: 'الشيخ مرسي الحجاج الصعيدي والحاج علي الصعيدي (عميد بيت طنطا والغربية)',
   });
 
   // Historical Roots Modal, Automated Visual Tree toggle, Smart ID Scanner & Registry Filters
@@ -834,12 +834,35 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
           ? `${centerText} — ${govText}`
           : centerText || govText || certForm.currentResidence;
 
-      // Check if locality matches any Historical Root to auto-suggest founder
+      // Smart Branch & Village Matcher: Match Historical Root & Specific Founder by locality + ancestral name chain
       const combinedLocSearch = `${govText} ${centerText}`.toLowerCase();
-      const matchedRoot = activeHistoricalRoots.find((r) =>
-        r.locations.some((loc) => combinedLocSearch.includes(loc.toLowerCase()))
-      );
-      const firstFounder = matchedRoot?.founders?.[0];
+      const scannedNameChain = parseArabicLineageName(ext.arabicName || '');
+      const matchedRoot =
+        activeHistoricalRoots.find((r) =>
+          r.locations.some((loc) => combinedLocSearch.includes(loc.toLowerCase()))
+        ) ||
+        activeHistoricalRoots.find((r) => r.countryCode === code) ||
+        activeHistoricalRoots[0];
+
+      let matchedFounder = matchedRoot?.founders?.[0];
+      if (matchedRoot?.founders && matchedRoot.founders.length > 0) {
+        const specificFounder = matchedRoot.founders.find((f) => {
+          const defLoc = (f.defaultLocation || '').toLowerCase();
+          const titleLoc = `${f.name} ${f.subHouseTitle}`.toLowerCase();
+          if (centerText && (defLoc.includes(centerText.toLowerCase()) || titleLoc.includes(centerText.toLowerCase()))) {
+            return true;
+          }
+          if (govText && (defLoc.includes(govText.toLowerCase()) || titleLoc.includes(govText.toLowerCase()))) {
+            return true;
+          }
+          // Also check if the scanned 4th/5th ancestor name matches a founder keyword (e.g., حسن / أحمد / عبد اللطيف / عبد القادر)
+          const elderNames = scannedNameChain.slice(2);
+          return elderNames.some((elder) => elder.length >= 3 && f.name.includes(elder));
+        });
+        if (specificFounder) {
+          matchedFounder = specificFounder;
+        }
+      }
 
       const rand = Math.floor(100 + Math.random() * 899);
       const nextSerial = editingCertSerial || `ELS-2026-${code}-${rand}`;
@@ -853,16 +876,16 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
         englishName: ext.englishName?.trim() || prev.englishName,
         countryCode: code,
         country: ext.countryNameArabic?.trim() || countryMap[code] || prev.country,
-        regionBranch: govText || prev.regionBranch,
+        regionBranch: combinedResidence || govText || prev.regionBranch,
         currentResidence: combinedResidence,
         idHash: ext.idHash?.trim() || prev.idHash,
-        ...(firstFounder
+        ...(matchedFounder && matchedRoot
           ? {
-              historicalRootId: matchedRoot!.id,
-              founderId: firstFounder.id,
-              founderName: firstFounder.name,
-              ancestralRoot: firstFounder.subHouseTitle,
-              lineageNarrative: firstFounder.lineageTemplate,
+              historicalRootId: matchedRoot.id,
+              founderId: matchedFounder.id,
+              founderName: matchedFounder.name,
+              ancestralRoot: matchedFounder.subHouseTitle,
+              lineageNarrative: matchedFounder.lineageTemplate,
             }
           : {}),
       }));
@@ -920,7 +943,9 @@ export const AdminCmsPage: React.FC<AdminCmsPageProps> = ({
         `REG-${serialUpper.replace(/^ELS-\d+-/, '')}`,
       ancestralRoot:
         certForm.ancestralRoot.trim() ||
-        'الجد السابع إبراهيم الصعيدي الجهني — عمود النسب الموثق',
+        (certForm.countryCode === 'SA'
+          ? 'إبراهيم الصعيدي الجهني ← عوض البراهيم — عمود النسب الحجازي والنجدي الموثق'
+          : 'الأصول التاريخية بصعيد مصر ← حاضرة محافظة الغربية والدلتا (موثق بدار الوثائق القومية)'),
       currentResidence:
         certForm.currentResidence.trim() ||
         `${certForm.country} — ${certForm.regionBranch.trim()}`,

@@ -424,8 +424,8 @@ export const FamilyTreePage: React.FC<FamilyTreePageProps> = ({
           </div>
 
           <div className="text-xs text-zinc-600">
-            <span>الجد السابع الجامع: </span>
-            <strong className="text-[#141413]">إبراهيم الصعيدي (قبيلة جهينة — ينبع النخل)</strong>
+            <span>الأعمدة التاريخية المستقلة: </span>
+            <strong className="text-[#141413]">صعيد مصر والغربية والدلتا · الحجاز ونجد (إبراهيم الصعيدي) · الشام وفلسطين</strong>
           </div>
         </div>
 

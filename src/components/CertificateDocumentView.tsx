@@ -242,7 +242,7 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
   const lineageNarrative =
     record?.lineageNarrative ??
     propNarrative ??
-    `ينتسب إلى الذرية الموثقة لعائلات ${effectiveFamilyTitle} (آل ${effectiveFamilyTitle}) ذات الجذور العربية الأصيلة المتصلة بقبيلة جهينة القضاعية وامتدادها التاريخي العريق في الديار المصرية والأقطار العربية.`;
+    `ينتسب إلى الذرية الموثقة لعائلات ${effectiveFamilyTitle} (آل ${effectiveFamilyTitle}) ذات الأصول التاريخية العريقة الممتدة من صعيد مصر إلى حاضرة محافظة الغربية والدلتا وسائر الأقطار العربية، والموثق حضورها في سجلات دار الوثائق القومية المصرية والمحاكم الشرعية.`;
   const documentType = record?.documentType ?? propDocType ?? 'a4-certificate';
   const issueDateGregorian = record?.issueDateGregorian ?? propGregorian ?? '2026-10-22';
   const issueDateHijri = record?.issueDateHijri ?? propHijri ?? '١١ ربيع الآخر ١٤٤٨ هـ';
@@ -256,7 +256,7 @@ export const CertificateDocumentView: React.FC<CertificateRenderProps> = ({
     `REG-${serialNumber.replace(/^ELS-\d+-/, '')}`;
   const ancestralRoot =
     (record?.ancestralRoot ?? propAncestralRoot ?? '').trim() ||
-    'الجد السابع إبراهيم الصعيدي الجهني — عمود النسب الموثق';
+    'الأصول التاريخية بصعيد مصر ← حاضرة محافظة الغربية والدلتا (دار الوثائق القومية)';
   const currentResidence =
     (record?.currentResidence ?? propCurrentResidence ?? '').trim() ||
     `${country} — ${regionBranch}`;
