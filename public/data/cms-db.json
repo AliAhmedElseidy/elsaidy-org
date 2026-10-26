@@ -1,6 +1,6 @@
 {
-  "visitorCount": 320948,
-  "lastUpdated": "2026-10-26T07:36:00.000Z",
+  "visitorCount": 321073,
+  "lastUpdated": "2026-10-26T21:17:52.977Z",
   "siteConfig": {
     "branding": {
       "siteTitle": "الموقع الرسمي لعائلات الصعيدي ومجموعة الصعيدي",
@@ -866,32 +866,6 @@
   ],
   "certificates": [
     {
-      "serialNumber": "ELS-2026-EG-002",
-      "arabicName": "علي أحمد علي الصعيدي",
-      "englishName": "Ali Ahmed Ali Elsaidy",
-      "familyTitle": "الصعيدي",
-      "country": "جمهورية مصر العربية",
-      "countryCode": "EG",
-      "regionBranch": "محافظة الغربية - مدينة طنطا / صعيد مصر / القاهرة",
-      "lineageNarrative": "ينتسب إلى الذرية الموثقة لفرع الشيخ مرسي الحجاج الصعيدي وبيت الحاج علي أحمد الصعيدي في مدينة طنطا ومحافظة الغربية والقاهرة، من الأجداد المؤسسين الذين قدموا من صعيد مصر واستقروا في حاضرة الغربية بقلب الدلتا المصرية، والموثق امتدادهم التاريخي في سجلات دار الوثائق القومية المصرية.",
-      "documentType": "a4-certificate",
-      "issueDateGregorian": "2026-10-23",
-      "issueDateHijri": "١١ ربيع الآخر ١٤٤٨ هـ",
-      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام",
-      "memberReferenceId": "REG-EG-GH-0002",
-      "ancestralRoot": "الأصول التاريخية بصعيد مصر ← فرع الشيخ مرسي الحجاج والحاج علي أحمد الصعيدي (طنطا والغربية)",
-      "currentResidence": "جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة",
-      "idHash": "1992-0002",
-      "historicalRootId": "root-upper-egypt-delta-brothers",
-      "founderId": "founder-morsi-hagag",
-      "founderName": "الشيخ مرسي الحجاج الصعيدي والحاج علي الصعيدي (عميد بيت طنطا والغربية)",
-      "parsedLineageChain": [
-        "علي",
-        "أحمد",
-        "علي"
-      ]
-    },
-    {
       "serialNumber": "ELS-2026-SA-001",
       "arabicName": "إبراهيم بن عبد الله بن صالح الصعيدي",
       "englishName": "Ibrahim bin Abdullah bin Saleh Elsaidy",
@@ -1050,33 +1024,6 @@
       "ancestralRoot": "الأصول التاريخية بصعيد مصر ← فرع الشيخ مرسي الحجاج والحاج علي أحمد الصعيدي (طنطا والغربية)",
       "currentResidence": "جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة",
       "idHash": "1992-0019",
-      "historicalRootId": "root-upper-egypt-delta-brothers",
-      "founderId": "founder-morsi-hagag",
-      "founderName": "الشيخ مرسي الحجاج الصعيدي والحاج علي الصعيدي (عميد بيت طنطا والغربية)",
-      "parsedLineageChain": [
-        "علي",
-        "أحمد",
-        "علي"
-      ],
-      "archived": false
-    },
-    {
-      "serialNumber": "ELS-2026-EG-013",
-      "arabicName": "علي أحمد علي الصعيدي",
-      "englishName": "Ali Ahmed Ali Elsaidy",
-      "familyTitle": "الصعيدي",
-      "country": "جمهورية مصر العربية",
-      "countryCode": "EG",
-      "regionBranch": "محافظة الغربية - مدينة طنطا / صعيد مصر / القاهرة",
-      "lineageNarrative": "ينتسب إلى الذرية الموثقة لفرع الشيخ مرسي الحجاج الصعيدي وبيت الحاج علي أحمد الصعيدي في مدينة طنطا ومحافظة الغربية والقاهرة، من الأجداد المؤسسين الذين قدموا من صعيد مصر واستقروا في حاضرة الغربية بقلب الدلتا المصرية، والموثق امتدادهم التاريخي في سجلات دار الوثائق القومية المصرية.",
-      "documentType": "vip-id",
-      "issueDateGregorian": "2026-10-23",
-      "issueDateHijri": "١١ ربيع الآخر ١٤٤٨ هـ",
-      "status": "وثيقة نسب معتمدة ومطابقة للسجل العام",
-      "memberReferenceId": "REG-EG-GH-0013",
-      "ancestralRoot": "الأصول التاريخية بصعيد مصر ← فرع الشيخ مرسي الحجاج والحاج علي أحمد الصعيدي (طنطا والغربية)",
-      "currentResidence": "جمهورية مصر العربية — محافظة الغربية (طنطا) / القاهرة",
-      "idHash": "1992-0013",
       "historicalRootId": "root-upper-egypt-delta-brothers",
       "founderId": "founder-morsi-hagag",
       "founderName": "الشيخ مرسي الحجاج الصعيدي والحاج علي الصعيدي (عميد بيت طنطا والغربية)",
